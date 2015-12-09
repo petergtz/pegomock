@@ -36,7 +36,7 @@ import (
 )
 
 const (
-	gomockImportPath = "github.com/golang/mock/gomock"
+	importPath = "github.com/petergtz/pegomock/pegomock"
 )
 
 var (
@@ -51,29 +51,33 @@ var (
 func main() {
 	flag.Usage = usage
 	flag.Parse()
+	Run(*source, *destination, *packageOut, *selfPackage, *debugParser, flag.Args()...)
+}
+
+func Run(source string, destination string, packageOut string, selfPackage string, debugParser bool, args ...string) {
 
 	var pkg *model.Package
 	var err error
-	if *source != "" {
-		pkg, err = ParseFile(*source)
+	if source != "" {
+		pkg, err = ParseFile(source)
 	} else {
-		if flag.NArg() != 2 {
+		if len(args) != 2 {
 			log.Fatal("Expected exactly two arguments")
 		}
-		pkg, err = Reflect(flag.Arg(0), strings.Split(flag.Arg(1), ","))
+		pkg, err = Reflect(args[0], strings.Split(args[1], ","))
 	}
 	if err != nil {
 		log.Fatalf("Loading input failed: %v", err)
 	}
 
-	if *debugParser {
+	if debugParser {
 		pkg.Print(os.Stdout)
 		return
 	}
 
 	dst := os.Stdout
-	if len(*destination) > 0 {
-		f, err := os.Create(*destination)
+	if len(destination) > 0 {
+		f, err := os.Create(destination)
 		if err != nil {
 			log.Fatalf("Failed opening destination file: %v", err)
 		}
@@ -81,7 +85,7 @@ func main() {
 		dst = f
 	}
 
-	packageName := *packageOut
+	packageName := packageOut
 	if packageName == "" {
 		// pkg.Name in reflect mode is the base name of the import path,
 		// which might have characters that are illegal to have in package names.
@@ -89,11 +93,11 @@ func main() {
 	}
 
 	g := new(generator)
-	if *source != "" {
-		g.filename = *source
+	if source != "" {
+		g.filename = source
 	} else {
-		g.srcPackage = flag.Arg(0)
-		g.srcInterfaces = flag.Arg(1)
+		g.srcPackage = args[0]    //flag.Arg(0)
+		g.srcInterfaces = args[1] //flag.Arg(1)
 	}
 	if err := g.Generate(pkg, packageName); err != nil {
 		log.Fatalf("Failed generating mock: %v", err)
@@ -108,7 +112,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-const usageText = `mockgen has two modes of operation: source and reflect.
+const usageText = `mockgen (pegomock) has two modes of operation: source and reflect.
 
 Source mode generates mock interfaces from a source file.
 It is enabled by using the -source flag. Other flags that
@@ -135,18 +139,21 @@ type generator struct {
 	packageMap map[string]string // map from import path to package name
 }
 
-func (g *generator) p(format string, args ...interface{}) {
+func (g *generator) p(format string, args ...interface{}) *generator {
 	fmt.Fprintf(&g.buf, g.indent+format+"\n", args...)
+	return g
 }
 
-func (g *generator) in() {
+func (g *generator) in() *generator {
 	g.indent += "\t"
+	return g
 }
 
-func (g *generator) out() {
+func (g *generator) out() *generator {
 	if len(g.indent) > 0 {
 		g.indent = g.indent[0 : len(g.indent)-1]
 	}
+	return g
 }
 
 func removeDot(s string) string {
@@ -190,7 +197,7 @@ func (g *generator) Generate(pkg *model.Package, pkgName string) error {
 
 	// Get all required imports, and generate unique names for them all.
 	im := pkg.Imports()
-	im[gomockImportPath] = true
+	im[importPath] = true
 	g.packageMap = make(map[string]string, len(im))
 	localNames := make(map[string]bool, len(im))
 	for pth := range im {
@@ -228,10 +235,8 @@ func (g *generator) Generate(pkg *model.Package, pkgName string) error {
 	g.out()
 	g.p(")")
 
-	for _, intf := range pkg.Interfaces {
-		if err := g.GenerateMockInterface(intf); err != nil {
-			return err
-		}
+	for _, iface := range pkg.Interfaces {
+		g.GenerateMockInterface(iface)
 	}
 
 	return nil
@@ -242,68 +247,103 @@ func mockName(typeName string) string {
 	return "Mock" + typeName
 }
 
-func (g *generator) GenerateMockInterface(intf *model.Interface) error {
-	mockType := mockName(intf.Name)
+func (g *generator) GenerateMockInterface(iface *model.Interface) {
+	mockType := mockName(iface.Name)
 
 	g.p("")
-	g.p("// Mock of %v interface", intf.Name)
+	g.p("// Mock of %v interface", iface.Name)
 	g.p("type %v struct {", mockType)
 	g.in()
-	g.p("ctrl     *gomock.Controller")
-	g.p("recorder *_%vRecorder", mockType)
+	g.p("//http://dave.cheney.net/2014/03/25/the-empty-struct")
+	g.p("fieldToMakeSureEveryInstanceHasItsOwnIdentity int")
 	g.out()
 	g.p("}")
 	g.p("")
 
-	g.p("// Recorder for %v (not exported)", mockType)
-	g.p("type _%vRecorder struct {", mockType)
-	g.in()
-	g.p("mock *%v", mockType)
-	g.out()
+	g.p("func New%v() *%v {", mockType, mockType)
+	g.in().p("return &%v{}", mockType).out()
 	g.p("}")
 	g.p("")
 
-	// TODO: Re-enable this if we can import the interface reliably.
-	//g.p("// Verify that the mock satisfies the interface at compile time.")
-	//g.p("var _ %v = (*%v)(nil)", typeName, mockType)
-	//g.p("")
-
-	g.p("func New%v(ctrl *gomock.Controller) *%v {", mockType, mockType)
-	g.in()
-	g.p("mock := &%v{ctrl: ctrl}", mockType)
-	g.p("mock.recorder = &_%vRecorder{mock}", mockType)
-	g.p("return mock")
-	g.out()
-	g.p("}")
-	g.p("")
-
-	// XXX: possible name collision here if someone has EXPECT in their interface.
-	g.p("func (_m *%v) EXPECT() *_%vRecorder {", mockType, mockType)
-	g.in()
-	g.p("return _m.recorder")
-	g.out()
+	for _, method := range iface.Methods {
+		g.GenerateMockMethod(mockType, method, *selfPackage).p("")
+	}
+	g.p("type Verifier%v struct {", iface.Name)
+	g.in().p("mock *Mock%v", iface.Name).out()
 	g.p("}")
 
-	g.GenerateMockMethods(mockType, intf, *selfPackage)
+	g.p("func (mock *Mock%v) VerifyWasCalled() *Verifier%v {", iface.Name, iface.Name)
+	g.in().p("return &Verifier%v{mock}", iface.Name).out()
+	g.p("}")
 
-	return nil
-}
-
-func (g *generator) GenerateMockMethods(mockType string, intf *model.Interface, pkgOverride string) {
-	for _, m := range intf.Methods {
-		g.p("")
-		g.GenerateMockMethod(mockType, m, pkgOverride)
-		g.p("")
-		g.GenerateMockRecorderMethod(mockType, m)
+	for _, method := range iface.Methods {
+		g.GenerateVerifierMethod(iface.Name, method, *selfPackage).p("")
 	}
 }
 
 // GenerateMockMethod generates a mock method implementation.
 // If non-empty, pkgOverride is the package in which unqualified types reside.
-func (g *generator) GenerateMockMethod(mockType string, m *model.Method, pkgOverride string) error {
-	args := make([]string, len(m.In))
-	argNames := make([]string, len(m.In))
-	for i, p := range m.In {
+func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
+	_, _, argString, rets, retString, callArgs := getStuff(method, g, pkgOverride)
+	g.p("func (mock *%v) %v(%v)%v {", mockType, method.Name, argString, retString)
+	g.in()
+
+	g.p("pegomock.LastInvocation = &pegomock.Invocation{Mock: mock, MethodName: \"%v\", Params: [pegomock.MaxNumParams]interface{}{%v}}", method.Name, callArgs)
+	g.p("pegomock.Invocations[*pegomock.LastInvocation]++")
+	if len(method.Out) > 0 {
+		g.p("if len(pegomock.Stubbings[*pegomock.LastInvocation]) == 0 {")
+		g.in()
+		retValues := make([]string, len(rets))
+		for i, ret := range rets {
+			g.p("var ret%v %v", i, ret)
+			retValues[i] = fmt.Sprintf("ret%v", i)
+		}
+		g.p("return %v", strings.Join(retValues, ", "))
+		g.out()
+		g.p("}")
+		g.p("result := pegomock.Stubbings[*pegomock.LastInvocation][pegomock.StubbingPointer[*pegomock.LastInvocation]]")
+		g.p("if pegomock.StubbingPointer[*pegomock.LastInvocation] < len(pegomock.Stubbings[*pegomock.LastInvocation])-1 {")
+		g.in().p("pegomock.StubbingPointer[*pegomock.LastInvocation]++").out()
+		g.p("}")
+		g.p("return %v", resultCast(rets))
+	}
+	g.out()
+	g.p("}")
+	return g
+}
+
+func resultCast(returnTypes []string) string {
+	castedResults := make([]string, len(returnTypes))
+	for i, returnType := range returnTypes {
+		castedResults[i] = fmt.Sprintf("result[%v].(%v)", i, returnType)
+	}
+	return strings.Join(castedResults, ", ")
+}
+
+func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.Method, pkgOverride string) *generator {
+	_, _, argString, rets, retString, callArgs := getStuff(method, g, pkgOverride)
+
+	g.p("func (verifier *Verifier%v) %v(%v)%v {", interfaceName, method.Name, argString, retString)
+	g.p("if pegomock.Invocations[pegomock.Invocation{verifier.mock, \"%v\", [pegomock.MaxNumParams]interface{}{%v}}] == 0 {", method.Name, callArgs)
+	g.p(`panic("Mock not called")`)
+	g.p("}")
+	if len(method.Out) > 0 {
+		retValues := make([]string, len(rets))
+		for i, ret := range rets {
+			g.p("var ret%v %v", i, ret)
+			retValues[i] = fmt.Sprintf("ret%v", i)
+		}
+		g.p("return %v", strings.Join(retValues, ", "))
+	}
+	g.p("}")
+
+	return g
+}
+
+func getStuff(method *model.Method, g *generator, pkgOverride string) (args []string, argNames []string, argString string, rets []string, retString string, callArgs string) {
+	args = make([]string, len(method.In))
+	argNames = make([]string, len(method.In))
+	for i, p := range method.In {
 		name := p.Name
 		if name == "" {
 			name = fmt.Sprintf("_param%d", i)
@@ -312,22 +352,22 @@ func (g *generator) GenerateMockMethod(mockType string, m *model.Method, pkgOver
 		args[i] = name + " " + ts
 		argNames[i] = name
 	}
-	if m.Variadic != nil {
-		name := m.Variadic.Name
+	if method.Variadic != nil {
+		name := method.Variadic.Name
 		if name == "" {
-			name = fmt.Sprintf("_param%d", len(m.In))
+			name = fmt.Sprintf("_param%d", len(method.In))
 		}
-		ts := m.Variadic.Type.String(g.packageMap, pkgOverride)
+		ts := method.Variadic.Type.String(g.packageMap, pkgOverride)
 		args = append(args, name+" ..."+ts)
 		argNames = append(argNames, name)
 	}
-	argString := strings.Join(args, ", ")
+	argString = strings.Join(args, ", ")
 
-	rets := make([]string, len(m.Out))
-	for i, p := range m.Out {
+	rets = make([]string, len(method.Out))
+	for i, p := range method.Out {
 		rets[i] = p.Type.String(g.packageMap, pkgOverride)
 	}
-	retString := strings.Join(rets, ", ")
+	retString = strings.Join(rets, ", ")
 	if len(rets) > 1 {
 		retString = "(" + retString + ")"
 	}
@@ -335,84 +375,20 @@ func (g *generator) GenerateMockMethod(mockType string, m *model.Method, pkgOver
 		retString = " " + retString
 	}
 
-	g.p("func (_m *%v) %v(%v)%v {", mockType, m.Name, argString, retString)
-	g.in()
-
-	callArgs := strings.Join(argNames, ", ")
-	if callArgs != "" {
-		callArgs = ", " + callArgs
-	}
-	if m.Variadic != nil {
-		// Non-trivial. The generated code must build a []interface{},
-		// but the variadic argument may be any type.
-		g.p("_s := []interface{}{%s}", strings.Join(argNames[:len(argNames)-1], ", "))
-		g.p("for _, _x := range %s {", argNames[len(argNames)-1])
-		g.in()
-		g.p("_s = append(_s, _x)")
-		g.out()
-		g.p("}")
-		callArgs = ", _s..."
-	}
-	if len(m.Out) == 0 {
-		g.p(`_m.ctrl.Call(_m, "%v"%v)`, m.Name, callArgs)
-	} else {
-		g.p(`ret := _m.ctrl.Call(_m, "%v"%v)`, m.Name, callArgs)
-
-		// Go does not allow "naked" type assertions on nil values, so we use the two-value form here.
-		// The value of that is either (x.(T), true) or (Z, false), where Z is the zero value for T.
-		// Happily, this coincides with the semantics we want here.
-		retNames := make([]string, len(rets))
-		for i, t := range rets {
-			retNames[i] = fmt.Sprintf("ret%d", i)
-			g.p("%s, _ := ret[%d].(%s)", retNames[i], i, t)
-		}
-		g.p("return " + strings.Join(retNames, ", "))
-	}
-
-	g.out()
-	g.p("}")
-	return nil
-}
-
-func (g *generator) GenerateMockRecorderMethod(mockType string, m *model.Method) error {
-	nargs := len(m.In)
-	args := make([]string, nargs)
-	for i := 0; i < nargs; i++ {
-		args[i] = "arg" + strconv.Itoa(i)
-	}
-	argString := strings.Join(args, ", ")
-	if nargs > 0 {
-		argString += " interface{}"
-	}
-	if m.Variadic != nil {
-		if nargs > 0 {
-			argString += ", "
-		}
-		argString += fmt.Sprintf("arg%d ...interface{}", nargs)
-	}
-
-	g.p("func (_mr *_%vRecorder) %v(%v) *gomock.Call {", mockType, m.Name, argString)
-	g.in()
-
-	callArgs := strings.Join(args, ", ")
-	if nargs > 0 {
-		callArgs = ", " + callArgs
-	}
-	if m.Variadic != nil {
-		if nargs == 0 {
-			// Easy: just use ... to push the arguments through.
-			callArgs = ", arg0..."
-		} else {
-			// Hard: create a temporary slice.
-			g.p("_s := append([]interface{}{%s}, arg%d...)", strings.Join(args, ", "), nargs)
-			callArgs = ", _s..."
-		}
-	}
-	g.p(`return _mr.mock.ctrl.RecordCall(_mr.mock, "%v"%v)`, m.Name, callArgs)
-
-	g.out()
-	g.p("}")
-	return nil
+	callArgs = strings.Join(argNames, ", ")
+	// TODO: variadic arguments
+	// if method.Variadic != nil {
+	// 	// Non-trivial. The generated code must build a []interface{},
+	// 	// but the variadic argument may be any type.
+	// 	g.p("_s := []interface{}{%s}", strings.Join(argNames[:len(argNames)-1], ", "))
+	// 	g.p("for _, _x := range %s {", argNames[len(argNames)-1])
+	// 	g.in()
+	// 	g.p("_s = append(_s, _x)")
+	// 	g.out()
+	// 	g.p("}")
+	// 	callArgs = ", _s..."
+	// }
+	return
 }
 
 // Output returns the generator's output, formatted in the standard Go style.
