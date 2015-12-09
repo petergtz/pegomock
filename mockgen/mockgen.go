@@ -1,4 +1,4 @@
-// Copyright 2010 Google Inc.
+// Copyright 2015 Peter Goetz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// Based on the work done in
+// https://github.com/golang/mock/blob/d581abfc04272f381d7a05e4b80163ea4e2b9447/mockgen/mockgen.go
 
 // MockGen generates mock implementations of Go interfaces.
 package main
