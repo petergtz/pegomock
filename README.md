@@ -1,28 +1,16 @@
-GoMock is a mocking framework for the [Go programming language][golang]. It
+PegoMock is a mocking framework for the [Go programming language][golang]. It
 integrates well with Go's built-in `testing` package, but can be used in other
-contexts too.
+contexts too. It is based on [golang/mock](https://github.com/golang/mock), but uses a DSL closely related to [Mockito](http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html).
 
 
 Installation
 ------------
 
 Once you have [installed Go][golang-install], run these commands
-to install the `gomock` package and the `mockgen` tool:
+to install the `pegomock` package and the `mockgen` tool:
 
-    go get github.com/golang/mock/gomock
-    go get github.com/golang/mock/mockgen
-
-
-Documentation
--------------
-
-After installing, you can use `go doc` to get documentation:
-
-    go doc github.com/golang/mock/gomock
-
-Alternatively, there is an online reference for the package hosted on GoPkgDoc
-[here][gomock-ref].
-
+    go get github.com/petergtz/pegomock/pegogomock
+    go get github.com/petergtz/pegomock/mockgen
 
 Running mockgen
 ---------------
