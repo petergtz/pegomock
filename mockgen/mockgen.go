@@ -256,15 +256,12 @@ func (g *generator) GenerateMockInterface(iface *model.Interface) {
 	g.p("")
 	g.p("// Mock of %v interface", iface.Name)
 	g.p("type %v struct {", mockType)
-	g.in()
-	g.p("//http://dave.cheney.net/2014/03/25/the-empty-struct")
-	g.p("fieldToMakeSureEveryInstanceHasItsOwnIdentity int")
-	g.out()
+	g.in().p("fail func(message string, callerSkip ...int)").out()
 	g.p("}")
 	g.p("")
 
 	g.p("func New%v() *%v {", mockType, mockType)
-	g.in().p("return &%v{}", mockType).out()
+	g.in().p("return &%v{fail: pegomock.GlobalFailHandler}", mockType).out()
 	g.p("}")
 	g.p("")
 
@@ -272,11 +269,14 @@ func (g *generator) GenerateMockInterface(iface *model.Interface) {
 		g.GenerateMockMethod(mockType, method, *selfPackage).p("")
 	}
 	g.p("type Verifier%v struct {", iface.Name)
-	g.in().p("mock *Mock%v", iface.Name).out()
+	g.in().
+		p("mock *Mock%v", iface.Name).
+		p("fail func(message string, callerSkip ...int)").
+		out()
 	g.p("}")
 
 	g.p("func (mock *Mock%v) VerifyWasCalled() *Verifier%v {", iface.Name, iface.Name)
-	g.in().p("return &Verifier%v{mock}", iface.Name).out()
+	g.in().p("return &Verifier%v{mock, mock.fail}", iface.Name).out()
 	g.p("}")
 
 	for _, method := range iface.Methods {
@@ -328,7 +328,7 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 
 	g.p("func (verifier *Verifier%v) %v(%v)%v {", interfaceName, method.Name, argString, retString)
 	g.p("if pegomock.Invocations[pegomock.Invocation{verifier.mock, \"%v\", [pegomock.MaxNumParams]interface{}{%v}}] == 0 {", method.Name, callArgs)
-	g.p(`panic("Mock not called")`)
+	g.p(`verifier.fail("Mock not called")`)
 	g.p("}")
 	if len(method.Out) > 0 {
 		retValues := make([]string, len(rets))

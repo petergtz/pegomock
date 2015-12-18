@@ -24,10 +24,10 @@ import (
 
 const MaxNumParams = 20
 
-var globalFailHandler types.PegoFailHandler
+var GlobalFailHandler types.FailHandler
 
-func RegisterMockFailHandler(handler types.PegoFailHandler) {
-	globalFailHandler = handler
+func RegisterMockFailHandler(handler types.FailHandler) {
+	GlobalFailHandler = handler
 }
 func RegisterMockTestingT(t *testing.T) {
 	RegisterMockFailHandler(testingtsupport.BuildTestingTGomegaFailHandler(t))

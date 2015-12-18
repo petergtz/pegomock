@@ -1,3 +1,3 @@
 package types
 
-type PegoFailHandler func(message string, callerSkip ...int)
+type FailHandler func(message string, callerSkip ...int)

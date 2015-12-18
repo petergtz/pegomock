@@ -29,11 +29,11 @@ import (
 	"github.com/petergtz/pegomock/pegomock/types"
 )
 
-type gomegaTestingT interface {
+type testingT interface {
 	Errorf(format string, args ...interface{})
 }
 
-func BuildTestingTGomegaFailHandler(t gomegaTestingT) types.PegoFailHandler {
+func BuildTestingTGomegaFailHandler(t testingT) types.FailHandler {
 	return func(message string, callerSkip ...int) {
 		skip := 1
 		if len(callerSkip) > 0 {
