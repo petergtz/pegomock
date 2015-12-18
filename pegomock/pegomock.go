@@ -14,9 +14,24 @@
 
 package pegomock
 
-import "reflect"
+import (
+	"reflect"
+	"testing"
+
+	"github.com/petergtz/pegomock/pegomock/internal/testingtsupport"
+	"github.com/petergtz/pegomock/pegomock/types"
+)
 
 const MaxNumParams = 20
+
+var globalFailHandler types.PegoFailHandler
+
+func RegisterMockFailHandler(handler types.PegoFailHandler) {
+	globalFailHandler = handler
+}
+func RegisterMockTestingT(t *testing.T) {
+	RegisterMockFailHandler(testingtsupport.BuildTestingTGomegaFailHandler(t))
+}
 
 type Invocation struct {
 	Mock       interface{}
