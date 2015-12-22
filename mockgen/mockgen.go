@@ -290,11 +290,10 @@ func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pk
 	_, _, argString, rets, retString, callArgs := getStuff(method, g, pkgOverride)
 	g.p("func (mock *%v) %v(%v)%v {", mockType, method.Name, argString, retString)
 	g.in()
-
-	g.p("pegomock.LastInvocation = &pegomock.Invocation{Mock: mock, MethodName: \"%v\", Params: [pegomock.MaxNumParams]interface{}{%v}}", method.Name, callArgs)
-	g.p("pegomock.Invocations[*pegomock.LastInvocation]++")
+	g.p("pegomock.Invoke(mock, \"%v\", %v)", method.Name, callArgs)
 	if len(method.Out) > 0 {
-		g.p("if len(pegomock.Stubbings[*pegomock.LastInvocation]) == 0 {")
+		// TODO: translate LastInvocation into a Matcher so it can be used as key for Stubbings
+		g.p("if len(pegomock.Match(pegomock.Stubbings[mock][\"%v\"], [pegomock.MaxNumParams]pegomock.Param{%v}, %v)) == 0 {", method.Name, callArgs, len(callArgs))
 		g.in()
 		retValues := make([]string, len(rets))
 		for i, ret := range rets {
@@ -304,9 +303,9 @@ func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pk
 		g.p("return %v", strings.Join(retValues, ", "))
 		g.out()
 		g.p("}")
-		g.p("result := pegomock.Stubbings[*pegomock.LastInvocation][pegomock.StubbingPointer[*pegomock.LastInvocation]]")
-		g.p("if pegomock.StubbingPointer[*pegomock.LastInvocation] < len(pegomock.Stubbings[*pegomock.LastInvocation])-1 {")
-		g.in().p("pegomock.StubbingPointer[*pegomock.LastInvocation]++").out()
+		g.p("result := pegomock.Match(pegomock.Stubbings[mock][\"%v\"], [pegomock.MaxNumParams]pegomock.Param{%v}, %v)[pegomock.MatchPointer(pegomock.StubbingPointer[mock][\"%v\"], [pegomock.MaxNumParams]pegomock.Param{%v}, %v)]", method.Name, callArgs, len(callArgs), method.Name, callArgs, len(callArgs))
+		g.p("if pegomock.MatchPointer(pegomock.StubbingPointer[mock][\"%v\"], [pegomock.MaxNumParams]pegomock.Param{%v}, %v) < len(pegomock.Match(pegomock.Stubbings[mock][\"%v\"], [pegomock.MaxNumParams]pegomock.Param{%v}, %v))-1 {", method.Name, callArgs, len(callArgs), method.Name, callArgs, len(callArgs))
+		g.in().p("pegomock.IncPointer(pegomock.StubbingPointer[mock][\"%v\"], [pegomock.MaxNumParams]pegomock.Param{%v}, %v)", method.Name, callArgs, len(callArgs)).out()
 		g.p("}")
 		g.p("return %v", resultCast(rets))
 	}
@@ -327,7 +326,7 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 	_, _, argString, rets, retString, callArgs := getStuff(method, g, pkgOverride)
 
 	g.p("func (verifier *Verifier%v) %v(%v)%v {", interfaceName, method.Name, argString, retString)
-	g.p("if pegomock.Invocations[pegomock.Invocation{verifier.mock, \"%v\", [pegomock.MaxNumParams]interface{}{%v}}] == 0 {", method.Name, callArgs)
+	g.p("if pegomock.Invocations[verifier.mock][\"%v\"][[pegomock.MaxNumParams]pegomock.Param{%v}] == 0 {", method.Name, callArgs)
 	g.p(`verifier.fail("Mock not called")`)
 	g.p("}")
 	if len(method.Out) > 0 {
