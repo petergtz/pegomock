@@ -15,14 +15,13 @@
 package pegomock
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/petergtz/pegomock/pegomock/internal/testingtsupport"
 	"github.com/petergtz/pegomock/pegomock/types"
 )
-
-const MaxNumParams = 20
 
 var GlobalFailHandler types.FailHandler
 
@@ -37,19 +36,19 @@ type Invocation struct {
 	Mock        Mock
 	genericMock *GenericMock
 	MethodName  MethodName
-	Params      [MaxNumParams]Param
+	Params      []Param
 }
 
 type MethodInvocation struct {
 	MethodName MethodName
-	Params     [MaxNumParams]Param
+	Params     []Param
 }
 
 type InvocationMatcher struct {
 	Mock        Mock
 	genericMock *GenericMock
 	MethodName  MethodName
-	Params      [MaxNumParams]Matcher
+	Params      []Matcher
 }
 
 type Stubbing struct {
@@ -58,27 +57,29 @@ type Stubbing struct {
 	sequencePointer      int
 }
 
-func (stubbing *Stubbing) Invoke(params ...Param) ReturnValues {
+func (stubbing *Stubbing) Invoke(params []Param) ReturnValues {
 	result := stubbing.returnValuesSequence[stubbing.sequencePointer]
-	stubbing.sequencePointer++
+	if stubbing.sequencePointer < len(stubbing.returnValuesSequence)-1 {
+		stubbing.sequencePointer++
+	}
 	return result
 }
 
-type Stubbings2 []Stubbing
+type Stubbings []*Stubbing
 
-func (stubbings Stubbings2) find(params ...Param) *Stubbing {
+func (stubbings Stubbings) find(params []Param) *Stubbing {
 	for _, stubbing := range stubbings {
 		if stubbing.paramMatchers.matches(params) {
-			return &stubbing
+			return stubbing
 		}
 	}
 	return nil
 }
 
-func (stubbings Stubbings2) findByMatchers(paramMatchers ...Matcher) *Stubbing {
+func (stubbings Stubbings) findByMatchers(paramMatchers Matchers) *Stubbing {
 	for _, stubbing := range stubbings {
 		if reflect.DeepEqual(stubbing.paramMatchers, paramMatchers) {
-			return &stubbing
+			return stubbing
 		}
 	}
 	return nil
@@ -87,10 +88,10 @@ func (stubbings Stubbings2) findByMatchers(paramMatchers ...Matcher) *Stubbing {
 type MockedMethod struct {
 	name        MethodName
 	invocations [][]Param
-	stubbings   Stubbings2
+	stubbings   Stubbings
 }
 
-func (method *MockedMethod) Invoke(params ...Param) ReturnValues {
+func (method *MockedMethod) Invoke(params []Param) ReturnValues {
 	method.invocations = append(method.invocations, params)
 	stubbing := method.stubbings.find(params)
 	if stubbing == nil {
@@ -100,47 +101,54 @@ func (method *MockedMethod) Invoke(params ...Param) ReturnValues {
 }
 
 func (method *MockedMethod) Stub(paramMatchers Matchers, returnValues ReturnValues) {
-	stubbing := method.stubbings.find(paramMatchers)
+	stubbing := method.stubbings.findByMatchers(paramMatchers)
 	if stubbing != nil {
 		stubbing.returnValuesSequence = append(stubbing.returnValuesSequence, returnValues)
+	} else {
+		method.stubbings = append(method.stubbings, &Stubbing{paramMatchers: paramMatchers, returnValuesSequence: []ReturnValues{returnValues}})
 	}
-	method.stubbings = append(method.stubbings, Stubbing{paramMatchers: paramMatchers, returnValuesSequence: []ReturnValues{returnValues}})
 }
 
 type GenericMock struct {
 	mock          Mock
-	mockedMethods map[MethodName]MockedMethod
+	mockedMethods map[MethodName]*MockedMethod
 }
 
 func (genericMock *GenericMock) Invoke(methodName MethodName, params ...Param) ReturnValues {
-	var p [MaxNumParams]Param
-	copy(p[:], params)
-	// TODO: store genericMock in Invocation
-	LastInvocation = &Invocation{Mock: genericMock.mock, MethodName: methodName, Params: p}
+	LastInvocation = &Invocation{Mock: genericMock.mock, genericMock: genericMock, MethodName: methodName, Params: params}
 
 	if _, ok := genericMock.mockedMethods[methodName]; !ok {
-		genericMock.mockedMethods[methodName] = MockedMethod{name: methodName}
+		genericMock.mockedMethods[methodName] = &MockedMethod{name: methodName}
 	}
-	mockedMethod := genericMock.mockedMethods[methodName]
-	return mockedMethod.Invoke(params)
+	return genericMock.mockedMethods[methodName].Invoke(params)
 }
 
 func (genericMock *GenericMock) Stub(methodName MethodName, paramMatchers []Matcher, returnValues ReturnValues) {
 	if _, ok := genericMock.mockedMethods[methodName]; !ok {
-		genericMock.mockedMethods[methodName] = MockedMethod{name: methodName}
+		genericMock.mockedMethods[methodName] = &MockedMethod{name: methodName}
 	}
-	mockedMethod := genericMock.mockedMethods[methodName]
-	mockedMethod.Stub(paramMatchers, returnValues)
+	genericMock.mockedMethods[methodName].Stub(paramMatchers, returnValues)
 }
 
 func (genericMock *GenericMock) Reset(methodName MethodName, params []Matcher) {
 	// TODO: should be called from When
 }
 
-func (genericMock *GenericMock) NumMethodInvocations(methodName MethodName, paramMatchers Matchers) int {
+func (genericMock *GenericMock) NumMethodInvocationsUsingMatchers(methodName MethodName, paramMatchers Matchers) int {
 	count := 0
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
 		if paramMatchers.matches(invocation) {
+			count++
+		}
+	}
+	return count
+}
+
+func (genericMock *GenericMock) NumMethodInvocations(methodName MethodName, params ...Param) int {
+	// TODO: if something is in matchers stack, pop and call NumMethodInvocationsUsingMatchers
+	count := 0
+	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
+		if reflect.DeepEqual(params, invocation) {
 			count++
 		}
 	}
@@ -151,7 +159,7 @@ type Matchers []Matcher
 
 func (paramMatchers Matchers) matches(params []Param) bool {
 	if len(paramMatchers) != len(params) {
-		panic("Number of params and matchers different: TODO: numbers")
+		panic("Number of params and matchers different: params: " + fmt.Sprint(params) + ", matchers: " + fmt.Sprint(paramMatchers))
 	}
 	for i := range params {
 		if !paramMatchers[i].matches(params[i]) {
@@ -168,9 +176,6 @@ type ReturnValue interface{}
 type ReturnValues []ReturnValue
 
 var LastInvocation *Invocation
-var Invocations = make(map[Mock]map[MethodName]map[[MaxNumParams]Param]int)
-var Stubbings = make(map[Mock]map[MethodName]map[[MaxNumParams]Matcher][]ReturnValues)
-var StubbingPointer = make(map[Mock]map[MethodName]map[[MaxNumParams]Matcher]int)
 
 type OngoingStubbing struct {
 	lastMockInvocationMatcher InvocationMatcher
@@ -208,67 +213,25 @@ func When(invocation ...interface{}) *OngoingStubbing {
 	LastInvocationMatcher.MethodName = LastInvocation.MethodName
 	if len(argMatchers) == 0 {
 		// TODO: Do proper translation into matchers
-		LastInvocationMatcher.Params = [MaxNumParams]Matcher{}
+		LastInvocationMatcher.Params = make([]Matcher, 0)
 	} else {
 		// TODO: Do proper translation into matchers
-		LastInvocationMatcher.Params = [MaxNumParams]Matcher{}
+		LastInvocationMatcher.Params = make([]Matcher, 0)
 	}
+	// Remove last invocation:
+	LastInvocation.genericMock.mockedMethods[LastInvocation.MethodName].invocations = LastInvocation.genericMock.mockedMethods[LastInvocation.MethodName].invocations[:len(LastInvocation.genericMock.mockedMethods[LastInvocation.MethodName].invocations)-1]
 	result := &OngoingStubbing{lastMockInvocationMatcher: LastInvocationMatcher, returnValues: invocation}
-
-	if _, ok := Stubbings[LastInvocationMatcher.Mock]; !ok {
-		Stubbings[LastInvocationMatcher.Mock] = make(map[MethodName]map[[MaxNumParams]Matcher][]ReturnValues)
-	}
-	if _, ok := Stubbings[LastInvocationMatcher.Mock][LastInvocationMatcher.MethodName]; !ok {
-		Stubbings[LastInvocationMatcher.Mock][LastInvocationMatcher.MethodName] = make(map[[MaxNumParams]Matcher][]ReturnValues)
-	}
-	Stubbings[LastInvocationMatcher.Mock][LastInvocationMatcher.MethodName][LastInvocationMatcher.Params] = make([]ReturnValues, 0)
-
-	if _, ok := Invocations[LastInvocation.Mock]; !ok {
-		Invocations[LastInvocation.Mock] = make(map[MethodName]map[[MaxNumParams]Param]int)
-	}
-	if _, ok := Invocations[LastInvocation.Mock][LastInvocationMatcher.MethodName]; !ok {
-		Invocations[LastInvocation.Mock][LastInvocation.MethodName] = make(map[[MaxNumParams]Param]int)
-	}
-	Invocations[LastInvocation.Mock][LastInvocation.MethodName][LastInvocation.Params] = 0
-
 	LastInvocation = nil
 	return result
 }
 
 var genericMocks = make(map[Mock]*GenericMock)
 
-func Invoke(mock Mock, methodName MethodName, params ...Param) {
-	// TODO: make this nicer:
-	var p [MaxNumParams]Param
-	for i := 0; i < len(params); i++ {
-		p[i] = params[i]
-	}
+func GetGenericMockFrom(mock Mock) *GenericMock {
 	if genericMocks[mock] == nil {
-		genericMocks[mock] = &GenericMock{mock: mock, mockedMethods: make(map[MethodName]MockedMethod)}
+		genericMocks[mock] = &GenericMock{mock: mock, mockedMethods: make(map[MethodName]*MockedMethod)}
 	}
-	LastInvocation = &Invocation{Mock: mock, genericMock: genericMocks[mock], MethodName: methodName, Params: p}
-
-	if _, ok := Invocations[mock]; !ok {
-		Invocations[mock] = make(map[MethodName]map[[MaxNumParams]Param]int)
-	}
-	if _, ok := Invocations[mock][methodName]; !ok {
-		Invocations[mock][methodName] = make(map[[MaxNumParams]Param]int)
-	}
-
-	Invocations[mock][methodName][p]++
-
-}
-
-func Match(m map[[MaxNumParams]Matcher][]ReturnValues, params [MaxNumParams]Param, numParams int) []ReturnValues {
-	return m[[MaxNumParams]Matcher{}]
-}
-
-func MatchPointer(m map[[MaxNumParams]Matcher]int, params [MaxNumParams]Param, numParams int) int {
-	return m[[MaxNumParams]Matcher{}]
-}
-
-func IncPointer(m map[[MaxNumParams]Matcher]int, params [MaxNumParams]Param, numParams int) {
-	m[[MaxNumParams]Matcher{}]++
+	return genericMocks[mock]
 }
 
 func (stubbing *OngoingStubbing) ThenReturn(values ...ReturnValue) *OngoingStubbing {
@@ -280,20 +243,7 @@ func (stubbing *OngoingStubbing) ThenReturn(values ...ReturnValue) *OngoingStubb
 			panic("Return type doesn't match")
 		}
 	}
-	p := make([]Matcher, MaxNumParams)
-	copy(p, stubbing.lastMockInvocationMatcher.Params[:])
-	stubbing.lastMockInvocationMatcher.genericMock.Stub(stubbing.lastMockInvocationMatcher.MethodName, p, values)
-	Stubbings[stubbing.lastMockInvocationMatcher.Mock][stubbing.lastMockInvocationMatcher.MethodName][stubbing.lastMockInvocationMatcher.Params] =
-		append(Stubbings[stubbing.lastMockInvocationMatcher.Mock][stubbing.lastMockInvocationMatcher.MethodName][stubbing.lastMockInvocationMatcher.Params],
-			values)
-	if _, ok := StubbingPointer[stubbing.lastMockInvocationMatcher.Mock]; !ok {
-		StubbingPointer[stubbing.lastMockInvocationMatcher.Mock] = make(map[MethodName]map[[MaxNumParams]Matcher]int)
-	}
-	if _, ok := StubbingPointer[stubbing.lastMockInvocationMatcher.Mock][stubbing.lastMockInvocationMatcher.MethodName]; !ok {
-		StubbingPointer[stubbing.lastMockInvocationMatcher.Mock][stubbing.lastMockInvocationMatcher.MethodName] = make(map[[MaxNumParams]Matcher]int)
-	}
-
-	StubbingPointer[stubbing.lastMockInvocationMatcher.Mock][stubbing.lastMockInvocationMatcher.MethodName][stubbing.lastMockInvocationMatcher.Params] = 0
+	stubbing.lastMockInvocationMatcher.genericMock.Stub(stubbing.lastMockInvocationMatcher.MethodName, stubbing.lastMockInvocationMatcher.Params, values)
 	return stubbing
 }
 

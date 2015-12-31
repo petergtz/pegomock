@@ -17,11 +17,14 @@ package pegomock_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/petergtz/pegomock/pegomock"
 
 	"testing"
 )
 
 func TestPegomock(t *testing.T) {
 	RegisterFailHandler(Fail)
+	RegisterMockFailHandler(func(message string, callerSkip ...int) { panic(message) })
+	// RegisterMockFailHandler(Fail)
 	RunSpecs(t, "Pegomock Suite")
 }
