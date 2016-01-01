@@ -40,16 +40,16 @@ var lastInvocation *invocation
 var argMatchers Matchers
 
 type invocation struct {
-	genericMock *genericMockClass
+	genericMock *GenericMock
 	MethodName  string
 	Params      []Param
 }
 
-type genericMockClass struct {
+type GenericMock struct {
 	mockedMethods map[string]*mockedMethod
 }
 
-func (genericMock *genericMockClass) Invoke(methodName string, params ...Param) ReturnValues {
+func (genericMock *GenericMock) Invoke(methodName string, params ...Param) ReturnValues {
 	lastInvocation = &invocation{genericMock: genericMock, MethodName: methodName, Params: params}
 
 	if _, ok := genericMock.mockedMethods[methodName]; !ok {
@@ -58,18 +58,18 @@ func (genericMock *genericMockClass) Invoke(methodName string, params ...Param) 
 	return genericMock.mockedMethods[methodName].Invoke(params)
 }
 
-func (genericMock *genericMockClass) stub(methodName string, paramMatchers []Matcher, returnValues ReturnValues) {
+func (genericMock *GenericMock) stub(methodName string, paramMatchers []Matcher, returnValues ReturnValues) {
 	if _, ok := genericMock.mockedMethods[methodName]; !ok {
 		genericMock.mockedMethods[methodName] = &mockedMethod{name: methodName}
 	}
 	genericMock.mockedMethods[methodName].stub(paramMatchers, returnValues)
 }
 
-func (genericMock *genericMockClass) Reset(methodName string, params []Matcher) {
+func (genericMock *GenericMock) Reset(methodName string, params []Matcher) {
 	// TODO: should be called from When
 }
 
-func (genericMock *genericMockClass) NumMethodInvocations(methodName string, params ...Param) int {
+func (genericMock *GenericMock) NumMethodInvocations(methodName string, params ...Param) int {
 	if len(argMatchers) != 0 {
 		checkArgument(len(argMatchers) == len(params), "If you use matchers, you must use matchers for all parameters. Example: TODO")
 		result := genericMock.NumMethodInvocationsUsingMatchers(methodName, argMatchers)
@@ -86,7 +86,7 @@ func (genericMock *genericMockClass) NumMethodInvocations(methodName string, par
 	return count
 }
 
-func (genericMock *genericMockClass) NumMethodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) int {
+func (genericMock *GenericMock) NumMethodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) int {
 	count := 0
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
 		if paramMatchers.matches(invocation) {
@@ -175,7 +175,7 @@ func (matchers *Matchers) append(matcher Matcher) {
 }
 
 type ongoingStubbing struct {
-	genericMock   *genericMockClass
+	genericMock   *GenericMock
 	MethodName    string
 	ParamMatchers []Matcher
 	returnValues  []interface{}
@@ -209,11 +209,11 @@ func When(invocation ...interface{}) *ongoingStubbing {
 	}
 }
 
-var genericMocks = make(map[Mock]*genericMockClass)
+var genericMocks = make(map[Mock]*GenericMock)
 
-func GetGenericMockFrom(mock Mock) *genericMockClass {
+func GetGenericMockFrom(mock Mock) *GenericMock {
 	if genericMocks[mock] == nil {
-		genericMocks[mock] = &genericMockClass{mockedMethods: make(map[string]*mockedMethod)}
+		genericMocks[mock] = &GenericMock{mockedMethods: make(map[string]*mockedMethod)}
 	}
 	return genericMocks[mock]
 }
