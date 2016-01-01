@@ -22,7 +22,6 @@ import (
 )
 
 var _ = Describe("MockDisplay", func() {
-
 	var display *MockDisplay
 
 	BeforeEach(func() {
@@ -36,19 +35,37 @@ var _ = Describe("MockDisplay", func() {
 	})
 
 	Context("Calling Flash() without matchers", func() {
-		It("Matches correctly", func() {
-			display.Flash("Hello", 333)
+
+		BeforeEach(func() { display.Flash("Hello", 333) })
+
+		It("Succeeds verification if values are matching", func() {
 			Expect(func() { display.VerifyWasCalled().Flash("Hello", 333) }).NotTo(Panic())
+		})
+
+		It("Panics during verification if values are not matching", func() {
 			Expect(func() { display.VerifyWasCalled().Flash("Hello", 666) }).To(Panic())
 		})
 	})
 
-	Context("Calling Flash() with matchers", func() {
+	Context("Calling MultipleParamsAndReturnValue() with matchers", func() {
 		It("Matches correctly", func() {
 			When(display.MultipleParamsAndReturnValue(EqString("Hello"), EqInt(333))).ThenReturn("Bla")
 			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
 			display.MultipleParamsAndReturnValue("Hello", 333)
 			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
+		})
+	})
+
+	Context("Calling MultipleParamsAndReturnValue() with any matchers", func() {
+		It("Matches correctly", func() {
+			When(display.MultipleParamsAndReturnValue(AnyString(), EqInt(333))).ThenReturn("Bla")
+			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
+			display.MultipleParamsAndReturnValue("Hello", 333)
+			display.MultipleParamsAndReturnValue("Hello again", 333)
+			display.MultipleParamsAndReturnValue("And again", 333)
+			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello again", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("And again", 333) }).NotTo(Panic())
 		})
 	})
 
