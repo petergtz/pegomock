@@ -20,4 +20,5 @@ type Display interface {
 	Show(_param0 string)
 	SomeValue() string
 	MultipleValues() (string, int, float32)
+	MultipleParamsAndReturnValue(s string, i int) string
 }

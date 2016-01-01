@@ -30,8 +30,31 @@ var _ = Describe("MockDisplay", func() {
 	})
 
 	Context("Calling SomeValue() with no stubbing", func() {
-		It("Returns default value", func() {
+		It("Returns zero value", func() {
 			Expect(display.SomeValue()).To(Equal(""))
+		})
+	})
+
+	Context("Calling Flash() without matchers", func() {
+		It("Matches correctly", func() {
+			display.Flash("Hello", 333)
+			Expect(func() { display.VerifyWasCalled().Flash("Hello", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalled().Flash("Hello", 666) }).To(Panic())
+		})
+	})
+
+	Context("Calling Flash() with matchers", func() {
+		It("Matches correctly", func() {
+			When(display.MultipleParamsAndReturnValue(EqString("Hello"), EqInt(333))).ThenReturn("Bla")
+			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
+			display.MultipleParamsAndReturnValue("Hello", 333)
+			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
+		})
+	})
+
+	Context("Calling Flash() only with partial matchers", func() {
+		It("panics", func() {
+			Expect(func() { When(display.MultipleParamsAndReturnValue(EqString("Hello"), 333)) }).To(Panic())
 		})
 	})
 
