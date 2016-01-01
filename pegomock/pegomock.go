@@ -15,7 +15,6 @@
 package pegomock
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -70,21 +69,27 @@ func (genericMock *genericMockClass) Reset(methodName string, params []Matcher) 
 	// TODO: should be called from When
 }
 
-func (genericMock *genericMockClass) NumMethodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) int {
+func (genericMock *genericMockClass) NumMethodInvocations(methodName string, params ...Param) int {
+	if len(argMatchers) != 0 {
+		checkArgument(len(argMatchers) == len(params), "If you use matchers, you must use matchers for all parameters. Example: TODO")
+		result := genericMock.NumMethodInvocationsUsingMatchers(methodName, argMatchers)
+		argMatchers = nil
+		return result
+	}
+
 	count := 0
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
-		if paramMatchers.matches(invocation) {
+		if reflect.DeepEqual(params, invocation) {
 			count++
 		}
 	}
 	return count
 }
 
-func (genericMock *genericMockClass) NumMethodInvocations(methodName string, params ...Param) int {
-	// TODO: if something is in matchers stack, pop and call NumMethodInvocationsUsingMatchers
+func (genericMock *genericMockClass) NumMethodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) int {
 	count := 0
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
-		if reflect.DeepEqual(params, invocation) {
+		if paramMatchers.matches(invocation) {
 			count++
 		}
 	}
@@ -185,7 +190,6 @@ func When(invocation ...interface{}) *ongoingStubbing {
 	}()
 
 	var paramMatchers []Matcher
-	fmt.Println(argMatchers)
 	if len(argMatchers) == 0 {
 		paramMatchers = make([]Matcher, 0)
 		for param := range lastInvocation.Params {

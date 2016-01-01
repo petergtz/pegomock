@@ -34,30 +34,20 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
-	Context("Calling Flash() without matchers", func() {
-
-		BeforeEach(func() { display.Flash("Hello", 333) })
-
-		It("succeeds verification if values are matching", func() {
-			Expect(func() { display.VerifyWasCalled().Flash("Hello", 333) }).NotTo(Panic())
-		})
-
-		It("panics during verification if values are not matching", func() {
-			Expect(func() { display.VerifyWasCalled().Flash("Hello", 666) }).To(Panic())
-		})
-	})
-
 	Context("Stubbing MultipleParamsAndReturnValue() with matchers", func() {
 		BeforeEach(func() {
 			When(display.MultipleParamsAndReturnValue(EqString("Hello"), EqInt(333))).ThenReturn("Bla")
 		})
-		It("panics during verification when mock was not called", func() {
+
+		It("fails during verification when mock was not called", func() {
 			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
 		})
+
 		It("succeeds verification when mock was called", func() {
 			display.MultipleParamsAndReturnValue("Hello", 333)
 			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
 		})
+
 		It("succeeds verification when verification and invocation are mixed", func() {
 			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
 			display.MultipleParamsAndReturnValue("Hello", 333)
@@ -84,7 +74,7 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
-	Context("Calling Flash() only with matchers on some parameters", func() {
+	Context("Calling MultipleParamsAndReturnValue() only with matchers on some parameters", func() {
 		It("panics", func() {
 			Expect(func() { When(display.MultipleParamsAndReturnValue(EqString("Hello"), 333)) }).To(Panic())
 		})
@@ -115,7 +105,7 @@ var _ = Describe("MockDisplay", func() {
 			Expect(func() { display.VerifyWasCalled().SomeValue() }).NotTo(Panic())
 		})
 
-		It("panics if verify is called on mock that was not invoked.", func() {
+		It("fails if verify is called on mock that was not invoked.", func() {
 			Expect(func() { display.VerifyWasCalled().Show("param") }).To(Panic())
 
 		})
@@ -128,9 +118,35 @@ var _ = Describe("MockDisplay", func() {
 	})
 
 	Context("Stubbed method, but no invocation takes place", func() {
-		It("panics when trying to verify", func() {
+		It("fails during verification", func() {
 			When(display.SomeValue()).ThenReturn("Hello")
 			Expect(func() { display.VerifyWasCalled().SomeValue() }).To(Panic())
 		})
 	})
+
+	Context("Calling Flash() with specific arguments", func() {
+
+		BeforeEach(func() { display.Flash("Hello", 333) })
+
+		It("succeeds verification if values are matching", func() {
+			Expect(func() { display.VerifyWasCalled().Flash("Hello", 333) }).NotTo(Panic())
+		})
+
+		It("fails during verification if values are not matching", func() {
+			Expect(func() { display.VerifyWasCalled().Flash("Hello", 666) }).To(Panic())
+		})
+
+		It("succeeds during verification when using Any-matchers ", func() {
+			Expect(func() { display.VerifyWasCalled().Flash(AnyString(), AnyInt()) }).NotTo(Panic())
+		})
+
+		It("succeeds during verification when using valid Eq-matchers ", func() {
+			Expect(func() { display.VerifyWasCalled().Flash(EqString("Hello"), EqInt(333)) }).NotTo(Panic())
+		})
+
+		It("fails during verification when using invalid Eq-matchers ", func() {
+			Expect(func() { display.VerifyWasCalled().Flash(EqString("Invalid"), EqInt(-1)) }).To(Panic())
+		})
+	})
+
 })
