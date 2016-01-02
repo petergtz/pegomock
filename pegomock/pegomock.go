@@ -55,14 +55,14 @@ func (genericMock *GenericMock) Invoke(methodName string, params ...Param) Retur
 		MethodName:  methodName,
 		Params:      params,
 	}
-	return genericMock.getMockedMethod(methodName).Invoke(params)
+	return genericMock.getOrCreateMockedMethod(methodName).Invoke(params)
 }
 
 func (genericMock *GenericMock) stub(methodName string, paramMatchers []Matcher, returnValues ReturnValues) {
-	genericMock.getMockedMethod(methodName).stub(paramMatchers, returnValues)
+	genericMock.getOrCreateMockedMethod(methodName).stub(paramMatchers, returnValues)
 }
 
-func (genericMock *GenericMock) getMockedMethod(methodName string) *mockedMethod {
+func (genericMock *GenericMock) getOrCreateMockedMethod(methodName string) *mockedMethod {
 	if _, ok := genericMock.mockedMethods[methodName]; !ok {
 		genericMock.mockedMethods[methodName] = &mockedMethod{name: methodName}
 	}
@@ -118,14 +118,11 @@ func (method *mockedMethod) Invoke(params []Param) ReturnValues {
 
 func (method *mockedMethod) stub(paramMatchers Matchers, returnValues ReturnValues) {
 	stubbing := method.stubbings.findByMatchers(paramMatchers)
-	if stubbing != nil {
-		stubbing.returnValuesSequence = append(stubbing.returnValuesSequence, returnValues)
-	} else {
-		method.stubbings = append(method.stubbings, &Stubbing{
-			paramMatchers:        paramMatchers,
-			returnValuesSequence: []ReturnValues{returnValues},
-		})
+	if stubbing == nil {
+		stubbing = &Stubbing{paramMatchers: paramMatchers}
+		method.stubbings = append(method.stubbings, stubbing)
 	}
+	stubbing.returnValuesSequence = append(stubbing.returnValuesSequence, returnValues)
 }
 
 func (method *mockedMethod) removeLastInvocation() {
