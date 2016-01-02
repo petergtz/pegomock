@@ -59,7 +59,11 @@ func (genericMock *GenericMock) Invoke(methodName string, params ...Param) Retur
 }
 
 func (genericMock *GenericMock) stub(methodName string, paramMatchers []Matcher, returnValues ReturnValues) {
-	genericMock.getOrCreateMockedMethod(methodName).stub(paramMatchers, returnValues)
+	genericMock.stubWithCallback(methodName, paramMatchers, func([]Param) ReturnValues { return returnValues })
+}
+
+func (genericMock *GenericMock) stubWithCallback(methodName string, paramMatchers []Matcher, callback func([]Param) ReturnValues) {
+	genericMock.getOrCreateMockedMethod(methodName).stub(paramMatchers, callback)
 }
 
 func (genericMock *GenericMock) getOrCreateMockedMethod(methodName string) *mockedMethod {
@@ -122,13 +126,13 @@ func (method *mockedMethod) Invoke(params []Param) ReturnValues {
 	return stubbing.Invoke(params)
 }
 
-func (method *mockedMethod) stub(paramMatchers Matchers, returnValues ReturnValues) {
+func (method *mockedMethod) stub(paramMatchers Matchers, callback func([]Param) ReturnValues) {
 	stubbing := method.stubbings.findByMatchers(paramMatchers)
 	if stubbing == nil {
 		stubbing = &Stubbing{paramMatchers: paramMatchers}
 		method.stubbings = append(method.stubbings, stubbing)
 	}
-	stubbing.returnValuesSequence = append(stubbing.returnValuesSequence, returnValues)
+	stubbing.callbackSequence = append(stubbing.callbackSequence, callback)
 }
 
 func (method *mockedMethod) removeLastInvocation() {
@@ -156,17 +160,18 @@ func (stubbings Stubbings) findByMatchers(paramMatchers Matchers) *Stubbing {
 }
 
 type Stubbing struct {
-	paramMatchers        Matchers
-	returnValuesSequence []ReturnValues
-	sequencePointer      int
+	paramMatchers    Matchers
+	callbackSequence []func([]Param) ReturnValues
+	sequencePointer  int
 }
 
 func (stubbing *Stubbing) Invoke(params []Param) ReturnValues {
-	result := stubbing.returnValuesSequence[stubbing.sequencePointer]
-	if stubbing.sequencePointer < len(stubbing.returnValuesSequence)-1 {
-		stubbing.sequencePointer++
-	}
-	return result
+	defer func() {
+		if stubbing.sequencePointer < len(stubbing.callbackSequence)-1 {
+			stubbing.sequencePointer++
+		}
+	}()
+	return stubbing.callbackSequence[stubbing.sequencePointer](params)
 }
 
 type Matchers []Matcher
@@ -238,18 +243,34 @@ func GetGenericMockFrom(mock Mock) *GenericMock {
 }
 
 func (stubbing *ongoingStubbing) ThenReturn(values ...ReturnValue) *ongoingStubbing {
-	checkArguments(values, stubbing.returnValues)
+	checkEquivalenceOf(values, stubbing.returnValues)
 	stubbing.genericMock.stub(stubbing.MethodName, stubbing.ParamMatchers, values)
 	return stubbing
 }
 
-func checkArguments(stubbedReturnValues []ReturnValue, pseudoReturnValues []interface{}) {
+func checkEquivalenceOf(stubbedReturnValues []ReturnValue, pseudoReturnValues []interface{}) {
 	checkArgument(len(stubbedReturnValues) == len(pseudoReturnValues),
 		"Different number of return values")
 	for i := range stubbedReturnValues {
 		checkArgument(reflect.TypeOf(stubbedReturnValues[i]) == reflect.TypeOf(pseudoReturnValues[i]),
 			"Return type doesn't match")
 	}
+}
+
+func (stubbing *ongoingStubbing) ThenPanic(v interface{}) *ongoingStubbing {
+	stubbing.genericMock.stubWithCallback(
+		stubbing.MethodName,
+		stubbing.ParamMatchers,
+		func([]Param) ReturnValues { panic(v) })
+	return stubbing
+}
+
+func (stubbing *ongoingStubbing) Then(callback func([]Param) ReturnValues) *ongoingStubbing {
+	stubbing.genericMock.stubWithCallback(
+		stubbing.MethodName,
+		stubbing.ParamMatchers,
+		callback)
+	return stubbing
 }
 
 type Stubber struct {

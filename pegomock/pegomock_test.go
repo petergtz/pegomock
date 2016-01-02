@@ -15,6 +15,8 @@
 package pegomock_test
 
 import (
+	"fmt"
+
 	. "github.com/petergtz/pegomock/pegomock"
 
 	. "github.com/onsi/ginkgo"
@@ -191,6 +193,28 @@ var _ = Describe("MockDisplay", func() {
 
 		It("fails during verification when using Never()", func() {
 			Expect(func() { display.VerifyWasCalled(Never()).Flash("Hello", 333) }).To(Panic())
+		})
+
+	})
+
+	Context("Calling MultipleParamsAndReturnValue()", func() {
+
+		It("panics when stubbed to panic", func() {
+			When(display.MultipleParamsAndReturnValue(AnyString(), AnyInt())).
+				ThenPanic("I'm panicking")
+			Expect(func() {
+				display.MultipleParamsAndReturnValue("Some string", 123)
+			}).To(Panic())
+		})
+
+		It("calls back when stubbed to call back", func() {
+			When(display.MultipleParamsAndReturnValue(AnyString(), AnyInt())).Then(
+				func(params []Param) ReturnValues {
+					return []ReturnValue{fmt.Sprintf("%v%v", params[0], params[1])}
+				},
+			)
+			Expect(display.MultipleParamsAndReturnValue("string and ", 123)).
+				To(Equal("string and 123"))
 		})
 
 	})
