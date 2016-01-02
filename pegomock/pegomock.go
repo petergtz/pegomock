@@ -50,19 +50,23 @@ type GenericMock struct {
 }
 
 func (genericMock *GenericMock) Invoke(methodName string, params ...Param) ReturnValues {
-	lastInvocation = &invocation{genericMock: genericMock, MethodName: methodName, Params: params}
-
-	if _, ok := genericMock.mockedMethods[methodName]; !ok {
-		genericMock.mockedMethods[methodName] = &mockedMethod{name: methodName}
+	lastInvocation = &invocation{
+		genericMock: genericMock,
+		MethodName:  methodName,
+		Params:      params,
 	}
-	return genericMock.mockedMethods[methodName].Invoke(params)
+	return genericMock.getMockedMethod(methodName).Invoke(params)
 }
 
 func (genericMock *GenericMock) stub(methodName string, paramMatchers []Matcher, returnValues ReturnValues) {
+	genericMock.getMockedMethod(methodName).stub(paramMatchers, returnValues)
+}
+
+func (genericMock *GenericMock) getMockedMethod(methodName string) *mockedMethod {
 	if _, ok := genericMock.mockedMethods[methodName]; !ok {
 		genericMock.mockedMethods[methodName] = &mockedMethod{name: methodName}
 	}
-	genericMock.mockedMethods[methodName].stub(paramMatchers, returnValues)
+	return genericMock.mockedMethods[methodName]
 }
 
 func (genericMock *GenericMock) Reset(methodName string, params []Matcher) {
@@ -71,8 +75,9 @@ func (genericMock *GenericMock) Reset(methodName string, params []Matcher) {
 
 func (genericMock *GenericMock) NumMethodInvocations(methodName string, params ...Param) int {
 	if len(argMatchers) != 0 {
-		checkArgument(len(argMatchers) == len(params), "If you use matchers, you must use matchers for all parameters. Example: TODO")
-		result := genericMock.NumMethodInvocationsUsingMatchers(methodName, argMatchers)
+		checkArgument(len(argMatchers) == len(params),
+			"If you use matchers, you must use matchers for all parameters. Example: TODO")
+		result := genericMock.numMethodInvocationsUsingMatchers(methodName, argMatchers)
 		argMatchers = nil
 		return result
 	}
@@ -86,7 +91,7 @@ func (genericMock *GenericMock) NumMethodInvocations(methodName string, params .
 	return count
 }
 
-func (genericMock *GenericMock) NumMethodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) int {
+func (genericMock *GenericMock) numMethodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) int {
 	count := 0
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
 		if paramMatchers.matches(invocation) {
@@ -116,7 +121,10 @@ func (method *mockedMethod) stub(paramMatchers Matchers, returnValues ReturnValu
 	if stubbing != nil {
 		stubbing.returnValuesSequence = append(stubbing.returnValuesSequence, returnValues)
 	} else {
-		method.stubbings = append(method.stubbings, &Stubbing{paramMatchers: paramMatchers, returnValuesSequence: []ReturnValues{returnValues}})
+		method.stubbings = append(method.stubbings, &Stubbing{
+			paramMatchers:        paramMatchers,
+			returnValuesSequence: []ReturnValues{returnValues},
+		})
 	}
 }
 
@@ -161,7 +169,9 @@ func (stubbing *Stubbing) Invoke(params []Param) ReturnValues {
 type Matchers []Matcher
 
 func (matchers Matchers) matches(params []Param) bool {
-	checkArgument(len(matchers) == len(params), "Number of params and matchers different: params: %v, matchers: %v", params, matchers)
+	checkArgument(len(matchers) == len(params),
+		"Number of params and matchers different: params: %v, matchers: %v",
+		params, matchers)
 	for i := range params {
 		if !matchers[i].matches(params[i]) {
 			return false
@@ -188,25 +198,31 @@ func When(invocation ...interface{}) *ongoingStubbing {
 		lastInvocation = nil
 		argMatchers = nil
 	}()
-
-	var paramMatchers []Matcher
-	if len(argMatchers) == 0 {
-		paramMatchers = make([]Matcher, 0)
-		for param := range lastInvocation.Params {
-			paramMatchers = append(paramMatchers, &EqMatcher{param})
-		}
-	} else {
-		checkArgument(len(argMatchers) == len(lastInvocation.Params),
-			"You must use the same number of matchers as arguments")
-		paramMatchers = argMatchers
-	}
 	lastInvocation.genericMock.mockedMethods[lastInvocation.MethodName].removeLastInvocation()
 	return &ongoingStubbing{
 		genericMock:   lastInvocation.genericMock,
 		MethodName:    lastInvocation.MethodName,
-		ParamMatchers: paramMatchers,
+		ParamMatchers: paramMatchersFromArgMatchersOrParams(argMatchers, lastInvocation.Params),
 		returnValues:  invocation,
 	}
+}
+
+func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param) []Matcher {
+	if len(argMatchers) == 0 {
+		return transformParamsIntoEqMatchers(params)
+	} else {
+		checkArgument(len(argMatchers) == len(lastInvocation.Params),
+			"You must use the same number of matchers as arguments. Example: TODO")
+		return argMatchers
+	}
+}
+
+func transformParamsIntoEqMatchers(params []Param) []Matcher {
+	paramMatchers := make([]Matcher, len(params))
+	for param := range params {
+		paramMatchers = append(paramMatchers, &EqMatcher{param})
+	}
+	return paramMatchers
 }
 
 var genericMocks = make(map[Mock]*GenericMock)
@@ -219,14 +235,18 @@ func GetGenericMockFrom(mock Mock) *GenericMock {
 }
 
 func (stubbing *ongoingStubbing) ThenReturn(values ...ReturnValue) *ongoingStubbing {
-	checkArgument(len(values) == len(stubbing.returnValues),
-		"Different number of return values")
-	for i := range values {
-		checkArgument(reflect.TypeOf(values[i]) == reflect.TypeOf(stubbing.returnValues[i]),
-			"Return type doesn't match")
-	}
+	checkArguments(values, stubbing.returnValues)
 	stubbing.genericMock.stub(stubbing.MethodName, stubbing.ParamMatchers, values)
 	return stubbing
+}
+
+func checkArguments(stubbedReturnValues []ReturnValue, pseudoReturnValues []interface{}) {
+	checkArgument(len(stubbedReturnValues) == len(pseudoReturnValues),
+		"Different number of return values")
+	for i := range stubbedReturnValues {
+		checkArgument(reflect.TypeOf(stubbedReturnValues[i]) == reflect.TypeOf(pseudoReturnValues[i]),
+			"Return type doesn't match")
+	}
 }
 
 type Stubber struct {
