@@ -73,6 +73,12 @@ func (genericMock *GenericMock) Reset(methodName string, params []Matcher) {
 	// TODO: should be called from When
 }
 
+func (genericMock *GenericMock) Verify(invocationCountMatcher Matcher, methodName string, params ...Param) {
+	if !invocationCountMatcher.matches(genericMock.NumMethodInvocations(methodName, params...)) {
+		GlobalFailHandler("Mock not called. TODO: better message")
+	}
+}
+
 func (genericMock *GenericMock) NumMethodInvocations(methodName string, params ...Param) int {
 	if len(argMatchers) != 0 {
 		checkArgument(len(argMatchers) == len(params),

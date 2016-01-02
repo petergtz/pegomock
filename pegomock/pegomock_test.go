@@ -40,18 +40,18 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("fails during verification when mock was not called", func() {
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
 		})
 
 		It("succeeds verification when mock was called", func() {
 			display.MultipleParamsAndReturnValue("Hello", 333)
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
 		})
 
 		It("succeeds verification when verification and invocation are mixed", func() {
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
 			display.MultipleParamsAndReturnValue("Hello", 333)
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
 		})
 	})
 
@@ -59,17 +59,17 @@ var _ = Describe("MockDisplay", func() {
 		It("succeeds all verifications that match", func() {
 			When(display.MultipleParamsAndReturnValue(AnyString(), EqInt(333))).ThenReturn("Bla")
 
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).To(Panic())
 
 			display.MultipleParamsAndReturnValue("Hello", 333)
 			display.MultipleParamsAndReturnValue("Hello again", 333)
 			display.MultipleParamsAndReturnValue("And again", 333)
 
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("Hello again", 333) }).NotTo(Panic())
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("And again", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello again", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("And again", 333) }).NotTo(Panic())
 
-			Expect(func() { display.VerifyWasCalled().MultipleParamsAndReturnValue("And again", 444) }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("And again", 444) }).To(Panic())
 
 		})
 	})
@@ -82,7 +82,6 @@ var _ = Describe("MockDisplay", func() {
 
 	Context("Stubbing with consecutive return values", func() {
 		BeforeEach(func() {
-			Expect(display.SomeValue()).To(Equal(""))
 			When(display.SomeValue()).ThenReturn("Hello").ThenReturn("again")
 		})
 
@@ -102,11 +101,17 @@ var _ = Describe("MockDisplay", func() {
 
 		It("can be verified that mock was called", func() {
 			display.SomeValue()
-			Expect(func() { display.VerifyWasCalled().SomeValue() }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().SomeValue() }).NotTo(Panic())
 		})
 
 		It("fails if verify is called on mock that was not invoked.", func() {
-			Expect(func() { display.VerifyWasCalled().Show("param") }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Show("param") }).To(Panic())
+		})
+
+		It("fails if verify is called on mock that was invoked more than once.", func() {
+			display.Show("param")
+			display.Show("param")
+			Expect(func() { display.VerifyWasCalledOnce().Show("param") }).To(Panic())
 
 		})
 	})
@@ -120,7 +125,7 @@ var _ = Describe("MockDisplay", func() {
 	Context("Stubbed method, but no invocation takes place", func() {
 		It("fails during verification", func() {
 			When(display.SomeValue()).ThenReturn("Hello")
-			Expect(func() { display.VerifyWasCalled().SomeValue() }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().SomeValue() }).To(Panic())
 		})
 	})
 
@@ -129,24 +134,65 @@ var _ = Describe("MockDisplay", func() {
 		BeforeEach(func() { display.Flash("Hello", 333) })
 
 		It("succeeds verification if values are matching", func() {
-			Expect(func() { display.VerifyWasCalled().Flash("Hello", 333) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 333) }).NotTo(Panic())
 		})
 
 		It("fails during verification if values are not matching", func() {
-			Expect(func() { display.VerifyWasCalled().Flash("Hello", 666) }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 666) }).To(Panic())
 		})
 
 		It("succeeds during verification when using Any-matchers ", func() {
-			Expect(func() { display.VerifyWasCalled().Flash(AnyString(), AnyInt()) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Flash(AnyString(), AnyInt()) }).NotTo(Panic())
 		})
 
 		It("succeeds during verification when using valid Eq-matchers ", func() {
-			Expect(func() { display.VerifyWasCalled().Flash(EqString("Hello"), EqInt(333)) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Flash(EqString("Hello"), EqInt(333)) }).NotTo(Panic())
 		})
 
 		It("fails during verification when using invalid Eq-matchers ", func() {
-			Expect(func() { display.VerifyWasCalled().Flash(EqString("Invalid"), EqInt(-1)) }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Flash(EqString("Invalid"), EqInt(-1)) }).To(Panic())
 		})
+	})
+
+	Context("Calling Flash() twice", func() {
+
+		BeforeEach(func() {
+			display.Flash("Hello", 333)
+			display.Flash("Hello", 333)
+		})
+
+		It("succeeds verification if verifying with Times(2)", func() {
+			Expect(func() { display.VerifyWasCalled(Times(2)).Flash("Hello", 333) }).NotTo(Panic())
+		})
+
+		It("fails during verification if verifying with VerifyWasCalledOnce", func() {
+			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 333) }).To(Panic())
+		})
+
+		It("fails during verification if verifying with Times(1)", func() {
+			Expect(func() { display.VerifyWasCalled(Times(1)).Flash("Hello", 333) }).To(Panic())
+		})
+
+		It("succeeds during verification when using AtLeast(1)", func() {
+			Expect(func() { display.VerifyWasCalled(AtLeast(1)).Flash("Hello", 333) }).NotTo(Panic())
+		})
+
+		It("succeeds during verification when using AtLeast(2)", func() {
+			Expect(func() { display.VerifyWasCalled(AtLeast(2)).Flash("Hello", 333) }).NotTo(Panic())
+		})
+
+		It("fails during verification when using AtLeast(3)", func() {
+			Expect(func() { display.VerifyWasCalled(AtLeast(3)).Flash("Hello", 333) }).To(Panic())
+		})
+
+		It("succeeds during verification when using Never()", func() {
+			Expect(func() { display.VerifyWasCalled(Never()).Flash("Other value", 333) }).NotTo(Panic())
+		})
+
+		It("fails during verification when using Never()", func() {
+			Expect(func() { display.VerifyWasCalled(Never()).Flash("Hello", 333) }).To(Panic())
+		})
+
 	})
 
 })

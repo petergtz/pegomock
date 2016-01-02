@@ -271,14 +271,18 @@ func (g *generator) GenerateMockInterface(iface *model.Interface) {
 	g.p("type Verifier%v struct {", iface.Name)
 	g.in().
 		p("mock *Mock%v", iface.Name).
-		p("fail func(message string, callerSkip ...int)").
+		p("invocationCountMatcher pegomock.Matcher").
 		out()
 	g.p("}")
-
-	g.p("func (mock *Mock%v) VerifyWasCalled() *Verifier%v {", iface.Name, iface.Name)
-	g.in().p("return &Verifier%v{mock, mock.fail}", iface.Name).out()
+	g.p("")
+	g.p("func (mock *Mock%v) VerifyWasCalledOnce() *Verifier%v {", iface.Name, iface.Name)
+	g.in().p("return &Verifier%v{mock, pegomock.Times(1)}", iface.Name).out()
 	g.p("}")
-
+	g.p("")
+	g.p("func (mock *Mock%v) VerifyWasCalled(invocationCountMatcher pegomock.Matcher) *Verifier%v {", iface.Name, iface.Name)
+	g.in().p("return &Verifier%v{mock, invocationCountMatcher}", iface.Name).out()
+	g.p("}")
+	g.p("")
 	for _, method := range iface.Methods {
 		g.GenerateVerifierMethod(iface.Name, method, *selfPackage).p("")
 	}
@@ -326,10 +330,8 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 	_, _, argString, rets, retString, callArgs := getStuff(method, g, pkgOverride)
 
 	g.p("func (verifier *Verifier%v) %v(%v)%v {", interfaceName, method.Name, argString, retString)
-	g.p(" if pegomock.GetGenericMockFrom(verifier.mock).NumMethodInvocations(\"%v\", %v) == 0 {", method.Name, callArgs)
+	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.invocationCountMatcher, \"%v\", %v)", method.Name, callArgs)
 
-	g.p(`verifier.fail("Mock not called")`)
-	g.p("}")
 	if len(method.Out) > 0 {
 		retValues := make([]string, len(rets))
 		for i, ret := range rets {
