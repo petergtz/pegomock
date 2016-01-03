@@ -272,15 +272,20 @@ func (g *generator) GenerateMockInterface(iface *model.Interface) {
 	g.in().
 		p("mock *Mock%v", iface.Name).
 		p("invocationCountMatcher pegomock.Matcher").
+		p("inOrderContext *pegomock.InOrderContext").
 		out()
 	g.p("}")
 	g.p("")
 	g.p("func (mock *Mock%v) VerifyWasCalledOnce() *Verifier%v {", iface.Name, iface.Name)
-	g.in().p("return &Verifier%v{mock, pegomock.Times(1)}", iface.Name).out()
+	g.in().p("return &Verifier%v{mock, pegomock.Times(1), nil}", iface.Name).out()
 	g.p("}")
 	g.p("")
 	g.p("func (mock *Mock%v) VerifyWasCalled(invocationCountMatcher pegomock.Matcher) *Verifier%v {", iface.Name, iface.Name)
-	g.in().p("return &Verifier%v{mock, invocationCountMatcher}", iface.Name).out()
+	g.in().p("return &Verifier%v{mock, invocationCountMatcher, nil}", iface.Name).out()
+	g.p("}")
+	g.p("")
+	g.p("func (mock *Mock%v) VerifyWasCalledInOrder(invocationCountMatcher pegomock.Matcher, inOrderContext *pegomock.InOrderContext) *Verifier%v {", iface.Name, iface.Name)
+	g.in().p("return &Verifier%v{mock, invocationCountMatcher, inOrderContext}", iface.Name).out()
 	g.p("}")
 	g.p("")
 	for _, method := range iface.Methods {
@@ -330,7 +335,7 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 	_, _, argString, rets, retString, callArgs := getStuff(method, g, pkgOverride)
 
 	g.p("func (verifier *Verifier%v) %v(%v)%v {", interfaceName, method.Name, argString, retString)
-	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.invocationCountMatcher, \"%v\", %v)", method.Name, callArgs)
+	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", %v)", method.Name, callArgs)
 
 	if len(method.Out) > 0 {
 		retValues := make([]string, len(rets))

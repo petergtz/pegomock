@@ -77,48 +77,61 @@ func (genericMock *GenericMock) Reset(methodName string, params []Matcher) {
 	// TODO: should be called from When
 }
 
-func (genericMock *GenericMock) Verify(invocationCountMatcher Matcher, methodName string, params ...Param) {
-	if !invocationCountMatcher.matches(genericMock.NumMethodInvocations(methodName, params...)) {
+func (genericMock *GenericMock) Verify(
+	inOrderContext *InOrderContext,
+	invocationCountMatcher Matcher,
+	methodName string,
+	params ...Param) {
+	methodInvocations := genericMock.methodInvocations(methodName, params...)
+	if inOrderContext != nil {
+		for _, methodInvocation := range methodInvocations {
+			if methodInvocation.orderingInvocationNumber <= inOrderContext.invocationCounter {
+				GlobalFailHandler("Wrong order. TODO: better message")
+			}
+			inOrderContext.invocationCounter = methodInvocation.orderingInvocationNumber
+		}
+	}
+	if !invocationCountMatcher.matches(len(methodInvocations)) {
 		GlobalFailHandler("Mock not called. TODO: better message")
 	}
 }
 
-func (genericMock *GenericMock) NumMethodInvocations(methodName string, params ...Param) int {
+func (genericMock *GenericMock) methodInvocations(methodName string, params ...Param) []methodInvocation {
 	if len(argMatchers) != 0 {
 		checkArgument(len(argMatchers) == len(params),
 			"If you use matchers, you must use matchers for all parameters. Example: TODO")
-		result := genericMock.numMethodInvocationsUsingMatchers(methodName, argMatchers)
+		result := genericMock.methodInvocationsUsingMatchers(methodName, argMatchers)
 		argMatchers = nil
 		return result
 	}
 
-	count := 0
+	invocations := make([]methodInvocation, 0)
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
-		if reflect.DeepEqual(params, invocation) {
-			count++
+		if reflect.DeepEqual(params, invocation.params) {
+			invocations = append(invocations, invocation)
 		}
 	}
-	return count
+	return invocations
 }
 
-func (genericMock *GenericMock) numMethodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) int {
-	count := 0
+func (genericMock *GenericMock) methodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) []methodInvocation {
+	invocations := make([]methodInvocation, 0)
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
-		if paramMatchers.matches(invocation) {
-			count++
+		if paramMatchers.matches(invocation.params) {
+			invocations = append(invocations, invocation)
 		}
 	}
-	return count
+	return invocations
 }
 
 type mockedMethod struct {
 	name        string
-	invocations [][]Param
+	invocations []methodInvocation
 	stubbings   Stubbings
 }
 
 func (method *mockedMethod) Invoke(params []Param) ReturnValues {
-	method.invocations = append(method.invocations, params)
+	method.invocations = append(method.invocations, methodInvocation{params, globalInvocationCounter.nextNumber()})
 	stubbing := method.stubbings.find(params)
 	if stubbing == nil {
 		return ReturnValues{}
@@ -137,6 +150,23 @@ func (method *mockedMethod) stub(paramMatchers Matchers, callback func([]Param) 
 
 func (method *mockedMethod) removeLastInvocation() {
 	method.invocations = method.invocations[:len(method.invocations)-1]
+}
+
+type Counter struct {
+	count int
+}
+
+func (counter *Counter) nextNumber() (nextNumber int) {
+	nextNumber = counter.count
+	counter.count++
+	return
+}
+
+var globalInvocationCounter Counter
+
+type methodInvocation struct {
+	params                   []Param
+	orderingInvocationNumber int
 }
 
 type Stubbings []*Stubbing
@@ -271,6 +301,10 @@ func (stubbing *ongoingStubbing) Then(callback func([]Param) ReturnValues) *ongo
 		stubbing.ParamMatchers,
 		callback)
 	return stubbing
+}
+
+type InOrderContext struct {
+	invocationCounter int
 }
 
 type Stubber struct {

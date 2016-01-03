@@ -219,4 +219,41 @@ var _ = Describe("MockDisplay", func() {
 
 	})
 
+	Context("Making calls in a specific order", func() {
+
+		BeforeEach(func() {
+			display.Flash("Hello", 111)
+			display.Flash("again", 222)
+			display.Flash("and again", 333)
+		})
+
+		It("succeeds during InOrder verification when order is correct", func() {
+			Expect(func() {
+				inOrderContext := new(InOrderContext)
+				display.VerifyWasCalledInOrder(Once(), inOrderContext).Flash("Hello", 111)
+				display.VerifyWasCalledInOrder(Once(), inOrderContext).Flash("again", 222)
+				display.VerifyWasCalledInOrder(Once(), inOrderContext).Flash("and again", 333)
+			}).NotTo(Panic())
+		})
+
+		It("succeeds during InOrder verification when order is correct, but not all invocations are verified", func() {
+			Expect(func() {
+				inOrder := new(InOrderContext)
+				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("Hello", 111)
+				// not checking for the 2nd call here
+				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("and again", 333)
+			}).NotTo(Panic())
+		})
+
+		It("fails during InOrder verification when order is not correct", func() {
+			Expect(func() {
+				inOrder := new(InOrderContext)
+				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("again", 222)
+				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("Hello", 111)
+				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("and again", 333)
+			}).To(Panic())
+		})
+
+	})
+
 })
