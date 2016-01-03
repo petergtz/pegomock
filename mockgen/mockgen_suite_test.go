@@ -12,16 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main_test
+package mockgen_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
 	"testing"
+
+	. "github.com/onsi/ginkgo"
+	mockgen "github.com/petergtz/pegomock/mockgen"
 )
 
-func TestMockgen(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Mockgen Suite")
+func TestMockGeneration(t *testing.T) {
+	RunSpecs(t, "Mock generation suite")
 }
+
+var _ = It("Generate mocks", func() {
+	mockgen.Run("",
+		"../pegomock/mock_display_test.go", "pegomock_test",
+		"",
+		false,
+		"github.com/petergtz/pegomock/test_interface", "Display")
+})
