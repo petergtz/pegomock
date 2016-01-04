@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"go/format"
 	"go/token"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -42,12 +43,35 @@ const (
 )
 
 func GenerateMock(packagePath string, interfaceName string) {
+	tmppath := "mock_" + strings.ToLower(interfaceName) + "_test.go.tmp"
 	Run("",
-		"mock_"+strings.ToLower(interfaceName)+"_test.go",
+		tmppath,
 		filepath.Base(packagePath),
 		"",
 		false,
 		packagePath, interfaceName)
+
+	existingFileContent, err := ioutil.ReadFile("mock_" + strings.ToLower(interfaceName) + "_test.go")
+	if err != nil {
+		fmt.Println("Error: ", err)
+		if os.IsNotExist(err) {
+			dir, _ := os.Getwd()
+			fmt.Println("dir: ", dir)
+			err = os.Rename(tmppath, "mock_"+strings.ToLower(interfaceName)+"_test.go")
+			fmt.Println("Rename: ", err)
+		} else {
+			panic(err)
+		}
+	}
+	newFileContent, err := ioutil.ReadFile(tmppath)
+	if err != nil {
+		panic(err)
+	}
+	if string(existingFileContent) == string(newFileContent) {
+		os.Remove(tmppath)
+	} else {
+		os.Rename(tmppath, "mock_"+strings.ToLower(interfaceName)+"_test.go")
+	}
 }
 
 func Run(source string, destination string, packageOut string, selfPackage string, debugParser bool, args ...string) {
