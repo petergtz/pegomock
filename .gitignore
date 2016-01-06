@@ -16,4 +16,4 @@ mockgen/mockgen
 # A binary produced by gotest.
 #gomock/[568]\.out
 
-pegomock/mock_display_test.go
+mock_display_test.go

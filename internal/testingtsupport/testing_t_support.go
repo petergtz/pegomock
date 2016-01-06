@@ -26,7 +26,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/petergtz/pegomock/pegomock/types"
+	"github.com/petergtz/pegomock/internal/types"
 )
 
 type testingT interface {

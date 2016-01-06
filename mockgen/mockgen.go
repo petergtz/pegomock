@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	importPath = "github.com/petergtz/pegomock/pegomock"
+	importPath = "github.com/petergtz/pegomock"
 )
 
 func GenerateMock(packagePath string, interfaceName string) (bool, string) {

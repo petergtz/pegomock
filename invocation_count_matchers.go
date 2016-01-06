@@ -12,23 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package mockgen_test
+package pegomock
 
 import (
-	"testing"
-
-	. "github.com/onsi/ginkgo"
-	mockgen "github.com/petergtz/pegomock/mockgen"
+	. "github.com/petergtz/pegomock/internal/matcher"
 )
 
-func TestMockGeneration(t *testing.T) {
-	RunSpecs(t, "Mock generation suite")
+func Times(numDesiredInvocations int) *EqMatcher {
+	return &EqMatcher{numDesiredInvocations}
 }
 
-var _ = It("Generate mocks", func() {
-	mockgen.Run("",
-		"../mock_display_test.go", "pegomock_test",
-		"",
-		false,
-		"github.com/petergtz/pegomock/test_interface", "Display")
-})
+func AtLeast(numDesiredInvocations int) *AtLeastIntMatcher {
+	return &AtLeastIntMatcher{numDesiredInvocations}
+}
+
+func AtMost(numDesiredInvocations int) *AtMostIntMatcher {
+	return &AtMostIntMatcher{numDesiredInvocations}
+}
+
+func Never() *EqMatcher {
+	return &EqMatcher{0}
+}
+
+func Once() *EqMatcher {
+	return &EqMatcher{1}
+}
+
+func Twice() *EqMatcher {
+	return &EqMatcher{2}
+}

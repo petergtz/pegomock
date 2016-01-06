@@ -17,7 +17,7 @@ package pegomock_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/petergtz/pegomock/pegomock"
+	. "github.com/petergtz/pegomock"
 
 	"testing"
 )

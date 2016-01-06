@@ -17,10 +17,11 @@ package pegomock_test
 import (
 	"fmt"
 
-	. "github.com/petergtz/pegomock/pegomock"
+	. "github.com/petergtz/pegomock"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/petergtz/pegomock/internal/types"
 )
 
 var _ = Describe("MockDisplay", func() {

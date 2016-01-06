@@ -18,23 +18,20 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/petergtz/pegomock/pegomock/internal/testingtsupport"
-	"github.com/petergtz/pegomock/pegomock/types"
+	"github.com/petergtz/pegomock/internal/matcher"
+	"github.com/petergtz/pegomock/internal/testingtsupport"
+	. "github.com/petergtz/pegomock/internal/types"
+	"github.com/petergtz/pegomock/internal/verify"
 )
 
-var GlobalFailHandler types.FailHandler
+var GlobalFailHandler FailHandler
 
-func RegisterMockFailHandler(handler types.FailHandler) {
+func RegisterMockFailHandler(handler FailHandler) {
 	GlobalFailHandler = handler
 }
 func RegisterMockTestingT(t *testing.T) {
 	RegisterMockFailHandler(testingtsupport.BuildTestingTGomegaFailHandler(t))
 }
-
-type Mock interface{}
-type Param interface{}
-type ReturnValue interface{}
-type ReturnValues []ReturnValue
 
 var lastInvocation *invocation
 var argMatchers Matchers
@@ -91,14 +88,14 @@ func (genericMock *GenericMock) Verify(
 			inOrderContext.invocationCounter = methodInvocation.orderingInvocationNumber
 		}
 	}
-	if !invocationCountMatcher.matches(len(methodInvocations)) {
+	if !invocationCountMatcher.Matches(len(methodInvocations)) {
 		GlobalFailHandler("Mock not called. TODO: better message")
 	}
 }
 
 func (genericMock *GenericMock) methodInvocations(methodName string, params ...Param) []methodInvocation {
 	if len(argMatchers) != 0 {
-		checkArgument(len(argMatchers) == len(params),
+		verify.Argument(len(argMatchers) == len(params),
 			"If you use matchers, you must use matchers for all parameters. Example: TODO")
 		result := genericMock.methodInvocationsUsingMatchers(methodName, argMatchers)
 		argMatchers = nil
@@ -117,7 +114,7 @@ func (genericMock *GenericMock) methodInvocations(methodName string, params ...P
 func (genericMock *GenericMock) methodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) []methodInvocation {
 	invocations := make([]methodInvocation, 0)
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
-		if paramMatchers.matches(invocation.params) {
+		if paramMatchers.Matches(invocation.params) {
 			invocations = append(invocations, invocation)
 		}
 	}
@@ -173,7 +170,7 @@ type Stubbings []*Stubbing
 
 func (stubbings Stubbings) find(params []Param) *Stubbing {
 	for _, stubbing := range stubbings {
-		if stubbing.paramMatchers.matches(params) {
+		if stubbing.paramMatchers.Matches(params) {
 			return stubbing
 		}
 	}
@@ -206,12 +203,12 @@ func (stubbing *Stubbing) Invoke(params []Param) ReturnValues {
 
 type Matchers []Matcher
 
-func (matchers Matchers) matches(params []Param) bool {
-	checkArgument(len(matchers) == len(params),
+func (matchers Matchers) Matches(params []Param) bool {
+	verify.Argument(len(matchers) == len(params),
 		"Number of params and matchers different: params: %v, matchers: %v",
 		params, matchers)
 	for i := range params {
-		if !matchers[i].matches(params[i]) {
+		if !matchers[i].Matches(params[i]) {
 			return false
 		}
 	}
@@ -230,7 +227,7 @@ type ongoingStubbing struct {
 }
 
 func When(invocation ...interface{}) *ongoingStubbing {
-	checkNotNil(lastInvocation,
+	verify.NotNil(lastInvocation,
 		"when() requires an argument which has to be 'a method call on a mock'.")
 	defer func() {
 		lastInvocation = nil
@@ -249,7 +246,7 @@ func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param)
 	if len(argMatchers) == 0 {
 		return transformParamsIntoEqMatchers(params)
 	} else {
-		checkArgument(len(argMatchers) == len(lastInvocation.Params),
+		verify.Argument(len(argMatchers) == len(lastInvocation.Params),
 			"You must use the same number of matchers as arguments. Example: TODO")
 		return argMatchers
 	}
@@ -258,7 +255,7 @@ func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param)
 func transformParamsIntoEqMatchers(params []Param) []Matcher {
 	paramMatchers := make([]Matcher, len(params))
 	for param := range params {
-		paramMatchers = append(paramMatchers, &EqMatcher{param})
+		paramMatchers = append(paramMatchers, &matcher.EqMatcher{param})
 	}
 	return paramMatchers
 }
@@ -279,10 +276,10 @@ func (stubbing *ongoingStubbing) ThenReturn(values ...ReturnValue) *ongoingStubb
 }
 
 func checkEquivalenceOf(stubbedReturnValues []ReturnValue, pseudoReturnValues []interface{}) {
-	checkArgument(len(stubbedReturnValues) == len(pseudoReturnValues),
+	verify.Argument(len(stubbedReturnValues) == len(pseudoReturnValues),
 		"Different number of return values")
 	for i := range stubbedReturnValues {
-		checkArgument(reflect.TypeOf(stubbedReturnValues[i]) == reflect.TypeOf(pseudoReturnValues[i]),
+		verify.Argument(reflect.TypeOf(stubbedReturnValues[i]) == reflect.TypeOf(pseudoReturnValues[i]),
 			"Return type doesn't match")
 	}
 }
@@ -317,4 +314,32 @@ func DoPanic(value interface{}) *Stubber {
 
 func (stubber *Stubber) When(mock interface{}) {
 
+}
+
+type Matcher interface {
+	Matches(param Param) bool
+}
+
+// EqInt .
+func EqInt(value int) int {
+	argMatchers.append(&matcher.EqMatcher{value})
+	return value
+}
+
+// EqString .
+func EqString(value string) string {
+	argMatchers.append(&matcher.EqMatcher{value})
+	return value
+}
+
+// AnyString .
+func AnyString() string {
+	argMatchers.append(&matcher.AnyStringMatcher{})
+	return ""
+}
+
+// AnyInt .
+func AnyInt() int {
+	argMatchers.append(&matcher.AnyIntMatcher{})
+	return 0
 }
