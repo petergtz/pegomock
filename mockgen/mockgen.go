@@ -87,7 +87,7 @@ func Run(source string, destination string, packageOut string, selfPackage strin
 		pkg, err = Reflect(args[0], strings.Split(args[1], ","))
 	}
 	if err != nil {
-		log.Fatalf("Loading input failed: %v", err)
+		panic(fmt.Errorf("Loading input failed: %v", err))
 	}
 
 	if debugParser {
@@ -99,7 +99,7 @@ func Run(source string, destination string, packageOut string, selfPackage strin
 	if len(destination) > 0 {
 		f, err := os.Create(destination)
 		if err != nil {
-			log.Fatalf("Failed opening destination file: %v", err)
+			panic(fmt.Errorf("Failed opening destination file: %v", err))
 		}
 		defer f.Close()
 		dst = f
@@ -120,10 +120,10 @@ func Run(source string, destination string, packageOut string, selfPackage strin
 		g.srcInterfaces = args[1] //flag.Arg(1)
 	}
 	if err := g.Generate(pkg, packageName, selfPackage); err != nil {
-		log.Fatalf("Failed generating mock: %v", err)
+		panic(fmt.Errorf("Failed generating mock: %v", err))
 	}
 	if _, err := dst.Write(g.Output()); err != nil {
-		log.Fatalf("Failed writing to destination: %v", err)
+		panic(fmt.Errorf("Failed writing to destination: %v", err))
 	}
 }
 
@@ -400,7 +400,7 @@ func getStuff(method *model.Method, g *generator, pkgOverride string) (args []st
 func (g *generator) Output() []byte {
 	src, err := format.Source(g.buf.Bytes())
 	if err != nil {
-		log.Fatalf("Failed to format generated source code: %s\n%s", err, g.buf.String())
+		panic(fmt.Errorf("Failed to format generated source code: %s\n%s", err, g.buf.String()))
 	}
 	return src
 }

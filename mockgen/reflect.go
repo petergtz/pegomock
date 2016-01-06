@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -74,10 +75,10 @@ func Reflect(importPath string, symbols []string) (*model.Package, error) {
 		// Build the program.
 		cmd := exec.Command("go", "build", "-o", progBinary, progSource)
 		cmd.Dir = tmpDir
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		stderr := &bytes.Buffer{}
+		cmd.Stderr = stderr
 		if err := cmd.Run(); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%v caused by:\n%v", err, stderr.String())
 		}
 		progPath = filepath.Join(tmpDir, progBinary)
 	}
