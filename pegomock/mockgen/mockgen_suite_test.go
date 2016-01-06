@@ -18,7 +18,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/ginkgo"
-	mockgen "github.com/petergtz/pegomock/mockgen"
+	"github.com/petergtz/pegomock/pegomock/mockgen"
 )
 
 func TestMockGeneration(t *testing.T) {
@@ -27,7 +27,7 @@ func TestMockGeneration(t *testing.T) {
 
 var _ = It("Generate mocks", func() {
 	mockgen.Run("",
-		"../mock_display_test.go", "pegomock_test",
+		"../../mock_display_test.go", "pegomock_test",
 		"",
 		false,
 		"github.com/petergtz/pegomock/test_interface", "Display")
