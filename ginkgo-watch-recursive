@@ -1,0 +1,2 @@
+#!/bin/bash
+ginkgo watch -r -notify -progress
