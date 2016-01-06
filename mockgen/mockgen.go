@@ -42,7 +42,7 @@ const (
 	importPath = "github.com/petergtz/pegomock/pegomock"
 )
 
-func GenerateMock(packagePath string, interfaceName string) {
+func GenerateMock(packagePath string, interfaceName string) (bool, string) {
 	tmppath := "mock_" + strings.ToLower(interfaceName) + "_test.go.tmp"
 	Run("",
 		tmppath,
@@ -53,12 +53,10 @@ func GenerateMock(packagePath string, interfaceName string) {
 
 	existingFileContent, err := ioutil.ReadFile("mock_" + strings.ToLower(interfaceName) + "_test.go")
 	if err != nil {
-		fmt.Println("Error: ", err)
 		if os.IsNotExist(err) {
-			dir, _ := os.Getwd()
-			fmt.Println("dir: ", dir)
 			err = os.Rename(tmppath, "mock_"+strings.ToLower(interfaceName)+"_test.go")
-			fmt.Println("Rename: ", err)
+			panicOnError(err)
+			return true, "mock_" + strings.ToLower(interfaceName) + "_test.go"
 		} else {
 			panic(err)
 		}
@@ -69,8 +67,10 @@ func GenerateMock(packagePath string, interfaceName string) {
 	}
 	if string(existingFileContent) == string(newFileContent) {
 		os.Remove(tmppath)
+		return false, "mock_" + strings.ToLower(interfaceName) + "_test.go"
 	} else {
 		os.Rename(tmppath, "mock_"+strings.ToLower(interfaceName)+"_test.go")
+		return true, "mock_" + strings.ToLower(interfaceName) + "_test.go"
 	}
 }
 
@@ -403,4 +403,10 @@ func (g *generator) Output() []byte {
 		log.Fatalf("Failed to format generated source code: %s\n%s", err, g.buf.String())
 	}
 	return src
+}
+
+func panicOnError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
