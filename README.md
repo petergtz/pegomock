@@ -147,7 +147,40 @@ phoneBook.VerifyWasCalledOnce().GetPhoneNumber("Tom")
 Argument Matchers
 -----------------
 
-TODO
+Pegomock provides matchers for stubbing and verification.
+
+Verification:
+
+```go
+display := NewMockDisplay()
+
+// Calling mock
+display.Show("Hello again!")
+
+// Verification:
+display.VerifyWasCalledOnce().Show(AnyString())
+```
+
+Stubbing:
+
+```go
+phoneBook := NewMockPhoneBook()
+
+// Stubbing:
+phoneBook.GetPhoneNumber(AnyString()).ThenReturn("123-456-789")
+
+// Prints "123-456-789":
+fmt.Println(phoneBook.GetPhoneNumber("Dan"))
+// Also prints "123-456-789":
+fmt.Println(phoneBook.GetPhoneNumber("Tom"))
+```
+**Important**: When you use argument matchers, you must always use them for all arguments:
+```go
+// Incorrect, panics:
+When(contactList.getContactByFullName("Dan", AnyString())).thenReturn(Contact{...})
+// Correct:
+When(contactList.getContactByFullName(EqString("Dan"), AnyString())).thenReturn(Contact{...})
+```
 
 Verifying the Number of Invocations
 -----------------------------------
