@@ -1,2 +1,2 @@
 #!/bin/bash
-ginkgo watch -r -notify -progress --depth=3
+ginkgo watch -r -v -notify -progress --depth=3
