@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,38 +14,53 @@ import (
 
 var (
 	app = kingpin.New("pegomock", "Generates mocks based on interfaces.")
-
-	generateCmd = app.Command("generate", "Generate mocks based on the args provided. ")
-	destination = generateCmd.Flag("output", "Output file; defaults to stdout.").Short('o').String()
-	packageOut  = generateCmd.Flag("package", "Package of the generated code; defaults to the package of the input with a 'mock_' prefix.").String()
-	selfPackage = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
-	debugParser = generateCmd.Flag("debug_parser", "Print out parser results only.").Bool()
-	args        = generateCmd.Arg("args", "Interfaces or go files").Required().Strings()
-
-	watchCmd       = app.Command("watch", "Watch ")
-	watchRecursive = watchCmd.Flag("recursive", "TODO").Short('r').Hidden().Bool()
-	watchPackages  = watchCmd.Arg("packages", "TODO").Strings()
 )
 
 func main() {
+	Run(os.Args, os.Stderr, app)
+}
 
-	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+func Run(cliArgs []string, out io.Writer, app *kingpin.Application) {
+
+	workingDir, err := os.Getwd()
+	app.FatalIfError(err, "")
+
+	var (
+		generateCmd = app.Command("generate", "Generate mocks based on the args provided. ")
+		destination = generateCmd.Flag("output", "Output file; defaults to stdout.").Short('o').String()
+		packageOut  = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(workingDir) + "_test").String()
+		selfPackage = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
+		debugParser = generateCmd.Flag("debug_parser", "Print out parser results only.").Bool()
+		args        = generateCmd.Arg("args", "Interfaces or go files").Required().Strings()
+
+		watchCmd       = app.Command("watch", "Watch ")
+		watchRecursive = watchCmd.Flag("recursive", "TODO").Short('r').Hidden().Bool()
+		watchPackages  = watchCmd.Arg("packages", "TODO").Strings()
+	)
+
+	app.Writer(out)
+	switch kingpin.MustParse(app.Parse(cliArgs[1:])) {
 
 	case generateCmd.FullCommand():
 		validateArgs(*args)
+		if *destination == "" {
+			*destination = filepath.Join(workingDir, "mock_"+strings.ToLower((*args)[len(*args)-1])+"_test.go")
+		}
 		if sourceMode(*args) {
 			mockgen.Run((*args)[0], *destination, *packageOut, *selfPackage, *debugParser)
 		} else {
 			if len(*args) == 1 {
-				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, packagePathFromWorkingDirectory(gopath()), (*args)[0])
+				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, packagePathFromWorkingDirectory(os.Getenv("GOPATH"), workingDir), (*args)[0])
+			} else if len(*args) == 2 {
+				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, (*args)[0], (*args)[1])
 			} else {
-				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, *args...)
+				app.FatalUsage("Please provide exactly 1 interface or 1 package + 1 interface")
 			}
 		}
 
 	case watchCmd.FullCommand():
 		if len(*watchPackages) == 0 {
-			watch.Watch(gopath(), []string{packagePathFromWorkingDirectory(gopath())}, *watchRecursive)
+			watch.Watch(gopath(), []string{packagePathFromWorkingDirectory(gopath(), workingDir)}, *watchRecursive)
 		} else {
 			watch.Watch(gopath(), *watchPackages, *watchRecursive)
 		}
@@ -74,11 +90,8 @@ func sourceMode(args []string) bool {
 	return false
 }
 
-// PackagePathFromWorkingDirectory TODO
-func packagePathFromWorkingDirectory(gopath string) string {
-	absolutePackagePath, err := os.Getwd()
-	app.FatalIfError(err, "")
-	relativePackagePath, err := filepath.Rel(filepath.Join(gopath, "src"), absolutePackagePath)
+func packagePathFromWorkingDirectory(gopath string, workingDir string) string {
+	relativePackagePath, err := filepath.Rel(filepath.Join(gopath, "src"), workingDir)
 	app.FatalIfError(err, "")
 	return relativePackagePath
 }
