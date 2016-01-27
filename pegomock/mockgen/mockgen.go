@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"go/format"
 	"go/token"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -76,7 +77,7 @@ func GenerateMock(packagePath string, interfaceName string) (bool, string) {
 	}
 }
 
-func Run(source string, destination string, packageOut string, selfPackage string, debugParser bool, args ...string) {
+func Run(source string, destination string, packageOut string, selfPackage string, debugParser bool, out io.Writer, args ...string) {
 
 	var pkg *model.Package
 	var err error
@@ -94,8 +95,7 @@ func Run(source string, destination string, packageOut string, selfPackage strin
 	}
 
 	if debugParser {
-		pkg.Print(os.Stdout)
-		return
+		pkg.Print(out)
 	}
 
 	dst := os.Stdout

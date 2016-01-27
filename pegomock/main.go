@@ -27,10 +27,10 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application) {
 
 	var (
 		generateCmd = app.Command("generate", "Generate mocks based on the args provided. ")
-		destination = generateCmd.Flag("output", "Output file; defaults to stdout.").Short('o').String()
+		destination = generateCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
 		packageOut  = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(workingDir) + "_test").String()
 		selfPackage = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
-		debugParser = generateCmd.Flag("debug_parser", "Print out parser results only.").Bool()
+		debugParser = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
 		args        = generateCmd.Arg("args", "Interfaces or go files").Required().Strings()
 
 		watchCmd       = app.Command("watch", "Watch ")
@@ -43,16 +43,20 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application) {
 
 	case generateCmd.FullCommand():
 		validateArgs(*args)
-		if *destination == "" {
-			*destination = filepath.Join(workingDir, "mock_"+strings.ToLower((*args)[len(*args)-1])+"_test.go")
-		}
 		if sourceMode(*args) {
-			mockgen.Run((*args)[0], *destination, *packageOut, *selfPackage, *debugParser)
+			if *destination == "" {
+				*destination = filepath.Join(workingDir, "mock_"+strings.TrimSuffix((*args)[0], ".go")+"_test.go")
+			}
+
+			mockgen.Run((*args)[0], *destination, *packageOut, *selfPackage, *debugParser, out)
 		} else {
+			if *destination == "" {
+				*destination = filepath.Join(workingDir, "mock_"+strings.ToLower((*args)[len(*args)-1])+"_test.go")
+			}
 			if len(*args) == 1 {
-				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, packagePathFromWorkingDirectory(os.Getenv("GOPATH"), workingDir), (*args)[0])
+				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, out, packagePathFromWorkingDirectory(os.Getenv("GOPATH"), workingDir), (*args)[0])
 			} else if len(*args) == 2 {
-				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, (*args)[0], (*args)[1])
+				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, out, (*args)[0], (*args)[1])
 			} else {
 				app.FatalUsage("Please provide exactly 1 interface or 1 package + 1 interface")
 			}

@@ -76,6 +76,26 @@ var _ = Describe("Test pegomock CLI", func() {
 		})
 	})
 
+	Context("Executing pegomock generate mydisplay.go", func() {
+
+		It(`generates a file mock_mydisplay_test.go that contains "package pegomocktest_test"`, func() {
+			main.Run(cmd("pegomock generate mydisplay.go"), os.Stdout, app)
+
+			mockFile := filepath.Join(packageDir, "mock_mydisplay_test.go")
+			Expect(mockFile).To(BeAnExistingFile())
+			Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+		})
+	})
+
+	Context("Executing pegomock generate -d mydisplay.go", func() {
+
+		It(`prints out debug information on stdout`, func() {
+			var buf bytes.Buffer
+			main.Run(cmd("pegomock generate -d mydisplay.go"), &buf, app)
+			Expect(buf.String()).To(ContainSubstring("- method Show"))
+		})
+	})
+
 	Context("Executing pegomock generate with too many args", func() {
 
 		It(`reports an error and the usage`, func() {
