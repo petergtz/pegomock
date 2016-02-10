@@ -5,6 +5,7 @@ go:
 install:
   - go get github.com/onsi/gomega
   - go get github.com/onsi/ginkgo/ginkgo
+  - go get gopkg.in/alecthomas/kingpin.v2
 
 script:
   - $GOPATH/bin/ginkgo github.com/petergtz/pegomock/pegomock/mockgen
