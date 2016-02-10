@@ -8,5 +8,5 @@ install:
   - go get gopkg.in/alecthomas/kingpin.v2
 
 script:
-  - $GOPATH/bin/ginkgo github.com/petergtz/pegomock/pegomock/mockgen
+  - $GOPATH/bin/ginkgo pegomock/mockgen
   - $GOPATH/bin/ginkgo -r --randomizeAllSpecs --randomizeSuites --race --trace
