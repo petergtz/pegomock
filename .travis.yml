@@ -6,4 +6,6 @@ install:
   - go get github.com/onsi/gomega
   - go get github.com/onsi/ginkgo/ginkgo
 
-script: $GOPATH/bin/ginkgo -r --randomizeAllSpecs --randomizeSuites --race --trace
+script:
+  - $GOPATH/bin/ginkgo github.com/petergtz/pegomock/pegomock/mockgen
+  - $GOPATH/bin/ginkgo -r --randomizeAllSpecs --randomizeSuites --race --trace
