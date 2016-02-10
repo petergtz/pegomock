@@ -118,7 +118,7 @@ import (
 	"path"
 	"reflect"
 
-	"github.com/golang/mock/mockgen/model"
+	"github.com/petergtz/pegomock/pegomock/mockgen/model"
 
 	pkg_ {{printf "%q" .ImportPath}}
 )
