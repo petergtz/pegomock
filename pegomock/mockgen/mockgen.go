@@ -36,7 +36,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/golang/mock/mockgen/model"
+	"github.com/petergtz/pegomock/pegomock/mockgen/model"
 )
 
 const importPath = "github.com/petergtz/pegomock"
