@@ -26,5 +26,5 @@ func TestPegomock(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RegisterMockFailHandler(func(message string, callerSkip ...int) { panic(message) })
 	// RegisterMockFailHandler(Fail)
-	RunSpecs(t, "Pegomock Suite")
+	RunSpecs(t, "Pegomock DSL Suite")
 }
