@@ -41,7 +41,7 @@ import (
 
 const importPath = "github.com/petergtz/pegomock"
 
-func GenerateMock(packagePath string, interfaceName string) (bool, string) {
+func GenerateMock(packagePath, interfaceName, outputPath, packageOut string) (bool, string) {
 	ast, err := Reflect(packagePath, []string{interfaceName})
 	if err != nil {
 		panic(fmt.Errorf("Loading input failed: %v", err))
@@ -50,13 +50,13 @@ func GenerateMock(packagePath string, interfaceName string) (bool, string) {
 	output, err := GenerateOutput(
 		ast,
 		fmt.Sprintf("%v (interfaces: %v)", packagePath, interfaceName),
-		filepath.Base(packagePath),
+		packageOut,
 		"")
 	if err != nil {
 		panic(fmt.Errorf("Failed generating mock: %v", err))
 	}
 
-	outputFilepath := "mock_" + strings.ToLower(interfaceName) + "_test.go"
+	outputFilepath := filepath.Join(outputPath, "mock_"+strings.ToLower(interfaceName)+"_test.go")
 
 	existingFileContent, err := ioutil.ReadFile(outputFilepath)
 	if err != nil {

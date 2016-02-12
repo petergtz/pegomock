@@ -17,10 +17,10 @@ var (
 )
 
 func main() {
-	Run(os.Args, os.Stderr, app)
+	Run(os.Args, os.Stderr, app, make(chan bool))
 }
 
-func Run(cliArgs []string, out io.Writer, app *kingpin.Application) {
+func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bool) {
 
 	workingDir, err := os.Getwd()
 	app.FatalIfError(err, "")
@@ -54,9 +54,25 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application) {
 				*destination = filepath.Join(workingDir, "mock_"+strings.ToLower((*args)[len(*args)-1])+"_test.go")
 			}
 			if len(*args) == 1 {
-				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, out, packagePathFromWorkingDirectory(os.Getenv("GOPATH"), workingDir), (*args)[0])
+				mockgen.Run(
+					"",
+					*destination,
+					*packageOut,
+					*selfPackage,
+					*debugParser,
+					out,
+					packagePathFromDirectory(os.Getenv("GOPATH"), workingDir),
+					(*args)[0])
 			} else if len(*args) == 2 {
-				mockgen.Run("", *destination, *packageOut, *selfPackage, *debugParser, out, (*args)[0], (*args)[1])
+				mockgen.Run(
+					"",
+					*destination,
+					*packageOut,
+					*selfPackage,
+					*debugParser,
+					out,
+					(*args)[0],
+					(*args)[1])
 			} else {
 				app.FatalUsage("Please provide exactly 1 interface or 1 package + 1 interface")
 			}
@@ -64,9 +80,9 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application) {
 
 	case watchCmd.FullCommand():
 		if len(*watchPackages) == 0 {
-			watch.Watch(gopath(), []string{packagePathFromWorkingDirectory(gopath(), workingDir)}, *watchRecursive)
+			watch.Watch([]string{workingDir}, *watchRecursive, done)
 		} else {
-			watch.Watch(gopath(), *watchPackages, *watchRecursive)
+			watch.Watch(*watchPackages, *watchRecursive, done)
 		}
 	}
 }
@@ -94,16 +110,10 @@ func sourceMode(args []string) bool {
 	return false
 }
 
-func packagePathFromWorkingDirectory(gopath string, workingDir string) string {
-	relativePackagePath, err := filepath.Rel(filepath.Join(gopath, "src"), workingDir)
-	app.FatalIfError(err, "")
-	return relativePackagePath
-}
-
-func gopath() string {
-	if os.Getenv("GOPATH") == "" {
-		app.Fatalf("No GOPATH defined. Please define GOPATH as an environment variable.")
+func packagePathFromDirectory(gopath, dir string) string {
+	relativePackagePath, err := filepath.Rel(filepath.Join(gopath, "src"), dir)
+	if err != nil {
+		panic("Directory is not within a Go package path. GOPATH:" + gopath + "; dir: " + dir)
 	}
-	return os.Getenv("GOPATH")
-
+	return relativePackagePath
 }
