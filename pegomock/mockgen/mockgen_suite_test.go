@@ -23,7 +23,7 @@ import (
 )
 
 func TestMockGeneration(t *testing.T) {
-	RunSpecs(t, "Mock generation suite")
+	RunSpecs(t, "Pegomock mock generation suite")
 }
 
 var _ = It("Generate mocks", func() {
