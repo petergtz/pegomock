@@ -45,7 +45,7 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 		packageOut  = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(workingDir) + "_test").String()
 		selfPackage = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
 		debugParser = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
-		args        = generateCmd.Arg("args", "Interfaces or go files").Required().Strings()
+		args        = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
 		watchCmd       = app.Command("watch", "Watch ")
 		watchRecursive = watchCmd.Flag("recursive", "TODO").Short('r').Hidden().Bool()
