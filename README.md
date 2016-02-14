@@ -176,7 +176,9 @@ fmt.Println(phoneBook.GetPhoneNumber("Dan"))
 // Also prints "123-456-789":
 fmt.Println(phoneBook.GetPhoneNumber("Tom"))
 ```
+
 **Important**: When you use argument matchers, you must always use them for all arguments:
+
 ```go
 // Incorrect, panics:
 When(contactList.getContactByFullName("Dan", AnyString())).thenReturn(Contact{...})
@@ -238,4 +240,19 @@ pegomock --help
 Continuously Generating Mocks
 -----------------------------
 
-TODO
+The `watch` command lets Pegomock generate mocks continuously on every change to an interface. For this, Pegomock expects an `interfaces_to_mock` file in the package directory where the mocks should be generated. In fact, `pegomock watch` will create it for you if it doesn't exist yet. The contents of the file are similar to the ones of the `generate` command:
+
+```
+# Any line starting with a # is treated as comment.
+
+# interface name without package specifies an Interface in the current package:
+PhoneBook
+
+ # generates a mock for SomeInterfacetaken from mypackage:
+path/to/my/mypackage SomeInterface
+
+# you can also specify a Go file:
+display.go
+```
+
+Most of the options from the `generate` command can be used here too.
