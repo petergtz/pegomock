@@ -41,27 +41,14 @@ import (
 
 const importPath = "github.com/petergtz/pegomock"
 
-func GenerateMock(packagePath, interfaceName, outputPath, packageOut string) (bool, string) {
-	ast, err := Reflect(packagePath, []string{interfaceName})
-	if err != nil {
-		panic(fmt.Errorf("Loading input failed: %v", err))
-	}
-
-	output, err := GenerateOutput(
-		ast,
-		fmt.Sprintf("%v (interfaces: %v)", packagePath, interfaceName),
-		packageOut,
-		"")
-	if err != nil {
-		panic(fmt.Errorf("Failed generating mock: %v", err))
-	}
-
-	outputFilepath := filepath.Join(outputPath, "mock_"+strings.ToLower(interfaceName)+"_test.go")
+func GenerateMock(packagePath, interfaceName, outputDirPath, packageOut string) (bool, string) {
+	output := generateMockSourceCode([]string{packagePath, interfaceName}, packageOut, "", false, os.Stdout)
+	outputFilepath := outputFilePath([]string{packagePath, interfaceName}, outputDirPath, "") // <- adjust last param
 
 	existingFileContent, err := ioutil.ReadFile(outputFilepath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			err = ioutil.WriteFile(outputFilepath, output, 0666)
+			err = ioutil.WriteFile(outputFilepath, output, 0664)
 			panicOnError(err)
 			return true, outputFilepath
 		} else {
@@ -71,56 +58,70 @@ func GenerateMock(packagePath, interfaceName, outputPath, packageOut string) (bo
 	if string(existingFileContent) == string(output) {
 		return false, outputFilepath
 	} else {
-		err = ioutil.WriteFile(outputFilepath, output, 0666)
+		err = ioutil.WriteFile(outputFilepath, output, 0664)
 		panicOnError(err)
 		return true, outputFilepath
 	}
 }
 
-func Run(source string, destination string, packageOut string, selfPackage string, debugParser bool, out io.Writer, args ...string) {
+func GenerateMockFileInOutputDir(args []string, outputDirPath string, outputFilePathOverride string, packageOut string, selfPackage string, debugParser bool, out io.Writer) {
+	GenerateMockFile(args, outputFilePath(args, outputDirPath, outputFilePathOverride), packageOut, selfPackage, debugParser, out)
+}
 
-	var pkg *model.Package
-	var err error
-	if source != "" {
-		pkg, err = ParseFile(source)
+func outputFilePath(args []string, outputDirPath string, outputFilePathOverride string) string {
+	if outputFilePathOverride != "" {
+		return outputFilePathOverride
+	} else if sourceMode(args) {
+		return filepath.Join(outputDirPath, "mock_"+strings.TrimSuffix(args[0], ".go")+"_test.go")
 	} else {
-		fmt.Print(args)
+		return filepath.Join(outputDirPath, "mock_"+strings.ToLower(args[len(args)-1])+"_test.go")
+	}
+}
+
+func GenerateMockFile(args []string, outputFilePath string, packageOut string, selfPackage string, debugParser bool, out io.Writer) {
+	output := generateMockSourceCode(args, packageOut, selfPackage, debugParser, out)
+
+	err := ioutil.WriteFile(outputFilePath, output, 0664)
+	if err != nil {
+		panic(fmt.Errorf("Failed writing to destination: %v", err))
+	}
+}
+
+func generateMockSourceCode(args []string, packageOut string, selfPackage string, debugParser bool, out io.Writer) []byte {
+	var err error
+
+	var ast *model.Package
+	var src string
+	if sourceMode(args) {
+		ast, err = ParseFile(args[0])
+		src = args[0]
+	} else {
 		if len(args) != 2 {
 			log.Fatal("Expected exactly two arguments, but got " + fmt.Sprint(args))
 		}
-		pkg, err = Reflect(args[0], strings.Split(args[1], ","))
+		ast, err = Reflect(args[0], strings.Split(args[1], ","))
+		src = fmt.Sprintf("%v (interfaces: %v)", args[0], args[1])
 	}
 	if err != nil {
 		panic(fmt.Errorf("Loading input failed: %v", err))
 	}
 
 	if debugParser {
-		pkg.Print(out)
+		ast.Print(out)
 	}
 
-	dst := os.Stdout
-	if len(destination) > 0 {
-		f, err := os.Create(destination)
-		if err != nil {
-			panic(fmt.Errorf("Failed opening destination file: %v", err))
-		}
-		defer f.Close()
-		dst = f
-	}
-
-	var src string
-	if source != "" {
-		src = source
-	} else {
-		src = fmt.Sprintf("%v (interfaces: %v)", args[0], args[1])
-	}
-	g := new(generator)
-	if err := g.Generate(src, pkg, packageOut, selfPackage); err != nil {
+	output, err := generateOutput(ast, src, packageOut, selfPackage)
+	if err != nil {
 		panic(fmt.Errorf("Failed generating mock: %v", err))
 	}
-	if _, err := dst.Write(g.Output()); err != nil {
-		panic(fmt.Errorf("Failed writing to destination: %v", err))
+	return output
+}
+
+func sourceMode(args []string) bool {
+	if len(args) == 1 && strings.HasSuffix(args[0], ".go") {
+		return true
 	}
+	return false
 }
 
 type generator struct {
@@ -179,7 +180,7 @@ func sanitize(s string) string {
 	return t
 }
 
-func GenerateOutput(ast *model.Package, source string, packageOut string, selfPackage string) ([]byte, error) {
+func generateOutput(ast *model.Package, source string, packageOut string, selfPackage string) ([]byte, error) {
 	g := new(generator)
 	if err := g.Generate(source, ast, packageOut, selfPackage); err != nil {
 		return nil, fmt.Errorf("Failed generating mock: %v", err)

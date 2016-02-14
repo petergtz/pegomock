@@ -58,35 +58,27 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 	case generateCmd.FullCommand():
 		validateArgs(*args)
 		if sourceMode(*args) {
-			if *destination == "" {
-				*destination = filepath.Join(workingDir, "mock_"+strings.TrimSuffix((*args)[0], ".go")+"_test.go")
-			}
-
-			mockgen.Run((*args)[0], *destination, *packageOut, *selfPackage, *debugParser, out)
+			mockgen.GenerateMockFileInOutputDir(*args, workingDir, *destination, *packageOut, *selfPackage, *debugParser, out)
 		} else {
-			if *destination == "" {
-				*destination = filepath.Join(workingDir, "mock_"+strings.ToLower((*args)[len(*args)-1])+"_test.go")
-			}
 			if len(*args) == 1 {
-				mockgen.Run(
-					"",
+				mockgen.GenerateMockFileInOutputDir(
+					[]string{packagePathFromDirectory(os.Getenv("GOPATH"), workingDir),
+						(*args)[0]},
+					workingDir,
 					*destination,
 					*packageOut,
 					*selfPackage,
 					*debugParser,
-					out,
-					packagePathFromDirectory(os.Getenv("GOPATH"), workingDir),
-					(*args)[0])
+					out)
 			} else if len(*args) == 2 {
-				mockgen.Run(
-					"",
+				mockgen.GenerateMockFileInOutputDir(
+					*args,
+					workingDir,
 					*destination,
 					*packageOut,
 					*selfPackage,
 					*debugParser,
-					out,
-					(*args)[0],
-					(*args)[1])
+					out)
 			} else {
 				app.FatalUsage("Please provide exactly 1 interface or 1 package + 1 interface")
 			}
