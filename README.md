@@ -189,12 +189,43 @@ When(contactList.getContactByFullName(EqString("Dan"), AnyString())).thenReturn(
 Verifying the Number of Invocations
 -----------------------------------
 
-TODO
+```go
+display := NewMockDisplay()
+
+// Calling mock
+display.Show("Hello")
+display.Show("Hello, again")
+display.Show("And again")
+
+// Verification:
+display.VerifyWasCalled(Times(3)).Show(AnyString())
+// or:
+display.VerifyWasCalled(AtLeast(3)).Show(AnyString())
+// or:
+display.VerifyWasCalled(Never()).Show("This one was never called")
+```
 
 Verifying in Order
 ------------------
 
-TODO
+```go
+display1 := NewMockDisplay()
+display2 := NewMockDisplay()
+
+// Calling mocks
+display1.Show("One")
+display1.Show("Two")
+display2.Show("Another two")
+display1.Show("Three")
+
+// Verification:
+inOrderContext := new(InOrderContext)
+display1.VerifyWasCalledInOrder(Once(), inOrderContext).Show("One")
+display2.VerifyWasCalledInOrder(Once(), inOrderContext).Show("Another two")
+display1.VerifyWasCalledInOrder(Once(), inOrderContext).Show("Three")
+```
+
+Note that it's not necessary to verify the call for `display.Show("Two")` if that one is not of any interested. An `InOrderContext` only verifies that the verifications that are done, are in order.
 
 The Pegomock CLI
 ================
