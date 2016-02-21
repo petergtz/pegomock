@@ -64,8 +64,21 @@ func GenerateMock(packagePath, interfaceName, outputDirPath, packageOut string) 
 	}
 }
 
-func GenerateMockFileInOutputDir(args []string, outputDirPath string, outputFilePathOverride string, packageOut string, selfPackage string, debugParser bool, out io.Writer) {
-	GenerateMockFile(args, outputFilePath(args, outputDirPath, outputFilePathOverride), packageOut, selfPackage, debugParser, out)
+func GenerateMockFileInOutputDir(
+	args []string,
+	outputDirPath string,
+	outputFilePathOverride string,
+	packageOut string,
+	selfPackage string,
+	debugParser bool,
+	out io.Writer) {
+	GenerateMockFile(
+		args,
+		outputFilePath(args, outputDirPath, outputFilePathOverride),
+		packageOut,
+		selfPackage,
+		debugParser,
+		out)
 }
 
 func outputFilePath(args []string, outputDirPath string, outputFilePathOverride string) string {

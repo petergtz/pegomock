@@ -58,12 +58,21 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 	case generateCmd.FullCommand():
 		validateArgs(*args)
 		if sourceMode(*args) {
-			mockgen.GenerateMockFileInOutputDir(*args, workingDir, *destination, *packageOut, *selfPackage, *debugParser, out)
+			mockgen.GenerateMockFileInOutputDir(
+				*args,
+				workingDir,
+				*destination,
+				*packageOut,
+				*selfPackage,
+				*debugParser,
+				out)
 		} else {
 			if len(*args) == 1 {
 				mockgen.GenerateMockFileInOutputDir(
-					[]string{packagePathFromDirectory(os.Getenv("GOPATH"), workingDir),
-						(*args)[0]},
+					[]string{
+						packagePathFromDirectory(os.Getenv("GOPATH"), workingDir),
+						(*args)[0],
+					},
 					workingDir,
 					*destination,
 					*packageOut,
