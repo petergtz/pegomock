@@ -18,11 +18,11 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/petergtz/pegomock/pegomock/mockgen"
+	"github.com/petergtz/pegomock/pegomock/mockgen/util"
 	"github.com/petergtz/pegomock/pegomock/watch"
 )
 
@@ -56,15 +56,17 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 	switch kingpin.MustParse(app.Parse(cliArgs[1:])) {
 
 	case generateCmd.FullCommand():
-		validateArgs(*args)
+		if err := util.ValidateArgs(*args); err != nil {
+			app.FatalUsage(err.Error())
+			return
+		}
 		var sourceArgs []string
-		if sourceMode(*args) {
+		if util.SourceMode(*args) {
 			sourceArgs = (*args)[:]
 		} else if len(*args) == 1 {
-			sourceArgs = []string{
-				packagePathFromDirectory(os.Getenv("GOPATH"), workingDir),
-				(*args)[0],
-			}
+			pkgPath, err := util.PackagePathFromDirectory(os.Getenv("GOPATH"), workingDir)
+			app.FatalIfError(err, "Couldn't determine package path from directory")
+			sourceArgs = []string{pkgPath, (*args)[0]}
 		} else if len(*args) == 2 {
 			sourceArgs = (*args)[:]
 		} else {
@@ -87,35 +89,4 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			watch.Watch(*watchPackages, *watchRecursive, done)
 		}
 	}
-}
-
-func validateArgs(args []string) {
-	if len(args) == 0 {
-		app.FatalUsage("You must specify either exactly one source filename ending with .go, or at least one go interface name.")
-	}
-	if len(args) == 1 {
-		return
-	}
-	if len(args) >= 2 {
-		for _, arg := range args {
-			if strings.HasSuffix(arg, ".go") {
-				app.FatalUsage("You can specify at most one go source file.")
-			}
-		}
-	}
-}
-
-func sourceMode(args []string) bool {
-	if len(args) == 1 && strings.HasSuffix(args[0], ".go") {
-		return true
-	}
-	return false
-}
-
-func packagePathFromDirectory(gopath, dir string) string {
-	relativePackagePath, err := filepath.Rel(filepath.Join(gopath, "src"), dir)
-	if err != nil {
-		panic("Directory is not within a Go package path. GOPATH:" + gopath + "; dir: " + dir)
-	}
-	return relativePackagePath
 }

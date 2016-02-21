@@ -15,6 +15,7 @@
 package watch
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -24,6 +25,7 @@ import (
 	"time"
 
 	"github.com/petergtz/pegomock/pegomock/mockgen"
+	"github.com/petergtz/pegomock/pegomock/mockgen/util"
 )
 
 const wellKnownInterfaceListFile = "interfaces_to_mock"
@@ -46,28 +48,73 @@ func Watch(targetPaths []string, recursive bool, done chan bool) {
 	}
 }
 
-var lastErrors = make(map[struct{ packageName, interfaceName string }]string)
+var lastErrors = make(map[string]string)
 
 func check(targetPath string) {
-	for _, packageAndIfaceName := range packageAndInterfaceNamesFrom(wellKnownInterfaceListFile) {
+	// TODO: currently this returns also all CLI options. In the end args should be parsed by kingpin again to properly use it.
+	for _, args := range linesIn(wellKnownInterfaceListFile) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				if lastErrors[packageAndIfaceName] != fmt.Sprint(err) {
-					fmt.Println("Error while trying to generate mock for", packageAndIfaceName, ":", err)
-					lastErrors[packageAndIfaceName] = fmt.Sprint(err)
+				// TODO: this mechanism doesnt work correctly now, because all possible CLI options would go into the joined string as well
+				if lastErrors[strings.Join(args, "_")] != fmt.Sprint(err) {
+					fmt.Println("Error while trying to generate mock for", strings.Join(args, "_"), ":", err)
+					lastErrors[strings.Join(args, "_")] = fmt.Sprint(err)
 				}
 			}
 		}()
-		generated, mockFilePath := mockgen.GenerateMock(
-			packageAndIfaceName.packageName,
-			packageAndIfaceName.interfaceName,
+		panicOnError(util.ValidateArgs(args))
+		sourceArgs, err := sourceArgs(args, targetPath)
+		panicOnError(err)
+
+		generated, mockFilePath := GenerateMock(
+			sourceArgs,
 			targetPath,
 			filepath.Base(targetPath)+"_test")
-		if generated || lastErrors[packageAndIfaceName] != "" {
-			fmt.Println("(Re)generated mock for", packageAndIfaceName, "in", mockFilePath)
+		if generated || lastErrors[strings.Join(args, "_")] != "" {
+			fmt.Println("(Re)generated mock for", strings.Join(args, "_"), "in", mockFilePath)
 		}
-		delete(lastErrors, packageAndIfaceName)
+		delete(lastErrors, strings.Join(args, "_"))
+	}
+}
+
+func sourceArgs(args []string, targetPath string) ([]string, error) {
+	if util.SourceMode(args) {
+		return args[:], nil
+	} else if len(args) == 1 {
+		packagePath, err := util.PackagePathFromDirectory(os.Getenv("GOPATH"), targetPath)
+		if err != nil {
+			return nil, errors.New("Couldn't determine package path from directory")
+		}
+		return []string{packagePath, args[0]}, nil
+	} else if len(args) == 2 {
+		return args[:], nil
+	} else {
+		return nil, errors.New("Please provide exactly 1 interface or 1 package + 1 interface in the interfaces_to_mock file")
+	}
+
+}
+
+func GenerateMock(args []string, outputDirPath, packageOut string) (bool, string) {
+	output := mockgen.GenerateMockSourceCode(args, packageOut, "", false, os.Stdout)
+	outputFilepath := mockgen.OutputFilePath(args, outputDirPath, "") // <- adjust last param
+
+	existingFileContent, err := ioutil.ReadFile(outputFilepath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = ioutil.WriteFile(outputFilepath, output, 0664)
+			panicOnError(err)
+			return true, outputFilepath
+		} else {
+			panic(err)
+		}
+	}
+	if string(existingFileContent) == string(output) {
+		return false, outputFilepath
+	} else {
+		err = ioutil.WriteFile(outputFilepath, output, 0664)
+		panicOnError(err)
+		return true, outputFilepath
 	}
 }
 
@@ -89,38 +136,18 @@ func createWellKnownInterfaceListFileIfNecessary(targetPath string) {
 	file.WriteString("### List here all interfaces you would like to mock. One per line.\n")
 }
 
-func packageAndInterfaceNamesFrom(file string) (result []struct{ packageName, interfaceName string }) {
+func linesIn(file string) (result [][]string) {
 	content, err := ioutil.ReadFile(file)
 	panicOnError(err)
 	for _, line := range strings.Split(string(content), "\n") {
 		if strings.HasPrefix(strings.TrimSpace(line), "#") || line == "" {
 			continue
 		}
-		parts := regexp.MustCompile(`\W`).Split(line, -1)
-		if len(parts) == 2 {
-			result = append(result, struct{ packageName, interfaceName string }{parts[0], parts[1]})
-		} else {
-			result = append(result, struct{ packageName, interfaceName string }{packagePathFromWorkingDirectory(), parts[0]})
-		}
+		parts := regexp.MustCompile(`\s`).Split(line, -1)
+		// TODO: do validation here like in main
+		result = append(result, parts)
 	}
 	return
-}
-
-func packagePathFromWorkingDirectory() string {
-	workingDir, err := os.Getwd()
-	panicOnError(err)
-
-	relativePackagePath, err := filepath.Rel(filepath.Join(gopath(), "src"), workingDir)
-	panicOnError(err)
-	return relativePackagePath
-}
-
-func gopath() string {
-	if os.Getenv("GOPATH") == "" {
-		panic("No GOPATH defined. Please define GOPATH as an environment variable.")
-	}
-	return os.Getenv("GOPATH")
-
 }
 
 func panicOnError(err error) {

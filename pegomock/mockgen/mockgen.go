@@ -29,7 +29,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"os"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -41,29 +40,6 @@ import (
 
 const importPath = "github.com/petergtz/pegomock"
 
-func GenerateMock(packagePath, interfaceName, outputDirPath, packageOut string) (bool, string) {
-	output := generateMockSourceCode([]string{packagePath, interfaceName}, packageOut, "", false, os.Stdout)
-	outputFilepath := outputFilePath([]string{packagePath, interfaceName}, outputDirPath, "") // <- adjust last param
-
-	existingFileContent, err := ioutil.ReadFile(outputFilepath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			err = ioutil.WriteFile(outputFilepath, output, 0664)
-			panicOnError(err)
-			return true, outputFilepath
-		} else {
-			panic(err)
-		}
-	}
-	if string(existingFileContent) == string(output) {
-		return false, outputFilepath
-	} else {
-		err = ioutil.WriteFile(outputFilepath, output, 0664)
-		panicOnError(err)
-		return true, outputFilepath
-	}
-}
-
 func GenerateMockFileInOutputDir(
 	args []string,
 	outputDirPath string,
@@ -74,14 +50,14 @@ func GenerateMockFileInOutputDir(
 	out io.Writer) {
 	GenerateMockFile(
 		args,
-		outputFilePath(args, outputDirPath, outputFilePathOverride),
+		OutputFilePath(args, outputDirPath, outputFilePathOverride),
 		packageOut,
 		selfPackage,
 		debugParser,
 		out)
 }
 
-func outputFilePath(args []string, outputDirPath string, outputFilePathOverride string) string {
+func OutputFilePath(args []string, outputDirPath string, outputFilePathOverride string) string {
 	if outputFilePathOverride != "" {
 		return outputFilePathOverride
 	} else if sourceMode(args) {
@@ -92,7 +68,7 @@ func outputFilePath(args []string, outputDirPath string, outputFilePathOverride 
 }
 
 func GenerateMockFile(args []string, outputFilePath string, packageOut string, selfPackage string, debugParser bool, out io.Writer) {
-	output := generateMockSourceCode(args, packageOut, selfPackage, debugParser, out)
+	output := GenerateMockSourceCode(args, packageOut, selfPackage, debugParser, out)
 
 	err := ioutil.WriteFile(outputFilePath, output, 0664)
 	if err != nil {
@@ -100,7 +76,7 @@ func GenerateMockFile(args []string, outputFilePath string, packageOut string, s
 	}
 }
 
-func generateMockSourceCode(args []string, packageOut string, selfPackage string, debugParser bool, out io.Writer) []byte {
+func GenerateMockSourceCode(args []string, packageOut string, selfPackage string, debugParser bool, out io.Writer) []byte {
 	var err error
 
 	var ast *model.Package

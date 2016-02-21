@@ -161,6 +161,20 @@ var _ = Describe("Testing pegomock CLI", func() {
 				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
 			})
 		})
+
+		Context("after populating interfaces_to_mock with a Go file", func() {
+			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
+				Expect(ioutil.WriteFile(
+					filepath.Join(packageDir, "interfaces_to_mock"),
+					[]byte("mydisplay.go"), 0644)).
+					To(Succeed())
+
+				go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
+				mockFile := filepath.Join(packageDir, "mock_mydisplay_test.go")
+				Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
+				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+			})
+		})
 	})
 
 	Context("with some unknown command", func() {
