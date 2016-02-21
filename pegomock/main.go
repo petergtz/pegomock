@@ -57,41 +57,28 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 
 	case generateCmd.FullCommand():
 		validateArgs(*args)
+		var sourceArgs []string
 		if sourceMode(*args) {
-			mockgen.GenerateMockFileInOutputDir(
-				*args,
-				workingDir,
-				*destination,
-				*packageOut,
-				*selfPackage,
-				*debugParser,
-				out)
-		} else {
-			if len(*args) == 1 {
-				mockgen.GenerateMockFileInOutputDir(
-					[]string{
-						packagePathFromDirectory(os.Getenv("GOPATH"), workingDir),
-						(*args)[0],
-					},
-					workingDir,
-					*destination,
-					*packageOut,
-					*selfPackage,
-					*debugParser,
-					out)
-			} else if len(*args) == 2 {
-				mockgen.GenerateMockFileInOutputDir(
-					*args,
-					workingDir,
-					*destination,
-					*packageOut,
-					*selfPackage,
-					*debugParser,
-					out)
-			} else {
-				app.FatalUsage("Please provide exactly 1 interface or 1 package + 1 interface")
+			sourceArgs = (*args)[:]
+		} else if len(*args) == 1 {
+			sourceArgs = []string{
+				packagePathFromDirectory(os.Getenv("GOPATH"), workingDir),
+				(*args)[0],
 			}
+		} else if len(*args) == 2 {
+			sourceArgs = (*args)[:]
+		} else {
+			app.FatalUsage("Please provide exactly 1 interface or 1 package + 1 interface")
+			return
 		}
+		mockgen.GenerateMockFileInOutputDir(
+			sourceArgs,
+			workingDir,
+			*destination,
+			*packageOut,
+			*selfPackage,
+			*debugParser,
+			out)
 
 	case watchCmd.FullCommand():
 		if len(*watchPackages) == 0 {
