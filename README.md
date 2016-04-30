@@ -271,7 +271,12 @@ pegomock --help
 Continuously Generating Mocks
 -----------------------------
 
-The `watch` command lets Pegomock generate mocks continuously on every change to an interface. For this, Pegomock expects an `interfaces_to_mock` file in the package directory where the mocks should be generated. In fact, `pegomock watch` will create it for you if it doesn't exist yet. The contents of the file are similar to the ones of the `generate` command:
+The `watch` command lets Pegomock generate mocks continuously on every change to an interface:
+```
+pegomock watch
+```
+
+For this, Pegomock expects an `interfaces_to_mock` file in the package directory where the mocks should be generated. In fact, `pegomock watch` will create it for you if it doesn't exist yet. The contents of the file are similar to the ones of the `generate` command:
 
 ```
 # Any line starting with a # is treated as comment.
