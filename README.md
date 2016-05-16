@@ -78,6 +78,32 @@ display.Show("Hello World!")
 display.VerifyWasCalledOnce().Show("Hello World!")
 ```
 
+Why yet Another Mocking Framework for Go?
+=========================================
+
+I've looked at some of the other frameworks, but found none of them satisfying:
+- [GoMock](https://github.com/golang/mock) seemed overly complicated when setting up mocks and verifying them. The command line interface is also not quite intuitive. That said, Pegomock is based on the GoMock, reusing mostly the mockgen code.
+- [Counterfeiter](https://github.com/maxbrunsfeld/counterfeiter) uses a DSL that I didn't find expressive enough. It often seems to need more lines of code too. In one of its samples, it uses e.g.:
+
+	```go
+	fake.DoThings("stuff", 5)
+	Expect(fake.DoThingsCallCount()).To(Equal(1))
+
+	str, num := fake.DoThingsArgsForCall(0)
+	Expect(str).To(Equal("stuff"))
+	Expect(num).To(Equal(uint64(5)))
+	```
+
+	In Pegomock, this can be written as simple as:
+
+	```go
+	fake.DoThings("stuff", 5)
+	fake.VerifyWasCalledOnce().DoThings("stuff", 5)
+	```
+- [Hel](https://github.com/nelsam/hel) uses a new and interesting approach to setting up and verifying mocks. However, I wonder how flexible it actually is. E.g. how about providing a callback function when stubbing? Can this be modeled with its current approach using channels?
+
+In addition, Pegomock provides a "watch" command similar to [Ginkgo](http://onsi.github.io/ginkgo/), which constantly watches over changes in an interface and updates its mocks. It gives the framework a much more dynamic feel, similar to mocking frameworks in Ruby or Java.
+
 Using Mocks In Your Tests
 =========================
 
@@ -272,6 +298,7 @@ Continuously Generating Mocks
 -----------------------------
 
 The `watch` command lets Pegomock generate mocks continuously on every change to an interface:
+
 ```
 pegomock watch
 ```
