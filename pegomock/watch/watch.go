@@ -15,7 +15,6 @@
 package watch
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -64,7 +63,7 @@ func check(targetPath string) {
 			}
 		}()
 		panicOnError(util.ValidateArgs(args))
-		sourceArgs, err := sourceArgs(args, targetPath)
+		sourceArgs, err := util.SourceArgs(args, targetPath)
 		panicOnError(err)
 
 		generatedMockSource := mockgen.GenerateMockSourceCode(sourceArgs, filepath.Base(targetPath)+"_test", "", false, os.Stdout)
@@ -76,23 +75,6 @@ func check(targetPath string) {
 		}
 		delete(lastErrors, strings.Join(args, "_"))
 	}
-}
-
-func sourceArgs(args []string, targetPath string) ([]string, error) {
-	if util.SourceMode(args) {
-		return args[:], nil
-	} else if len(args) == 1 {
-		packagePath, err := util.PackagePathFromDirectory(os.Getenv("GOPATH"), targetPath)
-		if err != nil {
-			return nil, errors.New("Couldn't determine package path from directory")
-		}
-		return []string{packagePath, args[0]}, nil
-	} else if len(args) == 2 {
-		return args[:], nil
-	} else {
-		return nil, errors.New("Please provide exactly 1 interface or 1 package + 1 interface in the interfaces_to_mock file")
-	}
-
 }
 
 func writeFileIfChanged(outputFilepath string, output []byte) bool {

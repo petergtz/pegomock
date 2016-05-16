@@ -58,21 +58,12 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 	case generateCmd.FullCommand():
 		if err := util.ValidateArgs(*generateCmdArgs); err != nil {
 			app.FatalUsage(err.Error())
-			return
 		}
-		var sourceArgs []string
-		if util.SourceMode(*generateCmdArgs) {
-			sourceArgs = (*generateCmdArgs)[:]
-		} else if len(*generateCmdArgs) == 1 {
-			pkgPath, err := util.PackagePathFromDirectory(os.Getenv("GOPATH"), workingDir)
-			app.FatalIfError(err, "Couldn't determine package path from directory")
-			sourceArgs = []string{pkgPath, (*generateCmdArgs)[0]}
-		} else if len(*generateCmdArgs) == 2 {
-			sourceArgs = (*generateCmdArgs)[:]
-		} else {
-			app.FatalUsage("Please provide exactly 1 interface or 1 package + 1 interface")
-			return
+		sourceArgs, err := util.SourceArgs(*generateCmdArgs, workingDir)
+		if err != nil {
+			app.FatalUsage(err.Error())
 		}
+
 		mockgen.GenerateMockFileInOutputDir(
 			sourceArgs,
 			workingDir,

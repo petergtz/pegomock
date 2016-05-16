@@ -128,8 +128,10 @@ var _ = Describe("Testing pegomock CLI", func() {
 
 			It(`reports an error and the usage`, func() {
 				var buf bytes.Buffer
-				app.Terminate(nil)
-				main.Run(cmd("pegomock generate with too many args"), &buf, app, done)
+				Expect(func() {
+					main.Run(cmd("pegomock generate with too many args"), &buf, app, done)
+				}).To(Panic())
+
 				Expect(buf.String()).To(ContainSubstring("Please provide exactly 1 interface or 1 package + 1 interface"))
 				Expect(buf.String()).To(ContainSubstring("usage"))
 			})
