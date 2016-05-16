@@ -25,7 +25,7 @@ func ValidateArgs(args []string) error {
 }
 
 func SourceArgs(args []string, targetPath string) ([]string, error) {
-	if sourceMode(args) {
+	if SourceMode(args) {
 		return args[:], nil
 	} else if len(args) == 1 {
 		packagePath, err := packagePathFromDirectory(os.Getenv("GOPATH"), targetPath)
@@ -40,7 +40,7 @@ func SourceArgs(args []string, targetPath string) ([]string, error) {
 	}
 }
 
-func sourceMode(args []string) bool {
+func SourceMode(args []string) bool {
 	if len(args) == 1 && strings.HasSuffix(args[0], ".go") {
 		return true
 	}

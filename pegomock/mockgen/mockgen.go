@@ -36,6 +36,7 @@ import (
 	"unicode"
 
 	"github.com/petergtz/pegomock/pegomock/mockgen/model"
+	"github.com/petergtz/pegomock/pegomock/mockgen/util"
 )
 
 const importPath = "github.com/petergtz/pegomock"
@@ -60,7 +61,7 @@ func GenerateMockFileInOutputDir(
 func OutputFilePath(args []string, outputDirPath string, outputFilePathOverride string) string {
 	if outputFilePathOverride != "" {
 		return outputFilePathOverride
-	} else if sourceMode(args) {
+	} else if util.SourceMode(args) {
 		return filepath.Join(outputDirPath, "mock_"+strings.TrimSuffix(args[0], ".go")+"_test.go")
 	} else {
 		return filepath.Join(outputDirPath, "mock_"+strings.ToLower(args[len(args)-1])+"_test.go")
@@ -81,7 +82,7 @@ func GenerateMockSourceCode(args []string, packageOut string, selfPackage string
 
 	var ast *model.Package
 	var src string
-	if sourceMode(args) {
+	if util.SourceMode(args) {
 		ast, err = ParseFile(args[0])
 		src = args[0]
 	} else {
@@ -104,13 +105,6 @@ func GenerateMockSourceCode(args []string, packageOut string, selfPackage string
 		panic(fmt.Errorf("Failed generating mock: %v", err))
 	}
 	return output
-}
-
-func sourceMode(args []string) bool {
-	if len(args) == 1 && strings.HasSuffix(args[0], ".go") {
-		return true
-	}
-	return false
 }
 
 type generator struct {
