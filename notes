@@ -1,0 +1,6 @@
+1 by default, mock files should appear in the directory where pegomock is run.
+2 by default, their package name should be the same as the current package + _test, not of the interface's package.
+3 if only an interface is specified (i.e., if no package is specified), the current package is assumed as the source
+4 to avoid ambiguouity, only one interface per cli run can be specified
+5 there's parameter for the output package defaulting to 2
+6 param for the output file
