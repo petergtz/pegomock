@@ -67,11 +67,11 @@ func check(targetPath string) {
 		sourceArgs, err := sourceArgs(args, targetPath)
 		panicOnError(err)
 
-		generated, mockFilePath := GenerateMock(
-			sourceArgs,
-			targetPath,
-			filepath.Base(targetPath)+"_test")
-		if generated || lastErrors[strings.Join(args, "_")] != "" {
+		generatedMockSource := mockgen.GenerateMockSourceCode(sourceArgs, filepath.Base(targetPath)+"_test", "", false, os.Stdout)
+		mockFilePath := mockgen.OutputFilePath(sourceArgs, targetPath, "") // <- adjust last param
+		hasChanged := writeFileIfChanged(mockFilePath, generatedMockSource)
+
+		if hasChanged || lastErrors[strings.Join(args, "_")] != "" {
 			fmt.Println("(Re)generated mock for", strings.Join(args, "_"), "in", mockFilePath)
 		}
 		delete(lastErrors, strings.Join(args, "_"))
@@ -95,26 +95,23 @@ func sourceArgs(args []string, targetPath string) ([]string, error) {
 
 }
 
-func GenerateMock(args []string, outputDirPath, packageOut string) (bool, string) {
-	output := mockgen.GenerateMockSourceCode(args, packageOut, "", false, os.Stdout)
-	outputFilepath := mockgen.OutputFilePath(args, outputDirPath, "") // <- adjust last param
-
+func writeFileIfChanged(outputFilepath string, output []byte) bool {
 	existingFileContent, err := ioutil.ReadFile(outputFilepath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			err = ioutil.WriteFile(outputFilepath, output, 0664)
 			panicOnError(err)
-			return true, outputFilepath
+			return true
 		} else {
 			panic(err)
 		}
 	}
 	if string(existingFileContent) == string(output) {
-		return false, outputFilepath
+		return false
 	} else {
 		err = ioutil.WriteFile(outputFilepath, output, 0664)
 		panicOnError(err)
-		return true, outputFilepath
+		return true
 	}
 }
 

@@ -40,12 +40,12 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 	app.FatalIfError(err, "")
 
 	var (
-		generateCmd = app.Command("generate", "Generate mocks based on the args provided. ")
-		destination = generateCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
-		packageOut  = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(workingDir) + "_test").String()
-		selfPackage = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
-		debugParser = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
-		args        = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
+		generateCmd     = app.Command("generate", "Generate mocks based on the args provided. ")
+		destination     = generateCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
+		packageOut      = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(workingDir) + "_test").String()
+		selfPackage     = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
+		debugParser     = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
+		generateCmdArgs = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
 		watchCmd       = app.Command("watch", "Watch ")
 		watchRecursive = watchCmd.Flag("recursive", "TODO").Short('r').Hidden().Bool()
@@ -56,19 +56,19 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 	switch kingpin.MustParse(app.Parse(cliArgs[1:])) {
 
 	case generateCmd.FullCommand():
-		if err := util.ValidateArgs(*args); err != nil {
+		if err := util.ValidateArgs(*generateCmdArgs); err != nil {
 			app.FatalUsage(err.Error())
 			return
 		}
 		var sourceArgs []string
-		if util.SourceMode(*args) {
-			sourceArgs = (*args)[:]
-		} else if len(*args) == 1 {
+		if util.SourceMode(*generateCmdArgs) {
+			sourceArgs = (*generateCmdArgs)[:]
+		} else if len(*generateCmdArgs) == 1 {
 			pkgPath, err := util.PackagePathFromDirectory(os.Getenv("GOPATH"), workingDir)
 			app.FatalIfError(err, "Couldn't determine package path from directory")
-			sourceArgs = []string{pkgPath, (*args)[0]}
-		} else if len(*args) == 2 {
-			sourceArgs = (*args)[:]
+			sourceArgs = []string{pkgPath, (*generateCmdArgs)[0]}
+		} else if len(*generateCmdArgs) == 2 {
+			sourceArgs = (*generateCmdArgs)[:]
 		} else {
 			app.FatalUsage("Please provide exactly 1 interface or 1 package + 1 interface")
 			return
