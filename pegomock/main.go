@@ -40,9 +40,12 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 	app.FatalIfError(err, "")
 
 	var (
-		generateCmd     = app.Command("generate", "Generate mocks based on the args provided. ")
-		destination     = generateCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
-		packageOut      = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(workingDir) + "_test").String()
+		generateCmd = app.Command("generate", "Generate mocks based on the args provided. ")
+		destination = generateCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
+		packageOut  = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(workingDir) + "_test").String()
+		// TODO: self_package was taken as is from GoMock.
+		//       Still don't understand what it's really there for.
+		//       So for now it's not tested.
 		selfPackage     = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
 		debugParser     = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
 		generateCmdArgs = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
