@@ -23,6 +23,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/alecthomas/kingpin.v2"
+
 	"github.com/petergtz/pegomock/pegomock/mockgen"
 	"github.com/petergtz/pegomock/pegomock/mockgen/util"
 )
@@ -50,30 +52,40 @@ func Watch(targetPaths []string, recursive bool, done chan bool) {
 var lastErrors = make(map[string]string)
 
 func check(targetPath string) {
-	// TODO: currently this returns also all CLI options. In the end args should be parsed by kingpin again to properly use it.
-	for _, args := range linesIn(wellKnownInterfaceListFile) {
+	lineCmd := kingpin.New("What should go in here", "And what should go in here")
+	destination := lineCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
+	packageOut := lineCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(targetPath) + "_test").String()
+	selfPackage := lineCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
+	lineArgs := lineCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
+	for _, lineParts := range linesIn(wellKnownInterfaceListFile) {
+
+		_, parseErr := lineCmd.Parse(lineParts)
+		if parseErr != nil {
+			fmt.Println("Error while trying to generate mock for line", strings.Join(lineParts, " "), ":", parseErr)
+			continue
+		}
 		defer func() {
 			err := recover()
 			if err != nil {
-				// TODO: this mechanism doesnt work correctly now, because all possible CLI options would go into the joined string as well
-				if lastErrors[strings.Join(args, "_")] != fmt.Sprint(err) {
-					fmt.Println("Error while trying to generate mock for", strings.Join(args, "_"), ":", err)
-					lastErrors[strings.Join(args, "_")] = fmt.Sprint(err)
+				if lastErrors[strings.Join(*lineArgs, "_")] != fmt.Sprint(err) {
+					fmt.Println("Error while trying to generate mock for", strings.Join(lineParts, " "), ":", err)
+					lastErrors[strings.Join(*lineArgs, "_")] = fmt.Sprint(err)
 				}
 			}
 		}()
-		panicOnError(util.ValidateArgs(args))
-		sourceArgs, err := util.SourceArgs(args, targetPath)
+
+		panicOnError(util.ValidateArgs(*lineArgs))
+		sourceArgs, err := util.SourceArgs(*lineArgs, targetPath)
 		panicOnError(err)
 
-		generatedMockSource := mockgen.GenerateMockSourceCode(sourceArgs, filepath.Base(targetPath)+"_test", "", false, os.Stdout)
-		mockFilePath := mockgen.OutputFilePath(sourceArgs, targetPath, "") // <- adjust last param
-		hasChanged := writeFileIfChanged(mockFilePath, generatedMockSource)
+		generatedMockSourceCode := mockgen.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, false, os.Stdout)
+		mockFilePath := mockgen.OutputFilePath(sourceArgs, targetPath, *destination)
+		hasChanged := writeFileIfChanged(mockFilePath, generatedMockSourceCode)
 
-		if hasChanged || lastErrors[strings.Join(args, "_")] != "" {
-			fmt.Println("(Re)generated mock for", strings.Join(args, "_"), "in", mockFilePath)
+		if hasChanged || lastErrors[strings.Join(*lineArgs, "_")] != "" {
+			fmt.Println("(Re)generated mock for", strings.Join(*lineArgs, "_"), "in", mockFilePath)
 		}
-		delete(lastErrors, strings.Join(args, "_"))
+		delete(lastErrors, strings.Join(*lineArgs, "_"))
 	}
 }
 

@@ -30,6 +30,10 @@ import (
 	"testing"
 )
 
+var (
+	joinPath = filepath.Join
+)
+
 func TestPegomock(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Pegomock CLI Suite")
@@ -55,16 +59,11 @@ var _ = Describe("Testing pegomock CLI", func() {
 		Expect(e).NotTo(HaveOccurred())
 		os.Chdir(packageDir)
 
-		Expect(ioutil.WriteFile(
-			filepath.Join(packageDir, "mydisplay.go"),
-			[]byte("package pegomocktest; type MyDisplay interface {  Show() }"),
-			0644)).
-			To(Succeed())
-		Expect(ioutil.WriteFile(
-			filepath.Join(subPackageDir, "subdisplay.go"),
-			[]byte("package pegomocktest; type SubDisplay interface {  ShowMe() }"),
-			0644)).
-			To(Succeed())
+		writeFile(joinPath(packageDir, "mydisplay.go"),
+			"package pegomocktest; type MyDisplay interface {  Show() }")
+		writeFile(joinPath(subPackageDir, "subdisplay.go"),
+			"package pegomocktest; type SubDisplay interface {  ShowMe() }")
+
 		app = kingpin.New("pegomock", "Generates mocks based on interfaces.")
 		app.Terminate(func(int) { panic("Unexpected terminate") })
 	})
@@ -152,27 +151,43 @@ var _ = Describe("Testing pegomock CLI", func() {
 
 		Context("after populating interfaces_to_mock with an actual interface", func() {
 			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
-				Expect(ioutil.WriteFile(
-					filepath.Join(packageDir, "interfaces_to_mock"),
-					[]byte("MyDisplay"), 0644)).
-					To(Succeed())
+				writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
 
 				go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
-				mockFile := filepath.Join(packageDir, "mock_mydisplay_test.go")
+				mockFile := joinPath(packageDir, "mock_mydisplay_test.go")
 				Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
 				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+			})
+
+			Context("and overriding the output filepath", func() {
+				It(`Eventually creates a file foo.go starting with "package pegomocktest_test"`, func() {
+					writeFile(joinPath(packageDir, "interfaces_to_mock"), "-o foo.go MyDisplay")
+
+					go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
+					mockFile := joinPath(packageDir, "foo.go")
+					Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
+					Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+				})
+			})
+
+			Context("and overriding the package name", func() {
+				It(`Eventually creates a file starting with "package the_overriden_test_package"`, func() {
+					writeFile(joinPath(packageDir, "interfaces_to_mock"), "--package the_overriden_test_package MyDisplay")
+
+					go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
+					mockFile := joinPath(packageDir, "mock_mydisplay_test.go")
+					Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
+					Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package the_overriden_test_package"))
+				})
 			})
 		})
 
 		Context("after populating interfaces_to_mock with a Go file", func() {
 			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
-				Expect(ioutil.WriteFile(
-					filepath.Join(packageDir, "interfaces_to_mock"),
-					[]byte("mydisplay.go"), 0644)).
-					To(Succeed())
+				writeFile(joinPath(packageDir, "interfaces_to_mock"), "mydisplay.go")
 
 				go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
-				mockFile := filepath.Join(packageDir, "mock_mydisplay_test.go")
+				mockFile := joinPath(packageDir, "mock_mydisplay_test.go")
 				Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
 				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
 			})
@@ -191,6 +206,10 @@ var _ = Describe("Testing pegomock CLI", func() {
 	})
 
 })
+
+func writeFile(filepath string, content string) {
+	Expect(ioutil.WriteFile(filepath, []byte(content), 0644)).To(Succeed())
+}
 
 func cmd(line string) []string {
 	return strings.Split(line, " ")
