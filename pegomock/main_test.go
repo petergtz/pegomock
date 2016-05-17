@@ -141,7 +141,7 @@ var _ = Describe("Testing pegomock CLI", func() {
 
 	Describe(`"watch" command`, func() {
 
-		AfterEach(func(testDone Done) { done <- true; close(testDone) }, 2)
+		AfterEach(func(testDone Done) { done <- true; close(testDone) }, 3)
 
 		Context("with no further action", func() {
 			It(`Creates a template file interfaces_to_mock in the current directory`, func() {
