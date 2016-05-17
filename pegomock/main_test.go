@@ -49,9 +49,9 @@ var _ = Describe("Testing pegomock CLI", func() {
 	)
 
 	BeforeEach(func() {
-		packageDir = filepath.Join(os.Getenv("GOPATH"), "src", "pegomocktest")
+		packageDir = joinPath(os.Getenv("GOPATH"), "src", "pegomocktest")
 		Expect(os.MkdirAll(packageDir, 0755)).To(Succeed())
-		subPackageDir = filepath.Join(packageDir, "subpackage")
+		subPackageDir = joinPath(packageDir, "subpackage")
 		Expect(os.MkdirAll(subPackageDir, 0755)).To(Succeed())
 
 		var e error
@@ -86,36 +86,33 @@ var _ = Describe("Testing pegomock CLI", func() {
 
 				main.Run(cmd("pegomock generate MyDisplay"), os.Stdout, app, done)
 
-				mockFile := filepath.Join(packageDir, "mock_mydisplay_test.go")
-				Expect(mockFile).To(BeAnExistingFile())
-				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+				Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package pegomocktest_test")))
 			})
 		})
 
 		Context(`with args "pegomocktest/subpackage SubDisplay"`, func() {
-
 			It(`generates a file mock_subdisplay_test.go in "pegomocktest" that contains "package pegomocktest_test"`, func() {
 				main.Run(cmd("pegomock generate pegomocktest/subpackage SubDisplay"), os.Stdout, app, done)
 
-				mockFile := filepath.Join(packageDir, "mock_subdisplay_test.go")
-				Expect(mockFile).To(BeAnExistingFile())
-				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+				Expect(joinPath(packageDir, "mock_subdisplay_test.go")).To(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package pegomocktest_test")))
 			})
 		})
 
 		Context("with args mydisplay.go", func() {
-
 			It(`generates a file mock_mydisplay_test.go that contains "package pegomocktest_test"`, func() {
 				main.Run(cmd("pegomock generate mydisplay.go"), os.Stdout, app, done)
 
-				mockFile := filepath.Join(packageDir, "mock_mydisplay_test.go")
-				Expect(mockFile).To(BeAnExistingFile())
-				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+				Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package pegomocktest_test")))
 			})
 		})
 
 		Context("with args -d mydisplay.go", func() {
-
 			It(`prints out debug information on stdout`, func() {
 				var buf bytes.Buffer
 				main.Run(cmd("pegomock generate -d mydisplay.go"), &buf, app, done)
@@ -154,9 +151,9 @@ var _ = Describe("Testing pegomock CLI", func() {
 				writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
 
 				go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
-				mockFile := joinPath(packageDir, "mock_mydisplay_test.go")
-				Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
-				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+				Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package pegomocktest_test")))
 			})
 
 			Context("and overriding the output filepath", func() {
@@ -164,9 +161,10 @@ var _ = Describe("Testing pegomock CLI", func() {
 					writeFile(joinPath(packageDir, "interfaces_to_mock"), "-o foo.go MyDisplay")
 
 					go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
-					mockFile := joinPath(packageDir, "foo.go")
-					Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
-					Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+
+					Eventually(joinPath(packageDir, "foo.go"), "3s").Should(SatisfyAll(
+						BeAnExistingFile(),
+						BeAFileContainingSubString("package pegomocktest_test")))
 				})
 			})
 
@@ -175,9 +173,10 @@ var _ = Describe("Testing pegomock CLI", func() {
 					writeFile(joinPath(packageDir, "interfaces_to_mock"), "--package the_overriden_test_package MyDisplay")
 
 					go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
-					mockFile := joinPath(packageDir, "mock_mydisplay_test.go")
-					Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
-					Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package the_overriden_test_package"))
+
+					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
+						BeAnExistingFile(),
+						BeAFileContainingSubString("package the_overriden_test_package")))
 				})
 			})
 		})
@@ -187,9 +186,10 @@ var _ = Describe("Testing pegomock CLI", func() {
 				writeFile(joinPath(packageDir, "interfaces_to_mock"), "mydisplay.go")
 
 				go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
-				mockFile := joinPath(packageDir, "mock_mydisplay_test.go")
-				Eventually(func() string { return mockFile }, "3s").Should(BeAnExistingFile())
-				Expect(ioutil.ReadFile(mockFile)).To(ContainSubstring("package pegomocktest_test"))
+
+				Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package pegomocktest_test")))
 			})
 		})
 	})
