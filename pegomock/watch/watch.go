@@ -52,12 +52,12 @@ func Watch(targetPaths []string, recursive bool, done chan bool) {
 var lastErrors = make(map[string]string)
 
 func check(targetPath string) {
-	lineCmd := kingpin.New("What should go in here", "And what should go in here")
-	destination := lineCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
-	packageOut := lineCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(targetPath) + "_test").String()
-	selfPackage := lineCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
-	lineArgs := lineCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 	for _, lineParts := range linesIn(wellKnownInterfaceListFile) {
+		lineCmd := kingpin.New("What should go in here", "And what should go in here")
+		destination := lineCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
+		packageOut := lineCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(targetPath) + "_test").String()
+		selfPackage := lineCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
+		lineArgs := lineCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
 		_, parseErr := lineCmd.Parse(lineParts)
 		if parseErr != nil {
