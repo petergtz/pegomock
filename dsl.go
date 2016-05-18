@@ -15,6 +15,7 @@
 package pegomock
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -89,7 +90,7 @@ func (genericMock *GenericMock) Verify(
 		}
 	}
 	if !invocationCountMatcher.Matches(len(methodInvocations)) {
-		GlobalFailHandler("Mock not called. TODO: better message")
+		GlobalFailHandler(fmt.Sprintf("Mock invocation count does not match expectation. %v", invocationCountMatcher.FailureMessage()))
 	}
 }
 
@@ -255,7 +256,7 @@ func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param)
 func transformParamsIntoEqMatchers(params []Param) []Matcher {
 	paramMatchers := make([]Matcher, len(params))
 	for param := range params {
-		paramMatchers = append(paramMatchers, &matcher.EqMatcher{param})
+		paramMatchers = append(paramMatchers, &matcher.EqMatcher{Value: param})
 	}
 	return paramMatchers
 }
@@ -316,19 +317,22 @@ func (stubber *Stubber) When(mock interface{}) {
 
 }
 
+// Matcher ... it is guaranteed that FailureMessage will always be called after Matches
+// so an implementation can save state
 type Matcher interface {
 	Matches(param Param) bool
+	FailureMessage() string
 }
 
 // EqInt .
 func EqInt(value int) int {
-	argMatchers.append(&matcher.EqMatcher{value})
+	argMatchers.append(&matcher.EqMatcher{Value: value})
 	return value
 }
 
 // EqString .
 func EqString(value string) string {
-	argMatchers.append(&matcher.EqMatcher{value})
+	argMatchers.append(&matcher.EqMatcher{Value: value})
 	return value
 }
 

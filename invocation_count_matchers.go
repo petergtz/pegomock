@@ -19,25 +19,25 @@ import (
 )
 
 func Times(numDesiredInvocations int) *EqMatcher {
-	return &EqMatcher{numDesiredInvocations}
+	return &EqMatcher{Value: numDesiredInvocations}
 }
 
 func AtLeast(numDesiredInvocations int) *AtLeastIntMatcher {
-	return &AtLeastIntMatcher{numDesiredInvocations}
+	return &AtLeastIntMatcher{Value: numDesiredInvocations}
 }
 
 func AtMost(numDesiredInvocations int) *AtMostIntMatcher {
-	return &AtMostIntMatcher{numDesiredInvocations}
+	return &AtMostIntMatcher{Value: numDesiredInvocations}
 }
 
 func Never() *EqMatcher {
-	return &EqMatcher{0}
+	return &EqMatcher{Value: 0}
 }
 
 func Once() *EqMatcher {
-	return &EqMatcher{1}
+	return &EqMatcher{Value: 1}
 }
 
 func Twice() *EqMatcher {
-	return &EqMatcher{2}
+	return &EqMatcher{Value: 2}
 }
