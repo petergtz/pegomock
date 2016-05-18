@@ -94,6 +94,10 @@ func (genericMock *GenericMock) Verify(
 	}
 }
 
+func (genericMock *GenericMock) GetLastInvocationParams(methodName string) []Param {
+	return genericMock.mockedMethods[methodName].invocations[len(genericMock.mockedMethods[methodName].invocations)-1].params
+}
+
 func (genericMock *GenericMock) methodInvocations(methodName string, params ...Param) []methodInvocation {
 	if len(argMatchers) != 0 {
 		verify.Argument(len(argMatchers) == len(params),

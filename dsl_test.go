@@ -257,4 +257,25 @@ var _ = Describe("MockDisplay", func() {
 
 	})
 
+	Context("Capturing arguments", func() {
+		It("Returns arguments when verifying with argument capture", func() {
+			display.Flash("Hello", 111)
+
+			arg1, arg2 := display.VerifyWasCalledOnce().Flash(AnyString(), AnyInt()).getCapturedArguments()
+
+			Expect(arg1).To(Equal("Hello"))
+			Expect(arg2).To(Equal(111))
+		})
+
+		It("Returns arguments of last invocation when verifying with argument capture", func() {
+			display.Flash("Hello", 111)
+			display.Flash("Again", 222)
+
+			arg1, arg2 := display.VerifyWasCalled(AtLeast(1)).Flash(AnyString(), AnyInt()).getCapturedArguments()
+
+			Expect(arg1).To(Equal("Again"))
+			Expect(arg2).To(Equal(222))
+		})
+	})
+
 })
