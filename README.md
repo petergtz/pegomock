@@ -68,10 +68,10 @@ The simplest way is to call `pegomock` from within your go package specifying th
 
 ```
 cd path/to/package
-pegomock generate Display --output mock_display_test.go
+pegomock generate Display
 ```
 
-You can now use it in your tests:
+This will generate a `mock_display_test.go` file which you can now use in your tests:
 
 ```go
 // creating mock
@@ -290,9 +290,9 @@ Pegomock can generate mocks in two different ways:
 
 Flags can be any of the following:
 
--	`--output,-o`: A file to which to write the resulting source code. If you don't set this, the code is printed to standard output.
+-	`--output,-o`: Output file; defaults to mock_<interface>_test.go.
 
--	`--package`: The package to use for the resulting mock class source code. If you don't set this, the package name is `mock_` concatenated with the package of the input file.
+-	`--package`: Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test
 
 For more flags, run:
 
