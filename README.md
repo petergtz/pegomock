@@ -16,6 +16,30 @@ This will download the package and install an executable `pegomock` in your `$GO
 Getting Started
 ===============
 
+Using Pegomock with Golang’s XUnit-style Tests
+----------------------------------------------
+
+Use it like this:
+
+```go
+
+import (
+	"github.com/petergtz/pegomock"
+	"testing"
+)
+
+func TestUsingMocks(t *testing.T) {
+	pegomock.RegisterMockTestingT(t)
+
+	// use Pegomock here
+}
+```
+
+There are two caveats:
+
+-	You must register the `t *testing.T` passed to your test with Pegomock before you make any verifications associated with that test. So every `Test...` function in your suite should have the `RegisterTestingT(t)` line.
+-	Pegomock uses a global (singleton) fail handler. This has the benefit that you don’t need to pass the fail handler down to each test, but does mean that you cannot run your XUnit style tests in parallel with Pegomock.
+
 Using Pegomock with Ginkgo
 --------------------------
 
@@ -28,24 +52,6 @@ pegomock.RegisterFailHandler(ginkgo.Fail)
 ```
 
 before you start your test suite.
-
-Using Pegomock with Golang’s XUnit-style Tests
-----------------------------------------------
-
-Use it like this:
-
-```go
-func TestUsingMocks(t *testing.T) {
-	RegisterTestingT(t)
-
-	// use Pegomock here
-}
-```
-
-There are two caveats:
-
--	You must register the `t *testing.T` passed to your test with Pegomock before you make any verifications associated with that test. So every `Test...` function in your suite should have the `RegisterTestingT(t)` line.
--	Pegomock uses a global (singleton) fail handler. This has the benefit that you don’t need to pass the fail handler down to each test, but does mean that you cannot run your XUnit style tests in parallel with Pegomock.
 
 Generating Your First Mock and Using It
 ---------------------------------------
