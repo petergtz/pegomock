@@ -68,7 +68,7 @@ The simplest way is to call `pegomock` from within your go package specifying th
 
 ```
 cd path/to/package
-pegomock generate Display -o mock_display_test.go
+pegomock generate Display --output mock_display_test.go
 ```
 
 You can now use it in your tests:
