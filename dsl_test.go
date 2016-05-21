@@ -276,6 +276,16 @@ var _ = Describe("MockDisplay", func() {
 			Expect(arg1).To(Equal("Again"))
 			Expect(arg2).To(Equal(222))
 		})
+
+		It("Returns arguments of all invocations when verifying with \"all\" argument capture", func() {
+			display.Flash("Hello", 111)
+			display.Flash("Again", 222)
+
+			args1, args2 := display.VerifyWasCalled(AtLeast(1)).Flash(AnyString(), AnyInt()).getAllCapturedArguments()
+
+			Expect(args1).To(ConsistOf("Hello", "Again"))
+			Expect(args2).To(ConsistOf(111, 222))
+		})
 	})
 
 })

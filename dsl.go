@@ -94,8 +94,17 @@ func (genericMock *GenericMock) Verify(
 	}
 }
 
-func (genericMock *GenericMock) GetLastInvocationParams(methodName string) []Param {
-	return genericMock.mockedMethods[methodName].invocations[len(genericMock.mockedMethods[methodName].invocations)-1].params
+func (genericMock *GenericMock) GetInvocationParams(methodName string) [][]Param {
+	if len(genericMock.mockedMethods[methodName].invocations) == 0 {
+		return nil
+	}
+	result := make([][]Param, len(genericMock.mockedMethods[methodName].invocations[len(genericMock.mockedMethods[methodName].invocations)-1].params))
+	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
+		for u, param := range invocation.params {
+			result[u] = append(result[u], param)
+		}
+	}
+	return result
 }
 
 func (genericMock *GenericMock) methodInvocations(methodName string, params ...Param) []methodInvocation {

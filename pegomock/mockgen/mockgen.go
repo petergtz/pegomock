@@ -310,38 +310,76 @@ func resultCast(returnTypes []string) string {
 }
 
 func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.Method, pkgOverride string) *generator {
-	args, argNames, argString, _, _, callArgs := getStuff(method, g, pkgOverride)
+	args, argNames, argString, _, _, argNamesString := getStuff(method, g, pkgOverride)
+	argTypes := argTypesFrom(args)
 
 	returnTypeString := fmt.Sprintf("%v_%v_OngoingVerification", interfaceName, method.Name)
 
+	argsAsArray := make([]string, len(args))
+	for i, arg := range args {
+		n, t := splitArg(arg)
+		argsAsArray[i] = fmt.Sprintf("%v []%v", n, t)
+	}
+
 	g.p("type %v struct {", returnTypeString)
-	g.p(strings.Replace(argString, ",", ";", -1))
+	g.p("mock *Mock%v", interfaceName)
 	g.p("}")
 
-	g.p("func (c *%v) getCapturedArguments() (%v) {", returnTypeString, argString)
+	g.p("func (c *%v) getCapturedArguments() (%v) {", returnTypeString, strings.Join(argTypes, ", "))
+
 	if len(args) > 0 {
+		g.p("%v := c.getAllCapturedArguments()", strings.Join(argNames, ", "))
+
 		prefixedArgNames := make([]string, len(argNames))
 		for i, argName := range argNames {
-			prefixedArgNames[i] = "c." + argName
+			prefixedArgNames[i] = argName + "[len(" + argName + ")-1]"
 		}
 		g.p("return %v", strings.Join(prefixedArgNames, ", "))
 	}
 	g.p("}")
 
-	g.p("func (verifier *Verifier%v) %v(%v) *%v {", interfaceName, method.Name, argString, returnTypeString)
-	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", %v)", method.Name, callArgs)
-	g.p("result := &%v{}", returnTypeString)
-	if argString != "" {
-		g.p("params := pegomock.GetGenericMockFrom(verifier.mock).GetLastInvocationParams(\"%v\")", method.Name)
-		for i, arg := range args {
-			g.p("result._param%v=params[%v].(%v)", i, i, strings.Split(arg, " ")[1])
-		}
+	g.p("func (c *%v) getAllCapturedArguments() (%v) {", returnTypeString, strings.Join(argsAsArray, ", "))
+	if len(args) > 0 {
+		calcParams(g, argString, args, method.Name)
+		g.p("return")
 	}
-	g.p("return result")
+	g.p("}")
+
+	g.p("func (verifier *Verifier%v) %v(%v) *%v {", interfaceName, method.Name, argString, returnTypeString)
+	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", %v)", method.Name, argNamesString)
+	g.p("return &%v{verifier.mock}", returnTypeString)
 
 	g.p("}")
 
 	return g
+}
+
+func splitArg(arg string) (argName string, argType string) {
+	array := strings.Split(arg, " ")
+	return array[0], array[1]
+}
+
+func argTypesFrom(args []string) []string {
+	result := make([]string, len(args))
+	for i, arg := range args {
+		_, t := splitArg(arg)
+		result[i] = t
+	}
+	return result
+}
+
+func calcParams(g *generator, argString string, args []string, methodName string) {
+	if argString != "" {
+		g.p("params := pegomock.GetGenericMockFrom(c.mock).GetInvocationParams(\"%v\")", methodName)
+		g.p("if len(params) > 0 {")
+		for i, arg := range args {
+			g.p("_param%v = make([]%v, len(params[%v]))", i, strings.Split(arg, " ")[1], i)
+			g.p("for u, param := range params[%v] {", i)
+			g.p("_param%v[u]=param.(%v)", i, strings.Split(arg, " ")[1])
+			g.p("}")
+		}
+		g.p("}")
+	}
 }
 
 func getStuff(method *model.Method, g *generator, pkgOverride string) (
@@ -350,7 +388,7 @@ func getStuff(method *model.Method, g *generator, pkgOverride string) (
 	argString string,
 	rets []string,
 	retString string,
-	callArgs string,
+	argNamesString string,
 ) {
 	args = make([]string, len(method.In))
 	argNames = make([]string, len(method.In))
@@ -386,7 +424,7 @@ func getStuff(method *model.Method, g *generator, pkgOverride string) (
 		retString = " " + retString
 	}
 
-	callArgs = strings.Join(argNames, ", ")
+	argNamesString = strings.Join(argNames, ", ")
 	// TODO: variadic arguments
 	// if method.Variadic != nil {
 	// 	// Non-trivial. The generated code must build a []interface{},
