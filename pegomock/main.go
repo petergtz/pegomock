@@ -52,7 +52,7 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 
 		watchCmd       = app.Command("watch", "Watch ")
 		watchRecursive = watchCmd.Flag("recursive", "TODO").Short('r').Hidden().Bool()
-		watchPackages  = watchCmd.Arg("packages", "TODO").Strings()
+		watchPackages  = watchCmd.Arg("directories...", "One or more directories of Go packages to watch").Strings()
 	)
 
 	app.Writer(out)
@@ -62,7 +62,7 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 		if err := util.ValidateArgs(*generateCmdArgs); err != nil {
 			app.FatalUsage(err.Error())
 		}
-		sourceArgs, err := util.SourceArgs(*generateCmdArgs, workingDir)
+		sourceArgs, err := util.SourceArgs(*generateCmdArgs)
 		if err != nil {
 			app.FatalUsage(err.Error())
 		}
@@ -78,9 +78,11 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 
 	case watchCmd.FullCommand():
 		if len(*watchPackages) == 0 {
-			watch.Watch([]string{workingDir}, *watchRecursive, done)
+			watch.CreateWellKnownInterfaceListFileIfNecessary(workingDir)
+			watch.Watch(watch.NewChecker([]string{workingDir}, *watchRecursive), done)
 		} else {
-			watch.Watch(*watchPackages, *watchRecursive, done)
+			watch.CreateWellKnownInterfaceListFilesIfNecessary(*watchPackages)
+			watch.Watch(watch.NewChecker(*watchPackages, *watchRecursive), done)
 		}
 	}
 }

@@ -62,7 +62,7 @@ var _ = Describe("Testing pegomock CLI", func() {
 		writeFile(joinPath(packageDir, "mydisplay.go"),
 			"package pegomocktest; type MyDisplay interface {  Show() }")
 		writeFile(joinPath(subPackageDir, "subdisplay.go"),
-			"package pegomocktest; type SubDisplay interface {  ShowMe() }")
+			"package subpackage; type SubDisplay interface {  ShowMe() }")
 
 		app = kingpin.New("pegomock", "Generates mocks based on interfaces.")
 		app.Terminate(func(int) { panic("Unexpected terminate") })
@@ -179,6 +179,40 @@ var _ = Describe("Testing pegomock CLI", func() {
 						BeAFileContainingSubString("package the_overriden_test_package")))
 				})
 			})
+
+			Context("in multiple packages and providing those packages to watch", func() {
+				It(`Eventually creates correct files in respective directories`, func() {
+					os.Chdir("..")
+					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
+					writeFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
+
+					go main.Run(cmd("pegomock watch pegomocktest pegomocktest/subpackage"), os.Stdout, app, done)
+
+					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
+						BeAnExistingFile(),
+						BeAFileContainingSubString("package pegomocktest_test")))
+					Eventually(joinPath(subPackageDir, "mock_subdisplay_test.go"), "3s").Should(SatisfyAll(
+						BeAnExistingFile(),
+						BeAFileContainingSubString("package subpackage_test")))
+				})
+			})
+
+			Context("in one package, but providing multiple packages to create mocks from", func() {
+				It(`Eventually creates correct files in respective directories`, func() {
+					os.Chdir("..")
+					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay\npegomocktest/subpackage SubDisplay")
+
+					go main.Run(cmd("pegomock watch pegomocktest pegomocktest/subpackage"), os.Stdout, app, done)
+
+					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
+						BeAnExistingFile(),
+						BeAFileContainingSubString("package pegomocktest_test")))
+					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
+						BeAnExistingFile(),
+						BeAFileContainingSubString("package pegomocktest_test")))
+				})
+			})
+
 		})
 
 		Context("after populating interfaces_to_mock with a Go file", func() {

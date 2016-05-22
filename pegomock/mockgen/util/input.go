@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,13 +25,17 @@ func ValidateArgs(args []string) error {
 	return nil
 }
 
-func SourceArgs(args []string, targetPath string) ([]string, error) {
+func SourceArgs(args []string) ([]string, error) {
 	if SourceMode(args) {
 		return args[:], nil
 	} else if len(args) == 1 {
-		packagePath, err := packagePathFromDirectory(os.Getenv("GOPATH"), targetPath)
+		workingDir, e := os.Getwd()
+		if e != nil {
+			panic(e)
+		}
+		packagePath, err := packagePathFromDirectory(os.Getenv("GOPATH"), workingDir)
 		if err != nil {
-			return nil, errors.New("Couldn't determine package path from directory")
+			return nil, fmt.Errorf("Couldn't determine package path from directory: %v", err)
 		}
 		return []string{packagePath, args[0]}, nil
 	} else if len(args) == 2 {

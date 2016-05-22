@@ -31,19 +31,35 @@ import (
 
 const wellKnownInterfaceListFile = "interfaces_to_mock"
 
+type Callable interface {
+	Call()
+}
+
+type Checker struct {
+	recursive   bool
+	targetPaths []string
+}
+
+func NewChecker(targetPaths []string, recursive bool) *Checker {
+	return &Checker{targetPaths: targetPaths, recursive: recursive}
+}
+
+func (checker *Checker) Call() {
+	for _, targetPath := range checker.targetPaths {
+		check(targetPath)
+	}
+}
+
 // Watch watches the specified packagePaths and continuously
 // generates mocks based on the interfaces.
-func Watch(targetPaths []string, recursive bool, done chan bool) {
-	createWellKnownInterfaceListFilesIfNecessary(targetPaths)
+func Watch(callable Callable, done chan bool) {
 	for {
 		select {
 		case <-done:
 			return
 
 		default:
-			for _, targetPath := range targetPaths {
-				check(targetPath)
-			}
+			callable.Call()
 			time.Sleep(2 * time.Second)
 		}
 	}
@@ -52,6 +68,16 @@ func Watch(targetPaths []string, recursive bool, done chan bool) {
 var lastErrors = make(map[string]string)
 
 func check(targetPath string) {
+	origWorkingDir, e := os.Getwd()
+	panicOnError(e)
+	e = os.Chdir(targetPath)
+	panicOnError(e)
+	defer func() { os.Chdir(origWorkingDir) }()
+
+	if _, err := os.Stat(wellKnownInterfaceListFile); os.IsNotExist(err) {
+		return
+	}
+
 	for _, lineParts := range linesIn(wellKnownInterfaceListFile) {
 		lineCmd := kingpin.New("What should go in here", "And what should go in here")
 		destination := lineCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
@@ -75,11 +101,11 @@ func check(targetPath string) {
 		}()
 
 		panicOnError(util.ValidateArgs(*lineArgs))
-		sourceArgs, err := util.SourceArgs(*lineArgs, targetPath)
+		sourceArgs, err := util.SourceArgs(*lineArgs)
 		panicOnError(err)
 
 		generatedMockSourceCode := mockgen.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, false, os.Stdout)
-		mockFilePath := mockgen.OutputFilePath(sourceArgs, targetPath, *destination)
+		mockFilePath := mockgen.OutputFilePath(sourceArgs, ".", *destination)
 		hasChanged := writeFileIfChanged(mockFilePath, generatedMockSourceCode)
 
 		if hasChanged || lastErrors[strings.Join(*lineArgs, "_")] != "" {
@@ -109,13 +135,13 @@ func writeFileIfChanged(outputFilepath string, output []byte) bool {
 	}
 }
 
-func createWellKnownInterfaceListFilesIfNecessary(targetPaths []string) {
+func CreateWellKnownInterfaceListFilesIfNecessary(targetPaths []string) {
 	for _, targetPath := range targetPaths {
-		createWellKnownInterfaceListFileIfNecessary(targetPath)
+		CreateWellKnownInterfaceListFileIfNecessary(targetPath)
 	}
 }
 
-func createWellKnownInterfaceListFileIfNecessary(targetPath string) {
+func CreateWellKnownInterfaceListFileIfNecessary(targetPath string) {
 	file, err := os.OpenFile(filepath.Join(targetPath, wellKnownInterfaceListFile), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
 		if os.IsExist(err) {
