@@ -16,6 +16,7 @@ package pegomock_test
 
 import (
 	"fmt"
+	"reflect"
 
 	. "github.com/petergtz/pegomock"
 
@@ -286,6 +287,36 @@ var _ = Describe("MockDisplay", func() {
 			Expect(args1).To(ConsistOf("Hello", "Again"))
 			Expect(args2).To(ConsistOf(111, 222))
 		})
+
+		It("Returns *array* arguments of all invocations when verifying with \"all\" argument capture", func() {
+			display.ArrayParam([]string{"one", "two"})
+			display.ArrayParam([]string{"4", "5", "3"})
+
+			args := display.VerifyWasCalled(AtLeast(1)).ArrayParam(AnyStringSlice()).getAllCapturedArguments()
+
+			Expect(flattenStringSliceOfSlices(args)).To(ConsistOf("one", "two", "3", "4", "5"))
+		})
+
 	})
 
 })
+
+func AnyStringSlice() []string {
+	RegisterMatcher(&AnyStringSliceMatcher{})
+	return nil
+}
+
+type AnyStringSliceMatcher struct{}
+
+func (matcher *AnyStringSliceMatcher) Matches(param Param) bool {
+	return reflect.TypeOf(param).Kind() == reflect.Slice
+}
+
+func (matcher *AnyStringSliceMatcher) FailureMessage() string { return "Unused" }
+
+func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {
+	for _, slice := range sliceOfSlices {
+		result = append(result, slice...)
+	}
+	return
+}

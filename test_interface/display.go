@@ -21,4 +21,5 @@ type Display interface {
 	SomeValue() string
 	MultipleValues() (string, int, float32)
 	MultipleParamsAndReturnValue(s string, i int) string
+	ArrayParam(array []string)
 }
