@@ -343,24 +343,24 @@ type Matcher interface {
 
 // EqInt .
 func EqInt(value int) int {
-	argMatchers.append(&matcher.EqMatcher{Value: value})
-	return value
+	RegisterMatcher(&matcher.EqMatcher{Value: value})
+	return 0
 }
 
 // EqString .
 func EqString(value string) string {
-	argMatchers.append(&matcher.EqMatcher{Value: value})
-	return value
+	RegisterMatcher(&matcher.EqMatcher{Value: value})
+	return ""
 }
 
 // AnyString .
 func AnyString() string {
-	argMatchers.append(&matcher.AnyStringMatcher{})
+	RegisterMatcher(&matcher.AnyStringMatcher{})
 	return ""
 }
 
 // AnyInt .
 func AnyInt() int {
-	argMatchers.append(&matcher.AnyIntMatcher{})
+	RegisterMatcher(&matcher.AnyIntMatcher{})
 	return 0
 }
