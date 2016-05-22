@@ -35,24 +35,24 @@ type Callable interface {
 	Call()
 }
 
-type Checker struct {
+type MockFileUpdater struct {
 	recursive   bool
 	targetPaths []string
 }
 
-func NewChecker(targetPaths []string, recursive bool) *Checker {
-	return &Checker{targetPaths: targetPaths, recursive: recursive}
+func NewMockFileUpdater(targetPaths []string, recursive bool) *MockFileUpdater {
+	return &MockFileUpdater{targetPaths: targetPaths, recursive: recursive}
 }
 
-func (checker *Checker) Call() {
-	for _, targetPath := range checker.targetPaths {
-		check(targetPath)
+func (updater *MockFileUpdater) Call() {
+	for _, targetPath := range updater.targetPaths {
+		updater.updateMockFiles(targetPath)
 	}
 }
 
 // Watch watches the specified packagePaths and continuously
 // generates mocks based on the interfaces.
-func Watch(callable Callable, done chan bool) {
+func Ticker(callable Callable, delay time.Duration, done chan bool) {
 	for {
 		select {
 		case <-done:
@@ -60,14 +60,14 @@ func Watch(callable Callable, done chan bool) {
 
 		default:
 			callable.Call()
-			time.Sleep(2 * time.Second)
+			time.Sleep(delay)
 		}
 	}
 }
 
 var lastErrors = make(map[string]string)
 
-func check(targetPath string) {
+func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 	origWorkingDir, e := os.Getwd()
 	panicOnError(e)
 	e = os.Chdir(targetPath)

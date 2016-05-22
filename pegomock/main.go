@@ -18,6 +18,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
@@ -77,12 +78,13 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			out)
 
 	case watchCmd.FullCommand():
+		var targetPaths []string
 		if len(*watchPackages) == 0 {
-			watch.CreateWellKnownInterfaceListFileIfNecessary(workingDir)
-			watch.Watch(watch.NewChecker([]string{workingDir}, *watchRecursive), done)
+			targetPaths = []string{workingDir}
 		} else {
-			watch.CreateWellKnownInterfaceListFilesIfNecessary(*watchPackages)
-			watch.Watch(watch.NewChecker(*watchPackages, *watchRecursive), done)
+			targetPaths = *watchPackages
 		}
+		watch.CreateWellKnownInterfaceListFilesIfNecessary(targetPaths)
+		watch.Ticker(watch.NewMockFileUpdater(targetPaths, *watchRecursive), 2*time.Second, done)
 	}
 }
