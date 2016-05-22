@@ -37,6 +37,10 @@ func RegisterMockTestingT(t *testing.T) {
 var lastInvocation *invocation
 var argMatchers Matchers
 
+func RegisterMatcher(matcher Matcher) {
+	argMatchers.append(matcher)
+}
+
 type invocation struct {
 	genericMock *GenericMock
 	MethodName  string
