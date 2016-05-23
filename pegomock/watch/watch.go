@@ -45,18 +45,18 @@ func (updater *MockFileUpdater) Update() {
 		if updater.recursive {
 			filepath.Walk(targetPath, func(path string, info os.FileInfo, err error) error {
 				if err == nil && info.IsDir() {
-					updater.updateMockFiles(path)
+					WithinWorkingDir(path, updater.updateMockFiles)
 				}
 				return nil
 			})
 		} else {
-			updater.updateMockFiles(targetPath)
+			WithinWorkingDir(targetPath, updater.updateMockFiles)
 		}
 	}
 }
 
-// Watch watches the specified packagePaths and continuously
-// generates mocks based on the interfaces.
+// Ticket repeatedly calls cb with a delay in between calls. It stops doing This
+// When a element is sent to the done channel.
 func Ticker(cb func(), delay time.Duration, done chan bool) {
 	for {
 		select {
@@ -70,19 +70,18 @@ func Ticker(cb func(), delay time.Duration, done chan bool) {
 	}
 }
 
-var lastErrors = make(map[string]string)
-
-func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
+func WithinWorkingDir(targetPath string, cb func(workingDir string)) {
 	origWorkingDir, e := os.Getwd()
 	panicOnError(e)
 	e = os.Chdir(targetPath)
 	panicOnError(e)
 	defer func() { os.Chdir(origWorkingDir) }()
+	cb(targetPath)
+}
 
-	if _, err := os.Stat(wellKnownInterfaceListFile); os.IsNotExist(err) {
-		return
-	}
+var lastErrors = make(map[string]string)
 
+func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 	for _, lineParts := range linesIn(wellKnownInterfaceListFile) {
 		lineCmd := kingpin.New("What should go in here", "And what should go in here")
 		destination := lineCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
