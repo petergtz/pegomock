@@ -31,10 +31,6 @@ import (
 
 const wellKnownInterfaceListFile = "interfaces_to_mock"
 
-type Callable interface {
-	Call()
-}
-
 type MockFileUpdater struct {
 	recursive   bool
 	targetPaths []string
@@ -44,7 +40,7 @@ func NewMockFileUpdater(targetPaths []string, recursive bool) *MockFileUpdater {
 	return &MockFileUpdater{targetPaths: targetPaths, recursive: recursive}
 }
 
-func (updater *MockFileUpdater) Call() {
+func (updater *MockFileUpdater) Update() {
 	for _, targetPath := range updater.targetPaths {
 		updater.updateMockFiles(targetPath)
 	}
@@ -52,14 +48,14 @@ func (updater *MockFileUpdater) Call() {
 
 // Watch watches the specified packagePaths and continuously
 // generates mocks based on the interfaces.
-func Ticker(callable Callable, delay time.Duration, done chan bool) {
+func Ticker(cb func(), delay time.Duration, done chan bool) {
 	for {
 		select {
 		case <-done:
 			return
 
 		default:
-			callable.Call()
+			cb()
 			time.Sleep(delay)
 		}
 	}
