@@ -52,7 +52,7 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 		generateCmdArgs = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
 		watchCmd       = app.Command("watch", "Watch ")
-		watchRecursive = watchCmd.Flag("recursive", "TODO").Short('r').Hidden().Bool()
+		watchRecursive = watchCmd.Flag("recursive", "Recursively watch sub-directories as well.").Short('r').Bool()
 		watchPackages  = watchCmd.Arg("directories...", "One or more directories of Go packages to watch").Strings()
 	)
 

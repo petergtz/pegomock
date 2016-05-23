@@ -42,7 +42,16 @@ func NewMockFileUpdater(targetPaths []string, recursive bool) *MockFileUpdater {
 
 func (updater *MockFileUpdater) Update() {
 	for _, targetPath := range updater.targetPaths {
-		updater.updateMockFiles(targetPath)
+		if updater.recursive {
+			filepath.Walk(targetPath, func(path string, info os.FileInfo, err error) error {
+				if err == nil && info.IsDir() {
+					updater.updateMockFiles(path)
+				}
+				return nil
+			})
+		} else {
+			updater.updateMockFiles(targetPath)
+		}
 	}
 }
 

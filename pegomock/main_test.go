@@ -207,9 +207,25 @@ var _ = Describe("Testing pegomock CLI", func() {
 					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 						BeAnExistingFile(),
 						BeAFileContainingSubString("package pegomocktest_test")))
+					Eventually(joinPath(packageDir, "mock_subdisplay_test.go"), "3s").Should(SatisfyAll(
+						BeAnExistingFile(),
+						BeAFileContainingSubString("package pegomocktest_test")))
+				})
+			})
+
+			Context("in multiple packages and watching --recursive", func() {
+				It(`Eventually creates correct files in respective directories`, func() {
+					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
+					writeFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
+
+					go main.Run(cmd("pegomock watch --recursive"), os.Stdout, app, done)
+
 					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 						BeAnExistingFile(),
 						BeAFileContainingSubString("package pegomocktest_test")))
+					Eventually(joinPath(subPackageDir, "mock_subdisplay_test.go"), "3s").Should(SatisfyAll(
+						BeAnExistingFile(),
+						BeAFileContainingSubString("package subpackage_test")))
 				})
 			})
 
