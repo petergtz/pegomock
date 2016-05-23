@@ -259,6 +259,38 @@ display1.VerifyWasCalledInOrder(Once(), inOrderContext).Show("Three")
 
 Note that it's not necessary to verify the call for `display.Show("Two")` if that one is not of any interested. An `InOrderContext` only verifies that the verifications that are done, are in order.
 
+Verifying with Argument Capture
+--------------------------------
+
+In some cases it can be useful to capture the arguments from mock invocations and assert on them separately. This method is only recommended if the techniques using matchers are not sufficient.
+
+```go
+display := NewMockDisplay()
+
+// Calling mock
+display.Show("Hello")
+display.Show("Hello, again")
+display.Show("And again")
+
+// Verification and getting captured arguments
+text := display.VerifyWasCalled(AtLeast(1)).Show(AnyString()).getCapturedArguments()
+
+// Captured arguments are from last invocation
+Expect(text).To(Equal("And again"))
+```
+
+You can also get all captured arguments:
+
+```go
+// Verification and getting all captured arguments
+texts := display.VerifyWasCalled(AtLeast(1)).Show(AnyString()).getAllCapturedArguments()
+
+// Captured arguments are a slice
+Expect(texts).To(ConsistOf("Hello", "Hello, again", "And again"))
+```
+
+
+
 The Pegomock CLI
 ================
 
@@ -322,6 +354,11 @@ path/to/my/mypackage SomeInterface
 
 # you can also specify a Go file:
 display.go
+
+# and use most of the flags from the "generate" command
+--output my_special_output.go MyInterface
 ```
 
-Most of the options from the `generate` command can be used here too.
+Flags can be:
+
+- `--recursive,-r`: Recursively watch sub-directories as well.
