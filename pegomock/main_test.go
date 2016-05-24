@@ -16,7 +16,6 @@ package main_test
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,9 +59,9 @@ var _ = Describe("Testing pegomock CLI", func() {
 		Expect(e).NotTo(HaveOccurred())
 		os.Chdir(packageDir)
 
-		writeFile(joinPath(packageDir, "mydisplay.go"),
+		WriteFile(joinPath(packageDir, "mydisplay.go"),
 			"package pegomocktest; type MyDisplay interface {  Show() }")
-		writeFile(joinPath(subPackageDir, "subdisplay.go"),
+		WriteFile(joinPath(subPackageDir, "subdisplay.go"),
 			"package subpackage; type SubDisplay interface {  ShowMe() }")
 
 		app = kingpin.New("pegomock", "Generates mocks based on interfaces.")
@@ -149,7 +148,7 @@ var _ = Describe("Testing pegomock CLI", func() {
 
 		Context("after populating interfaces_to_mock with an actual interface", func() {
 			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
-				writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
+				WriteFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
 
 				go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
 
@@ -173,10 +172,6 @@ var _ = Describe("Testing pegomock CLI", func() {
 	})
 
 })
-
-func writeFile(filepath string, content string) {
-	Expect(ioutil.WriteFile(filepath, []byte(content), 0644)).To(Succeed())
-}
 
 func cmd(line string) []string {
 	return strings.Split(line, " ")

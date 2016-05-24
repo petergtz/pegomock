@@ -15,7 +15,6 @@
 package watch_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -54,9 +53,9 @@ var _ = Describe("Testing pegomock watch", func() {
 		Expect(e).NotTo(HaveOccurred())
 		os.Chdir(packageDir)
 
-		writeFile(joinPath(packageDir, "mydisplay.go"),
+		WriteFile(joinPath(packageDir, "mydisplay.go"),
 			"package pegomocktest; type MyDisplay interface {  Show() }")
-		writeFile(joinPath(subPackageDir, "subdisplay.go"),
+		WriteFile(joinPath(subPackageDir, "subdisplay.go"),
 			"package subpackage; type SubDisplay interface {  ShowMe() }")
 	})
 
@@ -69,7 +68,7 @@ var _ = Describe("Testing pegomock watch", func() {
 
 		Context("after populating interfaces_to_mock with an actual interface", func() {
 			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
-				writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
+				WriteFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
 
 				watch.NewMockFileUpdater([]string{packageDir}, false).Update()
 
@@ -80,7 +79,7 @@ var _ = Describe("Testing pegomock watch", func() {
 
 			Context("and overriding the output filepath", func() {
 				It(`Eventually creates a file foo.go starting with "package pegomocktest_test"`, func() {
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "-o foo.go MyDisplay")
+					WriteFile(joinPath(packageDir, "interfaces_to_mock"), "-o foo.go MyDisplay")
 
 					watch.NewMockFileUpdater([]string{packageDir}, false).Update()
 
@@ -92,7 +91,7 @@ var _ = Describe("Testing pegomock watch", func() {
 
 			Context("and overriding the package name", func() {
 				It(`Eventually creates a file starting with "package the_overriden_test_package"`, func() {
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "--package the_overriden_test_package MyDisplay")
+					WriteFile(joinPath(packageDir, "interfaces_to_mock"), "--package the_overriden_test_package MyDisplay")
 
 					watch.NewMockFileUpdater([]string{packageDir}, false).Update()
 
@@ -105,8 +104,8 @@ var _ = Describe("Testing pegomock watch", func() {
 			Context("in multiple packages and providing those packages to watch", func() {
 				It(`Eventually creates correct files in respective directories`, func() {
 					os.Chdir("..")
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
-					writeFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
+					WriteFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
+					WriteFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
 
 					watch.NewMockFileUpdater([]string{"pegomocktest", "pegomocktest/subpackage"}, false).Update()
 
@@ -122,7 +121,7 @@ var _ = Describe("Testing pegomock watch", func() {
 			Context("in one package, but providing multiple packages to create mocks from", func() {
 				It(`Eventually creates correct files in respective directories`, func() {
 					os.Chdir("..")
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay\npegomocktest/subpackage SubDisplay")
+					WriteFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay\npegomocktest/subpackage SubDisplay")
 
 					watch.NewMockFileUpdater([]string{"pegomocktest", "pegomocktest/subpackage"}, false).Update()
 
@@ -137,8 +136,8 @@ var _ = Describe("Testing pegomock watch", func() {
 
 			Context("in multiple packages and watching --recursive", func() {
 				It(`Eventually creates correct files in respective directories`, func() {
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
-					writeFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
+					WriteFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
+					WriteFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
 
 					watch.NewMockFileUpdater([]string{packageDir}, true).Update()
 
@@ -155,7 +154,7 @@ var _ = Describe("Testing pegomock watch", func() {
 
 		Context("after populating interfaces_to_mock with a Go file", func() {
 			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
-				writeFile(joinPath(packageDir, "interfaces_to_mock"), "mydisplay.go")
+				WriteFile(joinPath(packageDir, "interfaces_to_mock"), "mydisplay.go")
 
 				watch.NewMockFileUpdater([]string{packageDir}, false).Update()
 
@@ -167,7 +166,3 @@ var _ = Describe("Testing pegomock watch", func() {
 	})
 
 })
-
-func writeFile(filepath string, content string) {
-	Expect(ioutil.WriteFile(filepath, []byte(content), 0644)).To(Succeed())
-}
