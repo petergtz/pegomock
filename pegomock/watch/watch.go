@@ -82,6 +82,9 @@ func WithinWorkingDir(targetPath string, cb func(workingDir string)) {
 var lastErrors = make(map[string]string)
 
 func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
+	if _, err := os.Stat(wellKnownInterfaceListFile); os.IsNotExist(err) {
+		return
+	}
 	for _, lineParts := range linesIn(wellKnownInterfaceListFile) {
 		lineCmd := kingpin.New("What should go in here", "And what should go in here")
 		destination := lineCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
