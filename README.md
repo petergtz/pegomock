@@ -259,6 +259,25 @@ display1.VerifyWasCalledInOrder(Once(), inOrderContext).Show("Three")
 
 Note that it's not necessary to verify the call for `display.Show("Two")` if that one is not of any interested. An `InOrderContext` only verifies that the verifications that are done, are in order.
 
+Stubbing with Callbacks
+------------------------
+
+```go
+phoneBook := NewMockPhoneBook()
+
+// Stubbing:
+phoneBook.GetPhoneNumber(AnyString()).Then(func(params []Param) ReturnValues {
+	return []ReturnValue{fmt.Sprintf("1-800-CALL-%v", strings.ToUpper(params[0]))}
+},
+
+
+// Prints "1-800-CALL-DAN":
+fmt.Println(phoneBook.GetPhoneNumber("Dan"))
+// Prints "1-800-CALL-TOM":
+fmt.Println(phoneBook.GetPhoneNumber("Tom"))
+```
+
+
 Verifying with Argument Capture
 --------------------------------
 
