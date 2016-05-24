@@ -340,27 +340,3 @@ type Matcher interface {
 	Matches(param Param) bool
 	FailureMessage() string
 }
-
-// EqInt .
-func EqInt(value int) int {
-	RegisterMatcher(&matcher.EqMatcher{Value: value})
-	return 0
-}
-
-// EqString .
-func EqString(value string) string {
-	RegisterMatcher(&matcher.EqMatcher{Value: value})
-	return ""
-}
-
-// AnyString .
-func AnyString() string {
-	RegisterMatcher(&matcher.AnyStringMatcher{})
-	return ""
-}
-
-// AnyInt .
-func AnyInt() int {
-	RegisterMatcher(&matcher.AnyIntMatcher{})
-	return 0
-}
