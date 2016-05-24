@@ -85,6 +85,6 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			targetPaths = *watchPackages
 		}
 		watch.CreateWellKnownInterfaceListFilesIfNecessary(targetPaths)
-		watch.Ticker(watch.NewMockFileUpdater(targetPaths, *watchRecursive).Update, 2*time.Second, done)
+		util.Ticker(watch.NewMockFileUpdater(targetPaths, *watchRecursive).Update, 2*time.Second, done)
 	}
 }

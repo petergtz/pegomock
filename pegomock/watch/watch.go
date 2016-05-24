@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
@@ -45,38 +44,14 @@ func (updater *MockFileUpdater) Update() {
 		if updater.recursive {
 			filepath.Walk(targetPath, func(path string, info os.FileInfo, err error) error {
 				if err == nil && info.IsDir() {
-					WithinWorkingDir(path, updater.updateMockFiles)
+					util.WithinWorkingDir(path, updater.updateMockFiles)
 				}
 				return nil
 			})
 		} else {
-			WithinWorkingDir(targetPath, updater.updateMockFiles)
+			util.WithinWorkingDir(targetPath, updater.updateMockFiles)
 		}
 	}
-}
-
-// Ticket repeatedly calls cb with a delay in between calls. It stops doing This
-// When a element is sent to the done channel.
-func Ticker(cb func(), delay time.Duration, done chan bool) {
-	for {
-		select {
-		case <-done:
-			return
-
-		default:
-			cb()
-			time.Sleep(delay)
-		}
-	}
-}
-
-func WithinWorkingDir(targetPath string, cb func(workingDir string)) {
-	origWorkingDir, e := os.Getwd()
-	panicOnError(e)
-	e = os.Chdir(targetPath)
-	panicOnError(e)
-	defer func() { os.Chdir(origWorkingDir) }()
-	cb(targetPath)
 }
 
 var lastErrors = make(map[string]string)
@@ -107,9 +82,9 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 			}
 		}()
 
-		panicOnError(util.ValidateArgs(*lineArgs))
+		util.PanicOnError(util.ValidateArgs(*lineArgs))
 		sourceArgs, err := util.SourceArgs(*lineArgs)
-		panicOnError(err)
+		util.PanicOnError(err)
 
 		generatedMockSourceCode := mockgen.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, false, os.Stdout)
 		mockFilePath := mockgen.OutputFilePath(sourceArgs, ".", *destination)
@@ -127,7 +102,7 @@ func writeFileIfChanged(outputFilepath string, output []byte) bool {
 	if err != nil {
 		if os.IsNotExist(err) {
 			err = ioutil.WriteFile(outputFilepath, output, 0664)
-			panicOnError(err)
+			util.PanicOnError(err)
 			return true
 		} else {
 			panic(err)
@@ -137,7 +112,7 @@ func writeFileIfChanged(outputFilepath string, output []byte) bool {
 		return false
 	} else {
 		err = ioutil.WriteFile(outputFilepath, output, 0664)
-		panicOnError(err)
+		util.PanicOnError(err)
 		return true
 	}
 }
@@ -162,7 +137,7 @@ func CreateWellKnownInterfaceListFileIfNecessary(targetPath string) {
 
 func linesIn(file string) (result [][]string) {
 	content, err := ioutil.ReadFile(file)
-	panicOnError(err)
+	util.PanicOnError(err)
 	for _, line := range strings.Split(string(content), "\n") {
 		if strings.HasPrefix(strings.TrimSpace(line), "#") || line == "" {
 			continue
@@ -172,10 +147,4 @@ func linesIn(file string) (result [][]string) {
 		result = append(result, parts)
 	}
 	return
-}
-
-func panicOnError(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
