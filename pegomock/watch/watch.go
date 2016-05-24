@@ -93,7 +93,7 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 
 		generatedMockSourceCode := mockgen.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, false, os.Stdout)
 		mockFilePath := mockgen.OutputFilePath(sourceArgs, ".", *destination)
-		hasChanged := writeFileIfChanged(mockFilePath, generatedMockSourceCode)
+		hasChanged := util.WriteFileIfChanged(mockFilePath, generatedMockSourceCode)
 
 		if hasChanged || updater.lastErrors[errorKey(*lineArgs)] != "" {
 			fmt.Println("(Re)generated mock for", errorKey(*lineArgs), "in", mockFilePath)
@@ -104,26 +104,6 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 
 func errorKey(args []string) string {
 	return join(args, "_")
-}
-
-func writeFileIfChanged(outputFilepath string, output []byte) bool {
-	existingFileContent, err := ioutil.ReadFile(outputFilepath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			err = ioutil.WriteFile(outputFilepath, output, 0664)
-			util.PanicOnError(err)
-			return true
-		} else {
-			panic(err)
-		}
-	}
-	if string(existingFileContent) == string(output) {
-		return false
-	} else {
-		err = ioutil.WriteFile(outputFilepath, output, 0664)
-		util.PanicOnError(err)
-		return true
-	}
 }
 
 func CreateWellKnownInterfaceListFilesIfNecessary(targetPaths []string) {
