@@ -26,6 +26,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/petergtz/pegomock/pegomock"
+	"github.com/petergtz/pegomock/pegomock/watch"
 
 	"testing"
 )
@@ -160,7 +161,8 @@ var _ = Describe("Testing pegomock CLI", func() {
 				It(`Eventually creates a file foo.go starting with "package pegomocktest_test"`, func() {
 					writeFile(joinPath(packageDir, "interfaces_to_mock"), "-o foo.go MyDisplay")
 
-					go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
+					watch.NewMockFileUpdater([]string{packageDir}, false).Update()
+					go func() { <-done }()
 
 					Eventually(joinPath(packageDir, "foo.go"), "3s").Should(SatisfyAll(
 						BeAnExistingFile(),
@@ -172,7 +174,8 @@ var _ = Describe("Testing pegomock CLI", func() {
 				It(`Eventually creates a file starting with "package the_overriden_test_package"`, func() {
 					writeFile(joinPath(packageDir, "interfaces_to_mock"), "--package the_overriden_test_package MyDisplay")
 
-					go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
+					watch.NewMockFileUpdater([]string{packageDir}, false).Update()
+					go func() { <-done }()
 
 					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 						BeAnExistingFile(),
@@ -186,7 +189,8 @@ var _ = Describe("Testing pegomock CLI", func() {
 					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
 					writeFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
 
-					go main.Run(cmd("pegomock watch pegomocktest pegomocktest/subpackage"), os.Stdout, app, done)
+					watch.NewMockFileUpdater([]string{"pegomocktest", "pegomocktest/subpackage"}, false).Update()
+					go func() { <-done }()
 
 					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 						BeAnExistingFile(),
@@ -202,7 +206,8 @@ var _ = Describe("Testing pegomock CLI", func() {
 					os.Chdir("..")
 					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay\npegomocktest/subpackage SubDisplay")
 
-					go main.Run(cmd("pegomock watch pegomocktest pegomocktest/subpackage"), os.Stdout, app, done)
+					watch.NewMockFileUpdater([]string{"pegomocktest", "pegomocktest/subpackage"}, false).Update()
+					go func() { <-done }()
 
 					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 						BeAnExistingFile(),
@@ -218,7 +223,8 @@ var _ = Describe("Testing pegomock CLI", func() {
 					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
 					writeFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
 
-					go main.Run(cmd("pegomock watch --recursive"), os.Stdout, app, done)
+					watch.NewMockFileUpdater([]string{packageDir}, true).Update()
+					go func() { <-done }()
 
 					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 						BeAnExistingFile(),
@@ -235,7 +241,8 @@ var _ = Describe("Testing pegomock CLI", func() {
 			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
 				writeFile(joinPath(packageDir, "interfaces_to_mock"), "mydisplay.go")
 
-				go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
+				watch.NewMockFileUpdater([]string{packageDir}, false).Update()
+				go func() { <-done }()
 
 				Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 					BeAnExistingFile(),
