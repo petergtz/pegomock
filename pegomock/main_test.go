@@ -26,7 +26,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/petergtz/pegomock/pegomock"
-	"github.com/petergtz/pegomock/pegomock/watch"
+	. "github.com/petergtz/pegomock/pegomock/testutil"
 
 	"testing"
 )
@@ -152,103 +152,13 @@ var _ = Describe("Testing pegomock CLI", func() {
 				writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
 
 				go main.Run(cmd("pegomock watch"), os.Stdout, app, done)
-				Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
-					BeAnExistingFile(),
-					BeAFileContainingSubString("package pegomocktest_test")))
-			})
-
-			Context("and overriding the output filepath", func() {
-				It(`Eventually creates a file foo.go starting with "package pegomocktest_test"`, func() {
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "-o foo.go MyDisplay")
-
-					watch.NewMockFileUpdater([]string{packageDir}, false).Update()
-					go func() { <-done }()
-
-					Eventually(joinPath(packageDir, "foo.go"), "3s").Should(SatisfyAll(
-						BeAnExistingFile(),
-						BeAFileContainingSubString("package pegomocktest_test")))
-				})
-			})
-
-			Context("and overriding the package name", func() {
-				It(`Eventually creates a file starting with "package the_overriden_test_package"`, func() {
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "--package the_overriden_test_package MyDisplay")
-
-					watch.NewMockFileUpdater([]string{packageDir}, false).Update()
-					go func() { <-done }()
-
-					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
-						BeAnExistingFile(),
-						BeAFileContainingSubString("package the_overriden_test_package")))
-				})
-			})
-
-			Context("in multiple packages and providing those packages to watch", func() {
-				It(`Eventually creates correct files in respective directories`, func() {
-					os.Chdir("..")
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
-					writeFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
-
-					watch.NewMockFileUpdater([]string{"pegomocktest", "pegomocktest/subpackage"}, false).Update()
-					go func() { <-done }()
-
-					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
-						BeAnExistingFile(),
-						BeAFileContainingSubString("package pegomocktest_test")))
-					Eventually(joinPath(subPackageDir, "mock_subdisplay_test.go"), "3s").Should(SatisfyAll(
-						BeAnExistingFile(),
-						BeAFileContainingSubString("package subpackage_test")))
-				})
-			})
-
-			Context("in one package, but providing multiple packages to create mocks from", func() {
-				It(`Eventually creates correct files in respective directories`, func() {
-					os.Chdir("..")
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay\npegomocktest/subpackage SubDisplay")
-
-					watch.NewMockFileUpdater([]string{"pegomocktest", "pegomocktest/subpackage"}, false).Update()
-					go func() { <-done }()
-
-					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
-						BeAnExistingFile(),
-						BeAFileContainingSubString("package pegomocktest_test")))
-					Eventually(joinPath(packageDir, "mock_subdisplay_test.go"), "3s").Should(SatisfyAll(
-						BeAnExistingFile(),
-						BeAFileContainingSubString("package pegomocktest_test")))
-				})
-			})
-
-			Context("in multiple packages and watching --recursive", func() {
-				It(`Eventually creates correct files in respective directories`, func() {
-					writeFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
-					writeFile(joinPath(subPackageDir, "interfaces_to_mock"), "SubDisplay")
-
-					watch.NewMockFileUpdater([]string{packageDir}, true).Update()
-					go func() { <-done }()
-
-					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
-						BeAnExistingFile(),
-						BeAFileContainingSubString("package pegomocktest_test")))
-					Eventually(joinPath(subPackageDir, "mock_subdisplay_test.go"), "3s").Should(SatisfyAll(
-						BeAnExistingFile(),
-						BeAFileContainingSubString("package subpackage_test")))
-				})
-			})
-
-		})
-
-		Context("after populating interfaces_to_mock with a Go file", func() {
-			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
-				writeFile(joinPath(packageDir, "interfaces_to_mock"), "mydisplay.go")
-
-				watch.NewMockFileUpdater([]string{packageDir}, false).Update()
-				go func() { <-done }()
 
 				Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 					BeAnExistingFile(),
 					BeAFileContainingSubString("package pegomocktest_test")))
 			})
 		})
+
 	})
 
 	Context("with some unknown command", func() {
