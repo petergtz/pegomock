@@ -36,7 +36,7 @@ import (
 	"unicode"
 
 	"github.com/petergtz/pegomock/pegomock/mockgen/model"
-	"github.com/petergtz/pegomock/pegomock/mockgen/util"
+	"github.com/petergtz/pegomock/pegomock/util"
 )
 
 const importPath = "github.com/petergtz/pegomock"

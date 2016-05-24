@@ -23,7 +23,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/petergtz/pegomock/pegomock/mockgen"
-	"github.com/petergtz/pegomock/pegomock/mockgen/util"
+	"github.com/petergtz/pegomock/pegomock/util"
 	"github.com/petergtz/pegomock/pegomock/watch"
 )
 
