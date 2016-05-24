@@ -30,13 +30,20 @@ import (
 
 const wellKnownInterfaceListFile = "interfaces_to_mock"
 
+var join = strings.Join
+
 type MockFileUpdater struct {
 	recursive   bool
 	targetPaths []string
+	lastErrors  map[string]string
 }
 
 func NewMockFileUpdater(targetPaths []string, recursive bool) *MockFileUpdater {
-	return &MockFileUpdater{targetPaths: targetPaths, recursive: recursive}
+	return &MockFileUpdater{
+		targetPaths: targetPaths,
+		recursive:   recursive,
+		lastErrors:  make(map[string]string),
+	}
 }
 
 func (updater *MockFileUpdater) Update() {
@@ -54,8 +61,6 @@ func (updater *MockFileUpdater) Update() {
 	}
 }
 
-var lastErrors = make(map[string]string)
-
 func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 	if _, err := os.Stat(wellKnownInterfaceListFile); os.IsNotExist(err) {
 		return
@@ -69,15 +74,15 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 
 		_, parseErr := lineCmd.Parse(lineParts)
 		if parseErr != nil {
-			fmt.Println("Error while trying to generate mock for line", strings.Join(lineParts, " "), ":", parseErr)
+			fmt.Println("Error while trying to generate mock for line", join(lineParts, " "), ":", parseErr)
 			continue
 		}
 		defer func() {
 			err := recover()
 			if err != nil {
-				if lastErrors[strings.Join(*lineArgs, "_")] != fmt.Sprint(err) {
-					fmt.Println("Error while trying to generate mock for", strings.Join(lineParts, " "), ":", err)
-					lastErrors[strings.Join(*lineArgs, "_")] = fmt.Sprint(err)
+				if updater.lastErrors[errorKey(*lineArgs)] != fmt.Sprint(err) {
+					fmt.Println("Error while trying to generate mock for", join(lineParts, " "), ":", err)
+					updater.lastErrors[errorKey(*lineArgs)] = fmt.Sprint(err)
 				}
 			}
 		}()
@@ -90,11 +95,15 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 		mockFilePath := mockgen.OutputFilePath(sourceArgs, ".", *destination)
 		hasChanged := writeFileIfChanged(mockFilePath, generatedMockSourceCode)
 
-		if hasChanged || lastErrors[strings.Join(*lineArgs, "_")] != "" {
-			fmt.Println("(Re)generated mock for", strings.Join(*lineArgs, "_"), "in", mockFilePath)
+		if hasChanged || updater.lastErrors[errorKey(*lineArgs)] != "" {
+			fmt.Println("(Re)generated mock for", errorKey(*lineArgs), "in", mockFilePath)
 		}
-		delete(lastErrors, strings.Join(*lineArgs, "_"))
+		delete(updater.lastErrors, errorKey(*lineArgs))
 	}
+}
+
+func errorKey(args []string) string {
+	return join(args, "_")
 }
 
 func writeFileIfChanged(outputFilepath string, output []byte) bool {
