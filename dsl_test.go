@@ -299,6 +299,32 @@ var _ = Describe("MockDisplay", func() {
 
 	})
 
+	Describe("Different \"Any\" matcher scenarios", func() {
+		It("Succeeds when int-parameter is passed as int but veryfied as float", func() {
+			display.FloatParam(1)
+			display.VerifyWasCalledOnce().FloatParam(AnyFloat32())
+		})
+
+		It("Panics when interface{}-parameter is passed as int, but verified as float", func() {
+			Expect(func() {
+				display.InterfaceParam(3)
+				display.VerifyWasCalledOnce().InterfaceParam(AnyFloat32())
+			}).To(Panic())
+		})
+
+		It("Panics when interface {}-parameter is passed as float, but verified as int", func() {
+			Expect(func() {
+				display.InterfaceParam(3.141)
+				display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
+			}).To(Panic())
+		})
+
+		It("Succeeds when interface{}-parameter is passed as int and verified as int", func() {
+			display.InterfaceParam(3)
+			display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
+		})
+	})
+
 })
 
 func AnyStringSlice() []string {

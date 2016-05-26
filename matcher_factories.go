@@ -1,6 +1,10 @@
 package pegomock
 
-import "github.com/petergtz/pegomock/internal/matcher"
+import (
+	"reflect"
+
+	"github.com/petergtz/pegomock/internal/matcher"
+)
 
 // EqInt .
 func EqInt(value int) int {
@@ -16,12 +20,18 @@ func EqString(value string) string {
 
 // AnyString .
 func AnyString() string {
-	RegisterMatcher(&matcher.AnyStringMatcher{})
+	RegisterMatcher(&matcher.AnyMatcher{Type: reflect.String})
 	return ""
 }
 
 // AnyInt .
 func AnyInt() int {
-	RegisterMatcher(&matcher.AnyIntMatcher{})
+	RegisterMatcher(&matcher.AnyMatcher{Type: reflect.Int})
+	return 0
+}
+
+// AnyFloat32 .
+func AnyFloat32() float32 {
+	RegisterMatcher(&matcher.AnyMatcher{Type: reflect.Float32})
 	return 0
 }
