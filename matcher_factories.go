@@ -24,6 +24,11 @@ func AnyString() string {
 	return ""
 }
 
+func AnyStringSlice() []string {
+	RegisterMatcher(&matcher.AnyMatcher{Type: reflect.Slice})
+	return nil
+}
+
 // AnyInt .
 func AnyInt() int {
 	RegisterMatcher(&matcher.AnyMatcher{Type: reflect.Int})

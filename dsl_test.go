@@ -16,7 +16,6 @@ package pegomock_test
 
 import (
 	"fmt"
-	"reflect"
 
 	. "github.com/petergtz/pegomock"
 
@@ -326,19 +325,6 @@ var _ = Describe("MockDisplay", func() {
 	})
 
 })
-
-func AnyStringSlice() []string {
-	RegisterMatcher(&AnyStringSliceMatcher{})
-	return nil
-}
-
-type AnyStringSliceMatcher struct{}
-
-func (matcher *AnyStringSliceMatcher) Matches(param Param) bool {
-	return reflect.TypeOf(param).Kind() == reflect.Slice
-}
-
-func (matcher *AnyStringSliceMatcher) FailureMessage() string { return "Unused" }
 
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {
 	for _, slice := range sliceOfSlices {
