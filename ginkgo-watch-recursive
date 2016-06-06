@@ -1,2 +1,3 @@
 #!/bin/bash
-ginkgo watch -r -v -notify -progress --depth=3
+time $GOPATH/bin/ginkgo pegomock/mockgen
+$GOPATH/bin/ginkgo watch -r -v -notify -progress --depth=3
