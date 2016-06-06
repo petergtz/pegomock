@@ -187,9 +187,9 @@ type methodInvocation struct {
 type Stubbings []*Stubbing
 
 func (stubbings Stubbings) find(params []Param) *Stubbing {
-	for _, stubbing := range stubbings {
-		if stubbing.paramMatchers.Matches(params) {
-			return stubbing
+	for i := len(stubbings) - 1; i >= 0; i-- {
+		if stubbings[i].paramMatchers.Matches(params) {
+			return stubbings[i]
 		}
 	}
 	return nil
@@ -272,8 +272,8 @@ func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param)
 
 func transformParamsIntoEqMatchers(params []Param) []Matcher {
 	paramMatchers := make([]Matcher, len(params))
-	for param := range params {
-		paramMatchers = append(paramMatchers, &matcher.EqMatcher{Value: param})
+	for i, param := range params {
+		paramMatchers[i] = &matcher.EqMatcher{Value: param}
 	}
 	return paramMatchers
 }

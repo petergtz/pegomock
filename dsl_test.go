@@ -324,14 +324,12 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
-	PContext("Last stub overrides previous ones", func() {
+	Context("Last stub overrides previous ones", func() {
 		It("TODO", func() {
-			fmt.Println("Calling When")
 			When(display.MultipleParamsAndReturnValue("one", 1)).ThenReturn("first")
-			// When(display.MultipleParamsAndReturnValue("one", 1)).ThenReturn("second")
+			When(display.MultipleParamsAndReturnValue("one", 1)).ThenReturn("second")
 
-			fmt.Println("Calling Expect")
-			Expect(display.MultipleParamsAndReturnValue("one", 1)).To(Equal("first"))
+			Expect(display.MultipleParamsAndReturnValue("one", 1)).To(Equal("second"))
 		})
 	})
 
