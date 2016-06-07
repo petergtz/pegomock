@@ -75,8 +75,8 @@ func (genericMock *GenericMock) getOrCreateMockedMethod(methodName string) *mock
 	return genericMock.mockedMethods[methodName]
 }
 
-func (genericMock *GenericMock) Reset(methodName string, params []Matcher) {
-	// TODO: should be called from When
+func (genericMock *GenericMock) Reset(methodName string, paramMatchers []Matcher) {
+	genericMock.getOrCreateMockedMethod(methodName).reset(paramMatchers)
 }
 
 func (genericMock *GenericMock) Verify(
@@ -167,6 +167,10 @@ func (method *mockedMethod) removeLastInvocation() {
 	method.invocations = method.invocations[:len(method.invocations)-1]
 }
 
+func (method *mockedMethod) reset(paramMatchers Matchers) {
+	method.stubbings.removeByMatchers(paramMatchers)
+}
+
 type Counter struct {
 	count int
 }
@@ -197,11 +201,31 @@ func (stubbings Stubbings) find(params []Param) *Stubbing {
 
 func (stubbings Stubbings) findByMatchers(paramMatchers Matchers) *Stubbing {
 	for _, stubbing := range stubbings {
-		if reflect.DeepEqual(stubbing.paramMatchers, paramMatchers) {
+		if matchersEqual(stubbing.paramMatchers, paramMatchers) {
 			return stubbing
 		}
 	}
 	return nil
+}
+
+func (stubbings *Stubbings) removeByMatchers(paramMatchers Matchers) {
+	for i, stubbing := range *stubbings {
+		if matchersEqual(stubbing.paramMatchers, paramMatchers) {
+			*stubbings = append((*stubbings)[:i], (*stubbings)[i+1:]...)
+		}
+	}
+}
+
+func matchersEqual(a, b Matchers) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !a[i].Equals(b[i]) {
+			return false
+		}
+	}
+	return true
 }
 
 type Stubbing struct {
@@ -252,10 +276,13 @@ func When(invocation ...interface{}) *ongoingStubbing {
 		argMatchers = nil
 	}()
 	lastInvocation.genericMock.mockedMethods[lastInvocation.MethodName].removeLastInvocation()
+
+	paramMatchers := paramMatchersFromArgMatchersOrParams(argMatchers, lastInvocation.Params)
+	lastInvocation.genericMock.Reset(lastInvocation.MethodName, paramMatchers)
 	return &ongoingStubbing{
 		genericMock:   lastInvocation.genericMock,
 		MethodName:    lastInvocation.MethodName,
-		ParamMatchers: paramMatchersFromArgMatchersOrParams(argMatchers, lastInvocation.Params),
+		ParamMatchers: paramMatchers,
 		returnValues:  invocation,
 	}
 }
@@ -339,4 +366,5 @@ func (stubber *Stubber) When(mock interface{}) {
 type Matcher interface {
 	Matches(param Param) bool
 	FailureMessage() string
+	Equals(interface{}) bool
 }

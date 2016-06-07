@@ -324,12 +324,24 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
-	Context("Last stub overrides previous ones", func() {
-		It("TODO", func() {
-			When(display.MultipleParamsAndReturnValue("one", 1)).ThenReturn("first")
-			When(display.MultipleParamsAndReturnValue("one", 1)).ThenReturn("second")
+	Describe("Stubbing with multiple ThenReturns versus multiple stubbings with same parameters", func() {
+		Context("One stubbing with multiple ThenReturns", func() {
+			It("returns the values in the order of the ThenReturns", func() {
+				When(display.MultipleParamsAndReturnValue("one", 1)).ThenReturn("first").ThenReturn("second")
 
-			Expect(display.MultipleParamsAndReturnValue("one", 1)).To(Equal("second"))
+				Expect(display.MultipleParamsAndReturnValue("one", 1)).To(Equal("first"))
+				Expect(display.MultipleParamsAndReturnValue("one", 1)).To(Equal("second"))
+			})
+		})
+
+		Context("Multiple stubbings with same parameters", func() {
+			It("overrides previous stubbings with last one", func() {
+				When(display.MultipleParamsAndReturnValue("one", 1)).ThenReturn("first")
+				When(display.MultipleParamsAndReturnValue("one", 1)).ThenReturn("second")
+
+				Expect(display.MultipleParamsAndReturnValue("one", 1)).To(Equal("second"))
+				Expect(display.MultipleParamsAndReturnValue("one", 1)).To(Equal("second"))
+			})
 		})
 	})
 
