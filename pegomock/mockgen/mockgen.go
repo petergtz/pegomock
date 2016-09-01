@@ -317,8 +317,8 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 
 	argsAsArray := make([]string, len(args))
 	for i, arg := range args {
-		n, t := splitArg(arg)
-		argsAsArray[i] = fmt.Sprintf("%v []%v", n, t)
+		_, t := splitArg(arg)
+		argsAsArray[i] = fmt.Sprintf("_param%v []%v", i, t)
 	}
 
 	g.p("type %v struct {", returnTypeString)

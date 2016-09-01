@@ -60,7 +60,7 @@ var _ = Describe("Testing pegomock CLI", func() {
 		os.Chdir(packageDir)
 
 		WriteFile(joinPath(packageDir, "mydisplay.go"),
-			"package pegomocktest; type MyDisplay interface {  Show() }")
+			"package pegomocktest; type MyDisplay interface {  Show(something string) }")
 		WriteFile(joinPath(subPackageDir, "subdisplay.go"),
 			"package subpackage; type SubDisplay interface {  ShowMe() }")
 
