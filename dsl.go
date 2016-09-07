@@ -19,10 +19,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/petergtz/pegomock/internal/matcher"
 	"github.com/petergtz/pegomock/internal/testingtsupport"
 	. "github.com/petergtz/pegomock/internal/types"
 	"github.com/petergtz/pegomock/internal/verify"
+	"github.com/petergtz/pegomock/matcher"
 )
 
 var GlobalFailHandler FailHandler

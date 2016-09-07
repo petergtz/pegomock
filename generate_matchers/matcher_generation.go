@@ -23,7 +23,7 @@ func GenerateDefaultMatchersFile() string {
 import (
 	"reflect"
 
-	"github.com/petergtz/pegomock/internal/matcher"
+	"github.com/petergtz/pegomock/matcher"
 )
 
 %s

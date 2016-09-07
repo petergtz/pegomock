@@ -15,7 +15,7 @@
 package pegomock
 
 import (
-	. "github.com/petergtz/pegomock/internal/matcher"
+	. "github.com/petergtz/pegomock/matcher"
 )
 
 func Times(numDesiredInvocations int) *EqMatcher {

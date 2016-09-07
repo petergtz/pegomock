@@ -3,7 +3,7 @@ package pegomock
 import (
 	"reflect"
 
-	"github.com/petergtz/pegomock/internal/matcher"
+	"github.com/petergtz/pegomock/matcher"
 )
 
 func EqBool(value bool) bool {
@@ -260,6 +260,3 @@ func AnyStringSlice() []string {
 	RegisterMatcher(&matcher.AnyMatcher{Type: reflect.Slice})
 	return nil
 }
-
-
-	
