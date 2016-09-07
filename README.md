@@ -218,6 +218,21 @@ When(contactList.getContactByFullName("Dan", AnyString())).thenReturn(Contact{..
 When(contactList.getContactByFullName(EqString("Dan"), AnyString())).thenReturn(Contact{...})
 ```
 
+### Writing Your Own Argument Matchers
+You can also write your own matchers for non-basic types. E.g. if you have a `struct MyType`, you can write an _Equals_ and _Any_ matcher like this:
+```go
+func EqMyType(value MyType) MyType {
+	pegomock.RegisterMatcher(&matcher.EqMatcher{Value: value})
+	return MyType{}
+}
+
+func AnyMyType() MyType {
+	pegomock.RegisterMatcher(&matcher.AnyMatcher{Type: reflect.Struct})
+	return MyType{}
+}
+```
+
+
 Verifying the Number of Invocations
 -----------------------------------
 
