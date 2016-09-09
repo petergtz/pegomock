@@ -201,7 +201,7 @@ Stubbing:
 phoneBook := NewMockPhoneBook()
 
 // Stubbing:
-phoneBook.GetPhoneNumber(AnyString()).ThenReturn("123-456-789")
+When(phoneBook.GetPhoneNumber(AnyString())).ThenReturn("123-456-789")
 
 // Prints "123-456-789":
 fmt.Println(phoneBook.GetPhoneNumber("Dan"))
@@ -281,7 +281,7 @@ Stubbing with Callbacks
 phoneBook := NewMockPhoneBook()
 
 // Stubbing:
-phoneBook.GetPhoneNumber(AnyString()).Then(func(params []Param) ReturnValues {
+When(phoneBook.GetPhoneNumber(AnyString())).Then(func(params []Param) ReturnValues {
 	return []ReturnValue{fmt.Sprintf("1-800-CALL-%v", strings.ToUpper(params[0]))}
 },
 
