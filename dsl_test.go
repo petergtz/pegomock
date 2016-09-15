@@ -15,6 +15,7 @@
 package pegomock_test
 
 import (
+	"errors"
 	"fmt"
 
 	. "github.com/petergtz/pegomock"
@@ -125,12 +126,33 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
-	// Addresses https://github.com/petergtz/pegomock/issues/24
-	Context("Stubbing with nil value", func() {
-		It("does not panic", func() {
-			When(display.InterfaceReturnValue()).ThenReturn(nil)
-			display.InterfaceReturnValue()
+	Describe("https://github.com/petergtz/pegomock/issues/24", func() {
+		Context("Stubbing with nil value", func() {
+			It("does not panic when return type is interface{}", func() {
+				When(display.InterfaceReturnValue()).ThenReturn(nil)
+				Expect(display.InterfaceReturnValue()).To(BeNil())
+			})
+
+			It("does not panic when return type is error interface", func() {
+				When(display.ErrorReturnValue()).ThenReturn(nil)
+				Expect(display.ErrorReturnValue()).To(BeNil())
+			})
 		})
+
+		Context("Stubbing with value that implements interface{}", func() {
+			It("does not panic", func() {
+				When(display.InterfaceReturnValue()).ThenReturn("Hello")
+				Expect(display.InterfaceReturnValue()).To(Equal("Hello"))
+			})
+		})
+
+		Context("Stubbing with value that implements error interface", func() {
+			It("does not panic", func() {
+				When(display.ErrorReturnValue()).ThenReturn(errors.New("Ouch"))
+				Expect(display.ErrorReturnValue()).To(Equal(errors.New("Ouch")))
+			})
+		})
+
 	})
 
 	Context("Stubbed method, but no invocation takes place", func() {

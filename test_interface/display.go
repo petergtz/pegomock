@@ -25,4 +25,5 @@ type Display interface {
 	FloatParam(float32)
 	InterfaceParam(interface{})
 	InterfaceReturnValue() interface{}
+	ErrorReturnValue() error
 }

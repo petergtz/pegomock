@@ -315,17 +315,41 @@ func GetGenericMockFrom(mock Mock) *GenericMock {
 }
 
 func (stubbing *ongoingStubbing) ThenReturn(values ...ReturnValue) *ongoingStubbing {
-	checkEquivalenceOf(values, stubbing.returnValues)
+	checkAssignabilityOf(values, stubbing.returnValues)
 	stubbing.genericMock.stub(stubbing.MethodName, stubbing.ParamMatchers, values)
 	return stubbing
 }
 
-func checkEquivalenceOf(stubbedReturnValues []ReturnValue, pseudoReturnValues []interface{}) {
+func checkAssignabilityOf(stubbedReturnValues []ReturnValue, pseudoReturnValues []interface{}) {
 	verify.Argument(len(stubbedReturnValues) == len(pseudoReturnValues),
 		"Different number of return values")
 	for i := range stubbedReturnValues {
-		verify.Argument(reflect.TypeOf(stubbedReturnValues[i]) == reflect.TypeOf(pseudoReturnValues[i]),
-			"Return type doesn't match")
+		if stubbedReturnValues[i] == nil {
+			if pseudoReturnValues[i] != nil {
+				switch reflect.TypeOf(pseudoReturnValues[i]).Kind() {
+				case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint,
+					reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
+					reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.String, reflect.Struct:
+					panic("Return value 'nil' not assignable to " + reflect.TypeOf(pseudoReturnValues[i]).Kind().String())
+				}
+			}
+		} else {
+			switch reflect.TypeOf(stubbedReturnValues[i]).Kind() {
+			case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint,
+				reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
+				reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.String, reflect.Struct:
+				if pseudoReturnValues[i] == nil {
+					verify.Argument(reflect.TypeOf(stubbedReturnValues[i]).AssignableTo(reflect.TypeOf(&pseudoReturnValues[i]).Elem()),
+						"Return value not assignable to return type")
+				} else {
+					verify.Argument(reflect.TypeOf(stubbedReturnValues[i]).AssignableTo(reflect.TypeOf(pseudoReturnValues[i])),
+						"Return value not assignable to return type")
+				}
+			default:
+				verify.Argument(reflect.TypeOf(&stubbedReturnValues[i]).Elem().AssignableTo(reflect.TypeOf(&pseudoReturnValues[i]).Elem()),
+					"Return value not assignable to return type")
+			}
+		}
 	}
 }
 
