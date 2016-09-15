@@ -24,4 +24,5 @@ type Display interface {
 	ArrayParam(array []string)
 	FloatParam(float32)
 	InterfaceParam(interface{})
+	InterfaceReturnValue() interface{}
 }

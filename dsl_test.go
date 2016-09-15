@@ -125,6 +125,14 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
+	// Addresses https://github.com/petergtz/pegomock/issues/24
+	Context("Stubbing with nil value", func() {
+		It("does not panic", func() {
+			When(display.InterfaceReturnValue()).ThenReturn(nil)
+			display.InterfaceReturnValue()
+		})
+	})
+
 	Context("Stubbed method, but no invocation takes place", func() {
 		It("fails during verification", func() {
 			When(display.SomeValue()).ThenReturn("Hello")

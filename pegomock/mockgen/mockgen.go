@@ -274,7 +274,7 @@ func (g *generator) GenerateMockInterface(iface *model.Interface, selfPackage st
 // GenerateMockMethod generates a mock method implementation.
 // If non-empty, pkgOverride is the package in which unqualified types reside.
 func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
-	_, _, argString, rets, retString, callArgs := getStuff(method, g, pkgOverride)
+	_, _, argString, returnTypes, retString, callArgs := getStuff(method, g, pkgOverride)
 	g.p("func (mock *%v) %v(%v)%v {", mockType, method.Name, argString, retString)
 	g.in()
 	r := ""
@@ -284,17 +284,21 @@ func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pk
 	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", %v)", r, method.Name, callArgs)
 	if len(method.Out) > 0 {
 		// TODO: translate LastInvocation into a Matcher so it can be used as key for Stubbings
-		g.p("if len(result) == 0 {")
-		g.in()
-		retValues := make([]string, len(rets))
-		for i, ret := range rets {
-			g.p("var ret%v %v", i, ret)
-			retValues[i] = fmt.Sprintf("ret%v", i)
+		for i, returnType := range returnTypes {
+			g.p("var ret%v %v", i, returnType)
 		}
-		g.p("return %v", strings.Join(retValues, ", "))
+		g.p("if len(result) != 0 {")
+		g.in()
+		returnValues := make([]string, len(returnTypes))
+		for i, returnType := range returnTypes {
+			g.p("if result[%v] != nil {", i)
+			g.in().p("ret%v  = result[%v].(%v)", i, i, returnType)
+			g.p("}")
+			returnValues[i] = fmt.Sprintf("ret%v", i)
+		}
 		g.out()
 		g.p("}")
-		g.p("return %v", resultCast(rets))
+		g.p("return %v", strings.Join(returnValues, ", "))
 	}
 	g.out()
 	g.p("}")
