@@ -158,7 +158,7 @@ var _ = Describe("MockDisplay", func() {
 			})
 		})
 
-		FContext("Stubbing string return type with nil value", func() {
+		Context("Stubbing string return type with nil value", func() {
 			It("panics", func() {
 				Expect(func() { When(display.SomeValue()).ThenReturn(nil) }).To(Panic())
 			})
