@@ -204,6 +204,8 @@ func (g *generator) Generate(source string, pkg *model.Package, pkgName string, 
 	g.p("")
 	g.p("import (")
 	g.in()
+	g.p("\"reflect\"")
+
 	for path, pkg := range g.packageMap {
 		if path == selfPackage {
 			continue
@@ -281,7 +283,12 @@ func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pk
 	if len(method.Out) > 0 {
 		r = "result :="
 	}
-	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", %v)", r, method.Name, callArgs)
+	reflectReturnTypes := make([]string, len(returnTypes))
+	for i, returnType := range returnTypes {
+		reflectReturnTypes[i] = fmt.Sprintf("reflect.TypeOf((*%v)(nil)).Elem()", returnType)
+	}
+	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", []pegomock.Param{%v}, []reflect.Type{%v})",
+		r, method.Name, callArgs, strings.Join(reflectReturnTypes, ", "))
 	if len(method.Out) > 0 {
 		// TODO: translate LastInvocation into a Matcher so it can be used as key for Stubbings
 		for i, returnType := range returnTypes {
@@ -350,7 +357,7 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 	g.p("}")
 
 	g.p("func (verifier *Verifier%v) %v(%v) *%v {", interfaceName, method.Name, argString, returnTypeString)
-	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", %v)", method.Name, argNamesString)
+	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", []pegomock.Param{%v})", method.Name, argNamesString)
 	g.p("return &%v{verifier.mock}", returnTypeString)
 
 	g.p("}")

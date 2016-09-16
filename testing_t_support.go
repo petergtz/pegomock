@@ -19,21 +19,19 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package testingtsupport
+package pegomock
 
 import (
 	"regexp"
 	"runtime/debug"
 	"strings"
-
-	"github.com/petergtz/pegomock/internal/types"
 )
 
 type testingT interface {
 	Errorf(format string, args ...interface{})
 }
 
-func BuildTestingTGomegaFailHandler(t testingT) types.FailHandler {
+func BuildTestingTGomegaFailHandler(t testingT) FailHandler {
 	return func(message string, callerSkip ...int) {
 		skip := 1
 		if len(callerSkip) > 0 {

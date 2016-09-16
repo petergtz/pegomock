@@ -22,8 +22,6 @@ func GenerateDefaultMatchersFile() string {
 
 import (
 	"reflect"
-
-	"github.com/petergtz/pegomock/matcher"
 )
 
 %s
@@ -62,7 +60,7 @@ var primitiveKinds = []reflect.Kind{
 
 func GenerateEqMatcherFactory(kind reflect.Kind) string {
 	return fmt.Sprintf(`func Eq%s(value %s) %s {
-	RegisterMatcher(&matcher.EqMatcher{Value: value})
+	RegisterMatcher(&EqMatcher{Value: value})
 	return %s
 }
 
@@ -71,7 +69,7 @@ func GenerateEqMatcherFactory(kind reflect.Kind) string {
 
 func GenerateAnyMatcherFactory(kind reflect.Kind) string {
 	return fmt.Sprintf(`func Any%s() %s {
-	RegisterMatcher(&matcher.AnyMatcher{Type: reflect.%s})
+	RegisterMatcher(&AnyMatcher{Type: reflect.%s})
 	return %s
 }
 
@@ -80,7 +78,7 @@ func GenerateAnyMatcherFactory(kind reflect.Kind) string {
 
 func GenerateAnySliceMatcherFactory(kind reflect.Kind) string {
 	return fmt.Sprintf(`func Any%sSlice() []%s {
-	RegisterMatcher(&matcher.AnyMatcher{Type: reflect.Slice})
+	RegisterMatcher(&AnyMatcher{Type: reflect.Slice})
 	return nil
 }
 

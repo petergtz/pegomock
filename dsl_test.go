@@ -22,7 +22,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/petergtz/pegomock/internal/types"
 )
 
 var _ = Describe("MockDisplay", func() {
@@ -150,6 +149,18 @@ var _ = Describe("MockDisplay", func() {
 			It("does not panic", func() {
 				When(display.ErrorReturnValue()).ThenReturn(errors.New("Ouch"))
 				Expect(display.ErrorReturnValue()).To(Equal(errors.New("Ouch")))
+			})
+		})
+
+		Context("Stubbing with value that does not implement error interface", func() {
+			It("panics", func() {
+				Expect(func() { When(display.ErrorReturnValue()).ThenReturn("Blub") }).To(Panic())
+			})
+		})
+
+		FContext("Stubbing string return type with nil value", func() {
+			It("panics", func() {
+				Expect(func() { When(display.SomeValue()).ThenReturn(nil) }).To(Panic())
 			})
 		})
 

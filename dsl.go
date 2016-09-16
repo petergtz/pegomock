@@ -19,10 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/petergtz/pegomock/internal/testingtsupport"
-	. "github.com/petergtz/pegomock/internal/types"
 	"github.com/petergtz/pegomock/internal/verify"
-	"github.com/petergtz/pegomock/matcher"
 )
 
 var GlobalFailHandler FailHandler
@@ -31,7 +28,7 @@ func RegisterMockFailHandler(handler FailHandler) {
 	GlobalFailHandler = handler
 }
 func RegisterMockTestingT(t *testing.T) {
-	RegisterMockFailHandler(testingtsupport.BuildTestingTGomegaFailHandler(t))
+	RegisterMockFailHandler(BuildTestingTGomegaFailHandler(t))
 }
 
 var lastInvocation *invocation
@@ -45,17 +42,19 @@ type invocation struct {
 	genericMock *GenericMock
 	MethodName  string
 	Params      []Param
+	ReturnTypes []reflect.Type
 }
 
 type GenericMock struct {
 	mockedMethods map[string]*mockedMethod
 }
 
-func (genericMock *GenericMock) Invoke(methodName string, params ...Param) ReturnValues {
+func (genericMock *GenericMock) Invoke(methodName string, params []Param, returnTypes []reflect.Type) ReturnValues {
 	lastInvocation = &invocation{
 		genericMock: genericMock,
 		MethodName:  methodName,
 		Params:      params,
+		ReturnTypes: returnTypes,
 	}
 	return genericMock.getOrCreateMockedMethod(methodName).Invoke(params)
 }
@@ -83,7 +82,7 @@ func (genericMock *GenericMock) Verify(
 	inOrderContext *InOrderContext,
 	invocationCountMatcher Matcher,
 	methodName string,
-	params ...Param) {
+	params []Param) {
 	methodInvocations := genericMock.methodInvocations(methodName, params...)
 	if inOrderContext != nil {
 		for _, methodInvocation := range methodInvocations {
@@ -265,7 +264,7 @@ type ongoingStubbing struct {
 	genericMock   *GenericMock
 	MethodName    string
 	ParamMatchers []Matcher
-	returnValues  []interface{}
+	returnTypes   []reflect.Type
 }
 
 func When(invocation ...interface{}) *ongoingStubbing {
@@ -283,7 +282,7 @@ func When(invocation ...interface{}) *ongoingStubbing {
 		genericMock:   lastInvocation.genericMock,
 		MethodName:    lastInvocation.MethodName,
 		ParamMatchers: paramMatchers,
-		returnValues:  invocation,
+		returnTypes:   lastInvocation.ReturnTypes,
 	}
 }
 
@@ -300,7 +299,7 @@ func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param)
 func transformParamsIntoEqMatchers(params []Param) []Matcher {
 	paramMatchers := make([]Matcher, len(params))
 	for i, param := range params {
-		paramMatchers[i] = &matcher.EqMatcher{Value: param}
+		paramMatchers[i] = &EqMatcher{Value: param}
 	}
 	return paramMatchers
 }
@@ -315,40 +314,26 @@ func GetGenericMockFrom(mock Mock) *GenericMock {
 }
 
 func (stubbing *ongoingStubbing) ThenReturn(values ...ReturnValue) *ongoingStubbing {
-	checkAssignabilityOf(values, stubbing.returnValues)
+	checkAssignabilityOf(values, stubbing.returnTypes)
 	stubbing.genericMock.stub(stubbing.MethodName, stubbing.ParamMatchers, values)
 	return stubbing
 }
 
-func checkAssignabilityOf(stubbedReturnValues []ReturnValue, pseudoReturnValues []interface{}) {
-	verify.Argument(len(stubbedReturnValues) == len(pseudoReturnValues),
+func checkAssignabilityOf(stubbedReturnValues []ReturnValue, expectedReturnTypes []reflect.Type) {
+	verify.Argument(len(stubbedReturnValues) == len(expectedReturnTypes),
 		"Different number of return values")
 	for i := range stubbedReturnValues {
 		if stubbedReturnValues[i] == nil {
-			if pseudoReturnValues[i] != nil {
-				switch reflect.TypeOf(pseudoReturnValues[i]).Kind() {
-				case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint,
-					reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
-					reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.String, reflect.Struct:
-					panic("Return value 'nil' not assignable to " + reflect.TypeOf(pseudoReturnValues[i]).Kind().String())
-				}
-			}
-		} else {
-			switch reflect.TypeOf(stubbedReturnValues[i]).Kind() {
+			switch expectedReturnTypes[i].Kind() {
 			case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint,
 				reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
-				reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.String, reflect.Struct:
-				if pseudoReturnValues[i] == nil {
-					verify.Argument(reflect.TypeOf(stubbedReturnValues[i]).AssignableTo(reflect.TypeOf(&pseudoReturnValues[i]).Elem()),
-						"Return value not assignable to return type")
-				} else {
-					verify.Argument(reflect.TypeOf(stubbedReturnValues[i]).AssignableTo(reflect.TypeOf(pseudoReturnValues[i])),
-						"Return value not assignable to return type")
-				}
-			default:
-				verify.Argument(reflect.TypeOf(&stubbedReturnValues[i]).Elem().AssignableTo(reflect.TypeOf(&pseudoReturnValues[i]).Elem()),
-					"Return value not assignable to return type")
+				reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.String,
+				reflect.Struct:
+				panic("Return value 'nil' not assignable to " + expectedReturnTypes[i].Kind().String())
 			}
+		} else {
+			verify.Argument(reflect.TypeOf(stubbedReturnValues[i]).AssignableTo(expectedReturnTypes[i]),
+				"Return value not assignable to return type")
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package types
+package pegomock
 
 type FailHandler func(message string, callerSkip ...int)
 

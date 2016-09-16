@@ -1,10 +1,8 @@
-package matcher
+package pegomock
 
 import (
 	"fmt"
 	"reflect"
-
-	. "github.com/petergtz/pegomock/internal/types"
 )
 
 type EqMatcher struct {
