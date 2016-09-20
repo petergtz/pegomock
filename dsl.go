@@ -117,9 +117,8 @@ func (genericMock *GenericMock) methodInvocations(methodName string, params ...P
 	if len(argMatchers) != 0 {
 		verify.Argument(len(argMatchers) == len(params),
 			"If you use matchers, you must use matchers for all parameters. Example: TODO")
-		result := genericMock.methodInvocationsUsingMatchers(methodName, argMatchers)
-		argMatchers = nil
-		return result
+		defer func() { argMatchers = nil }() // We don't want a panic in the matchers screw our global argMatchers
+		return genericMock.methodInvocationsUsingMatchers(methodName, argMatchers)
 	}
 
 	invocations := make([]methodInvocation, 0)
