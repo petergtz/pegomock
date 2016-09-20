@@ -17,12 +17,18 @@ package pegomock_test
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	. "github.com/petergtz/pegomock"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+func AnyError() error {
+	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*error)(nil)).Elem()))
+	return nil
+}
 
 var _ = Describe("MockDisplay", func() {
 	var display *MockDisplay
@@ -363,6 +369,29 @@ var _ = Describe("MockDisplay", func() {
 			display.InterfaceParam(3)
 			display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
 		})
+
+		It("Succeeds when interface{}-parameter is passed as nil and verified as int slice", func() {
+			display.InterfaceParam(nil)
+			display.VerifyWasCalledOnce().InterfaceParam(AnyIntSlice())
+		})
+
+		It("Panics when interface{}-parameter is passed as nil, but verified as int", func() {
+			Expect(func() {
+				display.InterfaceParam(nil)
+				display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
+			}).To(Panic())
+		})
+
+		It("Succeeds when error-parameter is passed as nil and verified as any error", func() {
+			display.ErrorParam(nil)
+			display.VerifyWasCalledOnce().ErrorParam(AnyError())
+		})
+
+		It("Succeeds when error-parameter is passed as string error and verified as any error", func() {
+			display.ErrorParam(errors.New("Some error"))
+			display.VerifyWasCalledOnce().ErrorParam(AnyError())
+		})
+
 	})
 
 	Describe("Stubbing with multiple ThenReturns versus multiple stubbings with same parameters", func() {

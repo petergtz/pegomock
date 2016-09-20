@@ -3,6 +3,8 @@ package pegomock
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/petergtz/pegomock/internal/verify"
 )
 
 type EqMatcher struct {
@@ -31,13 +33,27 @@ func (matcher *EqMatcher) FailureMessage() string {
 }
 
 type AnyMatcher struct {
-	Type   reflect.Kind
-	actual reflect.Kind
+	Type   reflect.Type
+	actual reflect.Type
+}
+
+func NewAnyMatcher(typ reflect.Type) *AnyMatcher {
+	verify.NotNil(typ, "Must provide a non-nil type")
+	return &AnyMatcher{Type: typ}
 }
 
 func (matcher *AnyMatcher) Matches(param Param) bool {
-	matcher.actual = reflect.TypeOf(param).Kind()
-	return reflect.TypeOf(param).Kind() == matcher.Type
+	matcher.actual = reflect.TypeOf(param)
+	if matcher.actual == nil {
+		switch matcher.Type.Kind() {
+		case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map,
+			reflect.Ptr, reflect.Slice, reflect.UnsafePointer:
+			return true
+		default:
+			return false
+		}
+	}
+	return matcher.actual.AssignableTo(matcher.Type)
 }
 
 func (matcher *AnyMatcher) Equals(other interface{}) bool {

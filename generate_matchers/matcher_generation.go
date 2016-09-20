@@ -69,20 +69,20 @@ func GenerateEqMatcherFactory(kind reflect.Kind) string {
 
 func GenerateAnyMatcherFactory(kind reflect.Kind) string {
 	return fmt.Sprintf(`func Any%s() %s {
-	RegisterMatcher(&AnyMatcher{Type: reflect.%s})
+	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((%s)(%s))))
 	return %s
 }
 
-`, strings.Title(kind.String()), kind, strings.Title(kind.String()), nullOf(kind))
+`, strings.Title(kind.String()), kind, kind.String(), nullOf(kind), nullOf(kind))
 }
 
 func GenerateAnySliceMatcherFactory(kind reflect.Kind) string {
 	return fmt.Sprintf(`func Any%sSlice() []%s {
-	RegisterMatcher(&AnyMatcher{Type: reflect.Slice})
+	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((%s)(%s)))))
 	return nil
 }
 
-`, strings.Title(kind.String()), kind.String())
+`, strings.Title(kind.String()), kind.String(), kind.String(), nullOf(kind))
 }
 
 // TODO generate:

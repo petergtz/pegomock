@@ -26,4 +26,5 @@ type Display interface {
 	InterfaceParam(interface{})
 	InterfaceReturnValue() interface{}
 	ErrorReturnValue() error
+	ErrorParam(e error)
 }
