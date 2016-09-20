@@ -14,6 +14,8 @@
 
 package test_interface
 
+import "net/http"
+
 // Display is some sample interface to be mocked.
 type Display interface {
 	Flash(_param0 string, _param1 int)
@@ -27,4 +29,6 @@ type Display interface {
 	InterfaceReturnValue() interface{}
 	ErrorReturnValue() error
 	ErrorParam(e error)
+	NetHttpRequestParam(r http.Request)
+	NetHttpRequestPtrParam(r *http.Request)
 }

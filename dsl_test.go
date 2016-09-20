@@ -17,6 +17,7 @@ package pegomock_test
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 
 	. "github.com/petergtz/pegomock"
@@ -27,6 +28,16 @@ import (
 
 func AnyError() error {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*error)(nil)).Elem()))
+	return nil
+}
+
+func AnyRequest() http.Request {
+	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*http.Request)(nil)).Elem()))
+	return http.Request{}
+}
+
+func AnyRequestPtr() *http.Request {
+	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*http.Request)(nil))))
 	return nil
 }
 
@@ -390,6 +401,21 @@ var _ = Describe("MockDisplay", func() {
 		It("Succeeds when error-parameter is passed as string error and verified as any error", func() {
 			display.ErrorParam(errors.New("Some error"))
 			display.VerifyWasCalledOnce().ErrorParam(AnyError())
+		})
+
+		It("Succeeds when http.Request-parameter is passed as null value and verified as any http.Request", func() {
+			display.NetHttpRequestParam(http.Request{})
+			display.VerifyWasCalledOnce().NetHttpRequestParam(AnyRequest())
+		})
+
+		It("Succeeds when http.Request-Pointer-parameter is passed as nil and verified as any *http.Request", func() {
+			display.NetHttpRequestPtrParam(nil)
+			display.VerifyWasCalledOnce().NetHttpRequestPtrParam(AnyRequestPtr())
+		})
+
+		It("Succeeds when http.Request-Pointer-parameter is passed as null value and verified as any *http.Request", func() {
+			display.NetHttpRequestPtrParam(&http.Request{})
+			display.VerifyWasCalledOnce().NetHttpRequestPtrParam(AnyRequestPtr())
 		})
 
 	})
