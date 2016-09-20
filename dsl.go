@@ -83,6 +83,9 @@ func (genericMock *GenericMock) Verify(
 	invocationCountMatcher Matcher,
 	methodName string,
 	params []Param) {
+	if GlobalFailHandler == nil {
+		panic("No GlobalFailHandler set. Please use either RegisterMockFailHandler or RegisterMockTestingT to set a fail handler.")
+	}
 	methodInvocations := genericMock.methodInvocations(methodName, params...)
 	if inOrderContext != nil {
 		for _, methodInvocation := range methodInvocations {
