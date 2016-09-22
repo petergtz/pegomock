@@ -222,12 +222,12 @@ When(contactList.getContactByFullName(EqString("Dan"), AnyString())).thenReturn(
 You can also write your own matchers for non-basic types. E.g. if you have a `struct MyType`, you can write an _Equals_ and _Any_ matcher like this:
 ```go
 func EqMyType(value MyType) MyType {
-	pegomock.RegisterMatcher(&matcher.EqMatcher{Value: value})
+	RegisterMatcher(&EqMatcher{Value: value})
 	return MyType{}
 }
 
 func AnyMyType() MyType {
-	pegomock.RegisterMatcher(&matcher.AnyMatcher{Type: reflect.Struct})
+	RegisterMatcher(NewAnyMatcher(reflect.TypeOf(MyType{})))
 	return MyType{}
 }
 ```
