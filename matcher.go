@@ -32,6 +32,10 @@ func (matcher *EqMatcher) FailureMessage() string {
 	return fmt.Sprintf("Expected: %v; but got: %v", matcher.Value, matcher.actual)
 }
 
+func (matcher *EqMatcher) String() string {
+	return fmt.Sprintf("Eq(%v)", matcher.Value)
+}
+
 type AnyMatcher struct {
 	Type   reflect.Type
 	actual reflect.Type
@@ -71,6 +75,10 @@ func (matcher *AnyMatcher) FailureMessage() string {
 	return fmt.Sprintf("Expected: %v; but got: %v", matcher.Type, matcher.actual)
 }
 
+func (matcher *AnyMatcher) String() string {
+	return fmt.Sprintf("Any(%v)", matcher.Type)
+}
+
 type AtLeastIntMatcher struct {
 	Value  int
 	actual int
@@ -96,6 +104,10 @@ func (matcher *AtLeastIntMatcher) FailureMessage() string {
 	return fmt.Sprintf("Expected: %v; but got: %v", matcher.Value, matcher.actual)
 }
 
+func (matcher *AtLeastIntMatcher) String() string {
+	return fmt.Sprintf("AtLeast(%v)", matcher.Value)
+}
+
 type AtMostIntMatcher struct {
 	Value  int
 	actual int
@@ -119,4 +131,8 @@ func (matcher *AtMostIntMatcher) Equals(other interface{}) bool {
 
 func (matcher *AtMostIntMatcher) FailureMessage() string {
 	return fmt.Sprintf("Expected: at most %v; but got: %v", matcher.Value, matcher.actual)
+}
+
+func (matcher *AtMostIntMatcher) String() string {
+	return fmt.Sprintf("AtMost(%v)", matcher.Value)
 }

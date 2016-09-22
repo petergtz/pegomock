@@ -86,7 +86,14 @@ func (genericMock *GenericMock) Verify(
 	if GlobalFailHandler == nil {
 		panic("No GlobalFailHandler set. Please use either RegisterMockFailHandler or RegisterMockTestingT to set a fail handler.")
 	}
-	methodInvocations := genericMock.methodInvocations(methodName, params...)
+	defer func() { argMatchers = nil }() // We don't want a panic somewhere during verification screw our global argMatchers
+
+	if len(argMatchers) != 0 {
+		verify.Argument(len(argMatchers) == len(params),
+			"If you use matchers, you must use matchers for all parameters. Example: TODO")
+	}
+	matchers := argMatchers
+	methodInvocations := genericMock.methodInvocations(methodName, params, matchers)
 	if inOrderContext != nil {
 		for _, methodInvocation := range methodInvocations {
 			if methodInvocation.orderingInvocationNumber <= inOrderContext.invocationCounter {
@@ -96,9 +103,15 @@ func (genericMock *GenericMock) Verify(
 		}
 	}
 	if !invocationCountMatcher.Matches(len(methodInvocations)) {
-		GlobalFailHandler(fmt.Sprintf(
-			"Mock invocation count for method \"%s\" with params %v does not match expectation.\n\n\t%v",
-			methodName, params, invocationCountMatcher.FailureMessage()))
+		if len(matchers) == 0 {
+			GlobalFailHandler(fmt.Sprintf(
+				"Mock invocation count for method \"%s\" with params %v does not match expectation.\n\n\t%v",
+				methodName, params, invocationCountMatcher.FailureMessage()))
+		} else {
+			GlobalFailHandler(fmt.Sprintf(
+				"Mock invocation count for method \"%s\" with params %v does not match expectation.\n\n\t%v",
+				methodName, matchers, invocationCountMatcher.FailureMessage()))
+		}
 	}
 }
 
@@ -115,12 +128,9 @@ func (genericMock *GenericMock) GetInvocationParams(methodName string) [][]Param
 	return result
 }
 
-func (genericMock *GenericMock) methodInvocations(methodName string, params ...Param) []methodInvocation {
-	if len(argMatchers) != 0 {
-		verify.Argument(len(argMatchers) == len(params),
-			"If you use matchers, you must use matchers for all parameters. Example: TODO")
-		defer func() { argMatchers = nil }() // We don't want a panic in the matchers screw our global argMatchers
-		return genericMock.methodInvocationsUsingMatchers(methodName, argMatchers)
+func (genericMock *GenericMock) methodInvocations(methodName string, params []Param, matchers []Matcher) []methodInvocation {
+	if len(matchers) != 0 {
+		return genericMock.methodInvocationsUsingMatchers(methodName, matchers)
 	}
 
 	invocations := make([]methodInvocation, 0)
@@ -297,7 +307,16 @@ func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param)
 		return transformParamsIntoEqMatchers(params)
 	} else {
 		verify.Argument(len(argMatchers) == len(lastInvocation.Params),
-			"You must use the same number of matchers as arguments. Example: TODO")
+			"Invalid use of matchers!\n\n %v matchers expected, %v recorded.\n\n"+
+				"This error may occur if matchers are combined with raw values:\n"+
+				"    //incorrect:\n"+
+				"    someFunc(AnyInt(), \"raw String\")\n"+
+				"When using matchers, all arguments have to be provided by matchers.\n"+
+				"For example:\n"+
+				"    //correct:\n"+
+				"    someFunc(AnyInt(), EqString(\"String by matcher\"))",
+			len(lastInvocation.Params), len(argMatchers),
+		)
 		return argMatchers
 	}
 }
@@ -335,11 +354,11 @@ func checkAssignabilityOf(stubbedReturnValues []ReturnValue, expectedReturnTypes
 				reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
 				reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.String,
 				reflect.Struct:
-				panic("Return value 'nil' not assignable to " + expectedReturnTypes[i].Kind().String())
+				panic("Return value 'nil' not assignable to return type " + expectedReturnTypes[i].Kind().String())
 			}
 		} else {
 			verify.Argument(reflect.TypeOf(stubbedReturnValues[i]).AssignableTo(expectedReturnTypes[i]),
-				"Return value not assignable to return type")
+				"Return value of type %T not assignable to return type %v", stubbedReturnValues[i], expectedReturnTypes[i])
 		}
 	}
 }
@@ -382,4 +401,5 @@ type Matcher interface {
 	Matches(param Param) bool
 	FailureMessage() string
 	Equals(interface{}) bool
+	fmt.Stringer
 }
