@@ -32,7 +32,7 @@ func AnyError() error {
 }
 
 func AnyRequest() http.Request {
-	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*http.Request)(nil)).Elem()))
+	RegisterMatcher(NewAnyMatcher(reflect.TypeOf(http.Request{})))
 	return http.Request{}
 }
 
