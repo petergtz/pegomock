@@ -125,7 +125,10 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("fails if verify is called on mock that was not invoked.", func() {
-			Expect(func() { display.VerifyWasCalledOnce().Show("param") }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Show("Some parameter") }).
+				To(PanicWith(
+				"Mock invocation count for method \"Show\" with params [Some parameter] " +
+					"does not match expectation.\n\n\tExpected: 1; but got: 0"))
 		})
 
 		It("fails if verify is called on mock that was invoked more than once.", func() {

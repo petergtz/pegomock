@@ -96,7 +96,9 @@ func (genericMock *GenericMock) Verify(
 		}
 	}
 	if !invocationCountMatcher.Matches(len(methodInvocations)) {
-		GlobalFailHandler(fmt.Sprintf("Mock invocation count does not match expectation. %v", invocationCountMatcher.FailureMessage()))
+		GlobalFailHandler(fmt.Sprintf(
+			"Mock invocation count for method \"%s\" with params %v does not match expectation.\n\n\t%v",
+			methodName, params, invocationCountMatcher.FailureMessage()))
 	}
 }
 
@@ -122,9 +124,11 @@ func (genericMock *GenericMock) methodInvocations(methodName string, params ...P
 	}
 
 	invocations := make([]methodInvocation, 0)
-	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
-		if reflect.DeepEqual(params, invocation.params) {
-			invocations = append(invocations, invocation)
+	if _, exists := genericMock.mockedMethods[methodName]; exists {
+		for _, invocation := range genericMock.mockedMethods[methodName].invocations {
+			if reflect.DeepEqual(params, invocation.params) {
+				invocations = append(invocations, invocation)
+			}
 		}
 	}
 	return invocations
