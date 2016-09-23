@@ -268,7 +268,10 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("fails during verification if verifying with VerifyWasCalledOnce", func() {
-			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 333) }).To(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 333) }).To(PanicWith(
+				"Mock invocation count for method \"Flash\" with params [Hello 333] " +
+					"does not match expectation.\n\n\tExpected: 1; but got: 2",
+			))
 		})
 
 		It("fails during verification if verifying with Times(1)", func() {
@@ -418,14 +421,20 @@ var _ = Describe("MockDisplay", func() {
 			Expect(func() {
 				display.InterfaceParam(3)
 				display.VerifyWasCalledOnce().InterfaceParam(AnyFloat32())
-			}).To(Panic())
+			}).To(PanicWith(
+				"Mock invocation count for method \"InterfaceParam\" with params [Any(float32)] " +
+					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+			))
 		})
 
-		It("Panics when interface {}-parameter is passed as float, but verified as int", func() {
+		It("Panics when interface{}-parameter is passed as float, but verified as int", func() {
 			Expect(func() {
 				display.InterfaceParam(3.141)
 				display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
-			}).To(Panic())
+			}).To(PanicWith(
+				"Mock invocation count for method \"InterfaceParam\" with params [Any(int)] " +
+					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+			))
 		})
 
 		It("Succeeds when interface{}-parameter is passed as int and verified as int", func() {
@@ -442,7 +451,10 @@ var _ = Describe("MockDisplay", func() {
 			Expect(func() {
 				display.InterfaceParam(nil)
 				display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
-			}).To(Panic())
+			}).To(PanicWith(
+				"Mock invocation count for method \"InterfaceParam\" with params [Any(int)] " +
+					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+			))
 		})
 
 		It("Succeeds when error-parameter is passed as nil and verified as any error", func() {
