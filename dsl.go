@@ -89,8 +89,7 @@ func (genericMock *GenericMock) Verify(
 	defer func() { globalArgMatchers = nil }() // We don't want a panic somewhere during verification screw our global argMatchers
 
 	if len(globalArgMatchers) != 0 {
-		verify.Argument(len(globalArgMatchers) == len(params),
-			"If you use matchers, you must use matchers for all parameters. Example: TODO")
+		verifyArgMatcherUse(globalArgMatchers, params)
 	}
 
 	methodInvocations := genericMock.methodInvocations(methodName, params, globalArgMatchers)
@@ -306,22 +305,25 @@ func When(invocation ...interface{}) *ongoingStubbing {
 }
 
 func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param) []Matcher {
-	if len(argMatchers) == 0 {
-		return transformParamsIntoEqMatchers(params)
-	} else {
-		verify.Argument(len(argMatchers) == len(lastInvocation.Params),
-			"Invalid use of matchers!\n\n %v matchers expected, %v recorded.\n\n"+
-				"This error may occur if matchers are combined with raw values:\n"+
-				"    //incorrect:\n"+
-				"    someFunc(AnyInt(), \"raw String\")\n"+
-				"When using matchers, all arguments have to be provided by matchers.\n"+
-				"For example:\n"+
-				"    //correct:\n"+
-				"    someFunc(AnyInt(), EqString(\"String by matcher\"))",
-			len(lastInvocation.Params), len(argMatchers),
-		)
+	if len(argMatchers) != 0 {
+		verifyArgMatcherUse(argMatchers, params)
 		return argMatchers
 	}
+	return transformParamsIntoEqMatchers(params)
+}
+
+func verifyArgMatcherUse(argMatchers []Matcher, params []Param) {
+	verify.Argument(len(argMatchers) == len(params),
+		"Invalid use of matchers!\n\n %v matchers expected, %v recorded.\n\n"+
+			"This error may occur if matchers are combined with raw values:\n"+
+			"    //incorrect:\n"+
+			"    someFunc(AnyInt(), \"raw String\")\n"+
+			"When using matchers, all arguments have to be provided by matchers.\n"+
+			"For example:\n"+
+			"    //correct:\n"+
+			"    someFunc(AnyInt(), EqString(\"String by matcher\"))",
+		len(params), len(argMatchers),
+	)
 }
 
 func transformParamsIntoEqMatchers(params []Param) []Matcher {

@@ -254,6 +254,19 @@ var _ = Describe("MockDisplay", func() {
 					"does not match expectation.\n\n\tExpected: 1; but got: 0",
 			))
 		})
+
+		It("fails when not using matchers for all params", func() {
+			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", AnyInt()) }).To(PanicWith(
+				"Invalid use of matchers!\n\n 2 matchers expected, 1 recorded.\n\n" +
+					"This error may occur if matchers are combined with raw values:\n" +
+					"    //incorrect:\n" +
+					"    someFunc(AnyInt(), \"raw String\")\n" +
+					"When using matchers, all arguments have to be provided by matchers.\n" +
+					"For example:\n" +
+					"    //correct:\n" +
+					"    someFunc(AnyInt(), EqString(\"String by matcher\"))",
+			))
+		})
 	})
 
 	Context("Calling Flash() twice", func() {
