@@ -519,6 +519,60 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
+	FDescribe("GomegaMatcherAdapter", func() {
+		Context("Verifying behavior", func() {
+			It("succeeds, when calling with params that are matched successfully by GomegaMatchers", func() {
+				display.Flash("Hello", 1)
+
+				Expect(func() {
+					display.VerifyWasCalledOnce().Flash(StringTo(ContainSubstring("llo")), IntTo(BeNumerically(">", 0)))
+				}).NotTo(Panic())
+				Expect(func() {
+					display.VerifyWasCalledOnce().Flash(StringTo(ContainSubstring("Hel")), IntTo(BeNumerically(">", 0)))
+				}).NotTo(Panic())
+			})
+
+			It("fails, when calling with params that cannot be matched successfully by GomegaMatchers", func() {
+				display.Flash("Hello", 1)
+
+				Expect(func() {
+					display.VerifyWasCalledOnce().Flash(StringTo(Equal("Hello")), IntTo(Equal(2)))
+				}).To(PanicWith("Mock invocation count for method \"Flash\" " +
+					"with params [ArgThatMatches((*matchers.EqualMatcher){Expected:(string)Hello}) " +
+					"ArgThatMatches((*matchers.EqualMatcher){Expected:(int)2})] " +
+					"does not match expectation.\n\n\tExpected: 1; but got: 0"))
+			})
+		})
+
+		Context("Stubbing", func() {
+			It("", func() {
+				When(display.MultipleParamsAndReturnValue(StringTo(ContainSubstring("a")), AnyInt())).ThenReturn("A")
+				When(display.MultipleParamsAndReturnValue(StringTo(ContainSubstring("b")), AnyInt())).ThenReturn("B")
+
+				Expect(display.MultipleParamsAndReturnValue("ab", 0)).To(Equal("B"))
+			})
+		})
+
+		Context("Equals method", func() {
+			It("equals when GomegaMatcher delegates are equal but not identical", func() {
+				Expect(NewGomegaMatcherAdapter(Equal(1))).To(Equal(NewGomegaMatcherAdapter(Equal(1))))
+			})
+
+			It("equals when GomegaMatcher delegates are equal but not identical", func() {
+				Expect(NewGomegaMatcherAdapter(ConsistOf(4, 2))).To(Equal(NewGomegaMatcherAdapter(ConsistOf(4, 2))))
+			})
+
+			It("equals when GomegaMatcher delegates are identical", func() {
+				gomegaMatcher := Equal(1)
+				Expect(NewGomegaMatcherAdapter(gomegaMatcher)).To(Equal(NewGomegaMatcherAdapter(gomegaMatcher)))
+			})
+
+			It("does not equal when GomegaMatcher delegates are not equal", func() {
+				Expect(NewGomegaMatcherAdapter(Equal(1))).NotTo(Equal(NewGomegaMatcherAdapter(Equal(2))))
+			})
+		})
+	})
+
 })
 
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {
