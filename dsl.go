@@ -32,10 +32,10 @@ func RegisterMockTestingT(t *testing.T) {
 }
 
 var lastInvocation *invocation
-var argMatchers Matchers
+var globalArgMatchers Matchers
 
 func RegisterMatcher(matcher Matcher) {
-	argMatchers.append(matcher)
+	globalArgMatchers.append(matcher)
 }
 
 type invocation struct {
@@ -86,13 +86,13 @@ func (genericMock *GenericMock) Verify(
 	if GlobalFailHandler == nil {
 		panic("No GlobalFailHandler set. Please use either RegisterMockFailHandler or RegisterMockTestingT to set a fail handler.")
 	}
-	defer func() { argMatchers = nil }() // We don't want a panic somewhere during verification screw our global argMatchers
+	defer func() { globalArgMatchers = nil }() // We don't want a panic somewhere during verification screw our global argMatchers
 
-	if len(argMatchers) != 0 {
-		verify.Argument(len(argMatchers) == len(params),
+	if len(globalArgMatchers) != 0 {
+		verify.Argument(len(globalArgMatchers) == len(params),
 			"If you use matchers, you must use matchers for all parameters. Example: TODO")
 	}
-	matchers := argMatchers
+	matchers := globalArgMatchers
 	methodInvocations := genericMock.methodInvocations(methodName, params, matchers)
 	if inOrderContext != nil {
 		for _, methodInvocation := range methodInvocations {
@@ -288,11 +288,11 @@ func When(invocation ...interface{}) *ongoingStubbing {
 		"when() requires an argument which has to be 'a method call on a mock'.")
 	defer func() {
 		lastInvocation = nil
-		argMatchers = nil
+		globalArgMatchers = nil
 	}()
 	lastInvocation.genericMock.mockedMethods[lastInvocation.MethodName].removeLastInvocation()
 
-	paramMatchers := paramMatchersFromArgMatchersOrParams(argMatchers, lastInvocation.Params)
+	paramMatchers := paramMatchersFromArgMatchersOrParams(globalArgMatchers, lastInvocation.Params)
 	lastInvocation.genericMock.Reset(lastInvocation.MethodName, paramMatchers)
 	return &ongoingStubbing{
 		genericMock:   lastInvocation.genericMock,
