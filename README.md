@@ -48,7 +48,7 @@ When a Pegomock verification fails, it calls a `FailHandler`. This is a function
 If you’re using [Ginkgo](http://onsi.github.io/ginkgo/), all you need to do is:
 
 ```go
-pegomock.RegisterFailHandler(ginkgo.Fail)
+pegomock.RegisterMockFailHandler(ginkgo.Fail)
 ```
 
 before you start your test suite.
