@@ -97,9 +97,12 @@ func (genericMock *GenericMock) Verify(
 	if inOrderContext != nil {
 		for _, methodInvocation := range methodInvocations {
 			if methodInvocation.orderingInvocationNumber <= inOrderContext.invocationCounter {
-				GlobalFailHandler("Wrong order. TODO: better message")
+				GlobalFailHandler(fmt.Sprintf("Expected function call \"%v\" with params %v before function call \"%v\" with params %v",
+					methodName, params, inOrderContext.lastInvokedMethodName, inOrderContext.lastInvokedMethodParams))
 			}
 			inOrderContext.invocationCounter = methodInvocation.orderingInvocationNumber
+			inOrderContext.lastInvokedMethodName = methodName
+			inOrderContext.lastInvokedMethodParams = params
 		}
 	}
 	if !invocationCountMatcher.Matches(len(methodInvocations)) {
@@ -380,7 +383,9 @@ func (stubbing *ongoingStubbing) Then(callback func([]Param) ReturnValues) *ongo
 }
 
 type InOrderContext struct {
-	invocationCounter int
+	invocationCounter       int
+	lastInvokedMethodName   string
+	lastInvokedMethodParams []Param
 }
 
 type Stubber struct {

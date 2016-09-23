@@ -272,7 +272,10 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("fails during verification if verifying with Times(1)", func() {
-			Expect(func() { display.VerifyWasCalled(Times(1)).Flash("Hello", 333) }).To(Panic())
+			Expect(func() { display.VerifyWasCalled(Times(1)).Flash("Hello", 333) }).To(PanicWith(
+				"Mock invocation count for method \"Flash\" with params [Hello 333] " +
+					"does not match expectation.\n\n\tExpected: 1; but got: 2",
+			))
 		})
 
 		It("succeeds during verification when using AtLeast(1)", func() {
@@ -284,7 +287,10 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("fails during verification when using AtLeast(3)", func() {
-			Expect(func() { display.VerifyWasCalled(AtLeast(3)).Flash("Hello", 333) }).To(Panic())
+			Expect(func() { display.VerifyWasCalled(AtLeast(3)).Flash("Hello", 333) }).To(PanicWith(
+				"Mock invocation count for method \"Flash\" with params [Hello 333] " +
+					"does not match expectation.\n\n\tExpected: at least 3; but got: 2",
+			))
 		})
 
 		It("succeeds during verification when using Never()", func() {
@@ -292,7 +298,10 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("fails during verification when using Never()", func() {
-			Expect(func() { display.VerifyWasCalled(Never()).Flash("Hello", 333) }).To(Panic())
+			Expect(func() { display.VerifyWasCalled(Never()).Flash("Hello", 333) }).To(PanicWith(
+				"Mock invocation count for method \"Flash\" with params [Hello 333] " +
+					"does not match expectation.\n\n\tExpected: 0; but got: 2",
+			))
 		})
 
 	})
@@ -304,7 +313,7 @@ var _ = Describe("MockDisplay", func() {
 				ThenPanic("I'm panicking")
 			Expect(func() {
 				display.MultipleParamsAndReturnValue("Some string", 123)
-			}).To(Panic())
+			}).To(PanicWith("I'm panicking"))
 		})
 
 		It("calls back when stubbed to call back", func() {
@@ -351,7 +360,9 @@ var _ = Describe("MockDisplay", func() {
 				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("again", 222)
 				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("Hello", 111)
 				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("and again", 333)
-			}).To(Panic())
+			}).To(PanicWith(
+				"Expected function call \"Flash\" with params [Hello 111] before function call \"Flash\" with params [again 222]",
+			))
 		})
 
 	})

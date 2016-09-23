@@ -101,7 +101,7 @@ func (matcher *AtLeastIntMatcher) Equals(other interface{}) bool {
 }
 
 func (matcher *AtLeastIntMatcher) FailureMessage() string {
-	return fmt.Sprintf("Expected: %v; but got: %v", matcher.Value, matcher.actual)
+	return fmt.Sprintf("Expected: at least %v; but got: %v", matcher.Value, matcher.actual)
 }
 
 func (matcher *AtLeastIntMatcher) String() string {
