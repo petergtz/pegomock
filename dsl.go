@@ -92,8 +92,8 @@ func (genericMock *GenericMock) Verify(
 		verify.Argument(len(globalArgMatchers) == len(params),
 			"If you use matchers, you must use matchers for all parameters. Example: TODO")
 	}
-	matchers := globalArgMatchers
-	methodInvocations := genericMock.methodInvocations(methodName, params, matchers)
+
+	methodInvocations := genericMock.methodInvocations(methodName, params, globalArgMatchers)
 	if inOrderContext != nil {
 		for _, methodInvocation := range methodInvocations {
 			if methodInvocation.orderingInvocationNumber <= inOrderContext.invocationCounter {
@@ -103,14 +103,14 @@ func (genericMock *GenericMock) Verify(
 		}
 	}
 	if !invocationCountMatcher.Matches(len(methodInvocations)) {
-		if len(matchers) == 0 {
+		if len(globalArgMatchers) == 0 {
 			GlobalFailHandler(fmt.Sprintf(
 				"Mock invocation count for method \"%s\" with params %v does not match expectation.\n\n\t%v",
 				methodName, params, invocationCountMatcher.FailureMessage()))
 		} else {
 			GlobalFailHandler(fmt.Sprintf(
 				"Mock invocation count for method \"%s\" with params %v does not match expectation.\n\n\t%v",
-				methodName, matchers, invocationCountMatcher.FailureMessage()))
+				methodName, globalArgMatchers, invocationCountMatcher.FailureMessage()))
 		}
 	}
 }
