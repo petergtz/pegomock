@@ -225,28 +225,23 @@ func (g *generator) Generate(source string, pkg *model.Package, pkgName string, 
 	return nil
 }
 
-// The name of the mock type to use for the given interface identifier.
-func mockName(typeName string) string {
-	return "Mock" + typeName
-}
-
 func (g *generator) GenerateMockInterface(iface *model.Interface, selfPackage string) {
-	mockType := mockName(iface.Name)
+	mockTypeName := "Mock" + iface.Name
 
 	g.p("")
 	g.p("// Mock of %v interface", iface.Name)
-	g.p("type %v struct {", mockType)
+	g.p("type %v struct {", mockTypeName)
 	g.in().p("fail func(message string, callerSkip ...int)").out()
 	g.p("}")
 	g.p("")
 
-	g.p("func New%v() *%v {", mockType, mockType)
-	g.in().p("return &%v{fail: pegomock.GlobalFailHandler}", mockType).out()
+	g.p("func New%v() *%v {", mockTypeName, mockTypeName)
+	g.in().p("return &%v{fail: pegomock.GlobalFailHandler}", mockTypeName).out()
 	g.p("}")
 	g.p("")
 
 	for _, method := range iface.Methods {
-		g.GenerateMockMethod(mockType, method, selfPackage).p("")
+		g.GenerateMockMethod(mockTypeName, method, selfPackage).p("")
 	}
 	g.p("type Verifier%v struct {", iface.Name)
 	g.in().
