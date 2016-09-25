@@ -1,8 +1,6 @@
 package pegomock
 
 import (
-	"reflect"
-
 	"github.com/davecgh/go-spew/spew"
 	"github.com/onsi/gomega/types"
 	"github.com/petergtz/goextract/util"
@@ -32,17 +30,6 @@ func (matcher *GomegaMatcherAdapter) Matches(param Param) bool {
 	matches, e := matcher.gomegaMatcher.Match(param)
 	util.PanicOnError(e)
 	return matches
-}
-
-func (matcher *GomegaMatcherAdapter) Equals(other interface{}) bool {
-	if other == nil {
-		return false
-	}
-	otherMatcher, ok := other.(*GomegaMatcherAdapter)
-	if !ok {
-		return false
-	}
-	return reflect.DeepEqual(otherMatcher.gomegaMatcher, matcher.gomegaMatcher)
 }
 
 func (matcher *GomegaMatcherAdapter) FailureMessage() string {
