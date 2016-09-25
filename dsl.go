@@ -238,7 +238,7 @@ func matchersEqual(a, b Matchers) bool {
 		return false
 	}
 	for i := range a {
-		if !a[i].Equals(b[i]) {
+		if !reflect.DeepEqual(a[i], b[i]) {
 			return false
 		}
 	}
@@ -407,6 +407,5 @@ func (stubber *Stubber) When(mock interface{}) {
 type Matcher interface {
 	Matches(param Param) bool
 	FailureMessage() string
-	Equals(interface{}) bool
 	fmt.Stringer
 }
