@@ -74,7 +74,7 @@ func (genericMock *GenericMock) getOrCreateMockedMethod(methodName string) *mock
 	return genericMock.mockedMethods[methodName]
 }
 
-func (genericMock *GenericMock) Reset(methodName string, paramMatchers []Matcher) {
+func (genericMock *GenericMock) reset(methodName string, paramMatchers []Matcher) {
 	genericMock.getOrCreateMockedMethod(methodName).reset(paramMatchers)
 }
 
@@ -295,7 +295,7 @@ func When(invocation ...interface{}) *ongoingStubbing {
 	lastInvocation.genericMock.mockedMethods[lastInvocation.MethodName].removeLastInvocation()
 
 	paramMatchers := paramMatchersFromArgMatchersOrParams(globalArgMatchers, lastInvocation.Params)
-	lastInvocation.genericMock.Reset(lastInvocation.MethodName, paramMatchers)
+	lastInvocation.genericMock.reset(lastInvocation.MethodName, paramMatchers)
 	return &ongoingStubbing{
 		genericMock:   lastInvocation.genericMock,
 		MethodName:    lastInvocation.MethodName,
