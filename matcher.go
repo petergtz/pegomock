@@ -31,7 +31,7 @@ type AnyMatcher struct {
 }
 
 func NewAnyMatcher(typ reflect.Type) *AnyMatcher {
-	verify.NotNil(typ, "Must provide a non-nil type")
+	verify.Argument(typ != nil, "Must provide a non-nil type")
 	return &AnyMatcher{Type: typ}
 }
 
