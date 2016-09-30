@@ -519,6 +519,24 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
+	Describe("Stubbing methods that have no return value", func() {
+		It("Can be stubbed with Panic", func() {
+			When(func() { display.Show(AnyString()) }).ThenPanic("bla")
+			Expect(func() { display.Show("Hello") }).To(PanicWith("bla"))
+		})
+
+		It("Can still work with methods returning a func", func() {
+			When(display.FuncReturnValue()).ThenReturn(func() { panic("It's actually a success") })
+			Expect(func() { display.FuncReturnValue()() }).To(PanicWith("It's actually a success"))
+		})
+
+		FIt("Panics when not using a func with no params", func() {
+			Expect(func() {
+				When(func(invalid int) { display.Show(AnyString()) })
+			}).To(PanicWith("When using 'When' with function that does not return a value, it expects a function with no arguments and no return value."))
+		})
+	})
+
 })
 
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {

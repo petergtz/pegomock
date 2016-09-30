@@ -31,4 +31,5 @@ type Display interface {
 	ErrorParam(e error)
 	NetHttpRequestParam(r http.Request)
 	NetHttpRequestPtrParam(r *http.Request)
+	FuncReturnValue() func()
 }

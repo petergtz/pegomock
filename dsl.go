@@ -286,8 +286,9 @@ type ongoingStubbing struct {
 }
 
 func When(invocation ...interface{}) *ongoingStubbing {
-	verify.NotNil(lastInvocation,
-		"when() requires an argument which has to be 'a method call on a mock'.")
+	callIfIsFunc(invocation)
+	verify.Argument(lastInvocation != nil,
+		"When() requires an argument which has to be 'a method call on a mock'.")
 	defer func() {
 		lastInvocation = nil
 		globalArgMatchers = nil
@@ -302,6 +303,25 @@ func When(invocation ...interface{}) *ongoingStubbing {
 		ParamMatchers: paramMatchers,
 		returnTypes:   lastInvocation.ReturnTypes,
 	}
+}
+
+func callIfIsFunc(invocation []interface{}) {
+	if len(invocation) == 1 {
+		actualType := actualTypeOf(invocation[0])
+		if actualType.Kind() == reflect.Func {
+			if !(actualType.NumIn() == 0 && actualType.NumOut() == 0) {
+				panic("When using 'When' with function that does not return a value, " +
+					"it expects a function with no arguments and no return value.")
+			}
+			reflect.ValueOf(invocation[0]).Call([]reflect.Value{})
+		}
+	}
+}
+
+// Deals with nils without panicking
+func actualTypeOf(iface interface{}) reflect.Type {
+	defer func() { recover() }()
+	return reflect.TypeOf(iface)
 }
 
 func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param) []Matcher {
