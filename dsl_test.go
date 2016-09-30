@@ -530,7 +530,7 @@ var _ = Describe("MockDisplay", func() {
 			Expect(func() { display.FuncReturnValue()() }).To(PanicWith("It's actually a success"))
 		})
 
-		FIt("Panics when not using a func with no params", func() {
+		It("Panics when not using a func with no params", func() {
 			Expect(func() {
 				When(func(invalid int) { display.Show(AnyString()) })
 			}).To(PanicWith("When using 'When' with function that does not return a value, it expects a function with no arguments and no return value."))

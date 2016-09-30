@@ -308,7 +308,7 @@ func When(invocation ...interface{}) *ongoingStubbing {
 func callIfIsFunc(invocation []interface{}) {
 	if len(invocation) == 1 {
 		actualType := actualTypeOf(invocation[0])
-		if actualType.Kind() == reflect.Func {
+		if actualType != nil && actualType.Kind() == reflect.Func && !reflect.ValueOf(invocation[0]).IsNil() {
 			if !(actualType.NumIn() == 0 && actualType.NumOut() == 0) {
 				panic("When using 'When' with function that does not return a value, " +
 					"it expects a function with no arguments and no return value.")
