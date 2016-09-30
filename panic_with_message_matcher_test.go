@@ -15,7 +15,7 @@ type PanicWithMatcher struct {
 }
 
 func PanicWith(object interface{}) types.GomegaMatcher {
-	verify.NotNil(object, "You must provide a non-nil object to PanicWith")
+	verify.Argument(object != nil, "You must provide a non-nil object to PanicWith")
 	return &PanicWithMatcher{expectedWith: object}
 }
 
