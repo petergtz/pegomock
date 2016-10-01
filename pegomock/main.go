@@ -51,9 +51,10 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 		debugParser     = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
 		generateCmdArgs = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
-		watchCmd       = app.Command("watch", "Watch ")
-		watchRecursive = watchCmd.Flag("recursive", "Recursively watch sub-directories as well.").Short('r').Bool()
-		watchPackages  = watchCmd.Arg("directories...", "One or more directories of Go packages to watch").Strings()
+		watchCmd           = app.Command("watch", "Watch ")
+		watchRecursive     = watchCmd.Flag("recursive", "Recursively watch sub-directories as well.").Short('r').Bool()
+		watchUseGoGenerate = watchCmd.Flag("use-go-generate", "Use go generate directive instead of interfaces_to_mock file.").Short('g').Bool()
+		watchPackages      = watchCmd.Arg("directories...", "One or more directories of Go packages to watch").Strings()
 	)
 
 	app.Writer(out)
@@ -84,7 +85,11 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 		} else {
 			targetPaths = *watchPackages
 		}
-		watch.CreateWellKnownInterfaceListFilesIfNecessary(targetPaths)
-		util.Ticker(watch.NewMockFileUpdater(targetPaths, *watchRecursive).Update, 2*time.Second, done)
+		if *watchUseGoGenerate {
+			util.Ticker(watch.NewDirectoryUpdaterWithGoGenerate(targetPaths, *watchRecursive).Update, 2*time.Second, done)
+		} else {
+			watch.CreateWellKnownInterfaceListFilesIfNecessary(targetPaths)
+			util.Ticker(watch.NewDirectoryUpdaterWithInterfacesToMockFile(targetPaths, *watchRecursive).Update, 2*time.Second, done)
+		}
 	}
 }

@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -32,36 +33,52 @@ const wellKnownInterfaceListFile = "interfaces_to_mock"
 
 var join = strings.Join
 
-type MockFileUpdater struct {
+type DirectoryUpdater struct {
 	recursive   bool
 	targetPaths []string
-	lastErrors  map[string]string
+	updater     MockFileUpdater
 }
 
-func NewMockFileUpdater(targetPaths []string, recursive bool) *MockFileUpdater {
-	return &MockFileUpdater{
+func NewDirectoryUpdaterWithInterfacesToMockFile(targetPaths []string, recursive bool) *DirectoryUpdater {
+	return &DirectoryUpdater{
 		targetPaths: targetPaths,
 		recursive:   recursive,
-		lastErrors:  make(map[string]string),
+		updater:     &ConfigFileMockFileUpdater{LastErrors: make(map[string]string)},
 	}
 }
 
-func (updater *MockFileUpdater) Update() {
+func NewDirectoryUpdaterWithGoGenerate(targetPaths []string, recursive bool) *DirectoryUpdater {
+	return &DirectoryUpdater{
+		targetPaths: targetPaths,
+		recursive:   recursive,
+		updater:     &GoGenerateMockFileUpdater{},
+	}
+}
+
+type MockFileUpdater interface {
+	UpdateMockFiles(targetPath string)
+}
+
+func (updater *DirectoryUpdater) Update() {
 	for _, targetPath := range updater.targetPaths {
 		if updater.recursive {
 			filepath.Walk(targetPath, func(path string, info os.FileInfo, err error) error {
 				if err == nil && info.IsDir() {
-					util.WithinWorkingDir(path, updater.updateMockFiles)
+					util.WithinWorkingDir(path, updater.updater.UpdateMockFiles)
 				}
 				return nil
 			})
 		} else {
-			util.WithinWorkingDir(targetPath, updater.updateMockFiles)
+			util.WithinWorkingDir(targetPath, updater.updater.UpdateMockFiles)
 		}
 	}
 }
 
-func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
+type ConfigFileMockFileUpdater struct {
+	LastErrors map[string]string
+}
+
+func (updater *ConfigFileMockFileUpdater) UpdateMockFiles(targetPath string) {
 	if _, err := os.Stat(wellKnownInterfaceListFile); os.IsNotExist(err) {
 		return
 	}
@@ -80,9 +97,9 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				if updater.lastErrors[errorKey(*lineArgs)] != fmt.Sprint(err) {
+				if updater.LastErrors[errorKey(*lineArgs)] != fmt.Sprint(err) {
 					fmt.Println("Error while trying to generate mock for", join(lineParts, " "), ":", err)
-					updater.lastErrors[errorKey(*lineArgs)] = fmt.Sprint(err)
+					updater.LastErrors[errorKey(*lineArgs)] = fmt.Sprint(err)
 				}
 			}
 		}()
@@ -95,11 +112,23 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 		mockFilePath := mockgen.OutputFilePath(sourceArgs, ".", *destination)
 		hasChanged := util.WriteFileIfChanged(mockFilePath, generatedMockSourceCode)
 
-		if hasChanged || updater.lastErrors[errorKey(*lineArgs)] != "" {
+		if hasChanged || updater.LastErrors[errorKey(*lineArgs)] != "" {
 			fmt.Println("(Re)generated mock for", errorKey(*lineArgs), "in", mockFilePath)
 		}
-		delete(updater.lastErrors, errorKey(*lineArgs))
+		delete(updater.LastErrors, errorKey(*lineArgs))
 	}
+}
+
+type GoGenerateMockFileUpdater struct{}
+
+func (updater *GoGenerateMockFileUpdater) UpdateMockFiles(targetPath string) {
+	cmd := exec.Command("go", "generate")
+	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	err := cmd.Run()
+	util.PanicOnError(err)
+	// if _, err := os.Stat(wellKnownInterfaceListFile); os.IsNotExist(err) {
+	// 	return
+	// }
 }
 
 func errorKey(args []string) string {
@@ -125,6 +154,8 @@ func CreateWellKnownInterfaceListFileIfNecessary(targetPath string) {
 }
 
 func linesIn(file string) (result [][]string) {
+	s, _ := os.Getwd()
+	fmt.Println(s)
 	content, err := ioutil.ReadFile(file)
 	util.PanicOnError(err)
 	for _, line := range strings.Split(string(content), "\n") {

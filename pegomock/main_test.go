@@ -158,6 +158,19 @@ var _ = Describe("Testing pegomock CLI", func() {
 			})
 		})
 
+		Context("specifying --use-go-generate", func() {
+			It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
+				WriteFile(joinPath(packageDir, "generate.go"),
+					"package pegomocktest\n\n//go:generate pegomock generate MyDisplay\n")
+
+				go main.Run(cmd("pegomock watch --use-go-generate"), os.Stdout, app, done)
+
+				Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package pegomocktest_test")))
+			})
+		})
+
 	})
 
 	Context("with some unknown command", func() {
