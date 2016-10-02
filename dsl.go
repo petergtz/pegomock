@@ -88,6 +88,8 @@ func (genericMock *GenericMock) Verify(
 	}
 	defer func() { globalArgMatchers = nil }() // We don't want a panic somewhere during verification screw our global argMatchers
 
+	// FIXME: should manipulate globalArgMatchers to group variadic part into a SliceMatcher made up of the individual variadic arg matchers
+
 	if len(globalArgMatchers) != 0 {
 		verifyArgMatcherUse(globalArgMatchers, params)
 	}

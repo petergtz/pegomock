@@ -271,7 +271,7 @@ func (g *generator) GenerateMockInterface(iface *model.Interface, selfPackage st
 // GenerateMockMethod generates a mock method implementation.
 // If non-empty, pkgOverride is the package in which unqualified types reside.
 func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
-	_, argNames, argString, returnTypes, retString, callArgs := getStuff(method, g, pkgOverride)
+	_, _, argString, returnTypes, retString, callArgs := getStuff(method, g, pkgOverride)
 	g.p("func (mock *%v) %v(%v)%v {", mockType, method.Name, argString, retString)
 	g.in()
 	r := ""
@@ -283,15 +283,15 @@ func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pk
 		reflectReturnTypes[i] = fmt.Sprintf("reflect.TypeOf((*%v)(nil)).Elem()", returnType)
 	}
 	// TODO: this is repeated in verifier generation
-	if method.Variadic != nil {
-		g.p("params := []pegomock.Param{%v}", strings.Join(argNames[0:len(argNames)-1], ", "))
-		g.p("for _, param := range %v {", argNames[len(argNames)-1]).in()
-		g.p("params = append(params, param)")
-		g.out().p("}")
-	} else {
-		g.p("params := []pegomock.Param{%v}", callArgs)
+	// if method.Variadic != nil {
+	// 	g.p("params := []pegomock.Param{%v}", strings.Join(argNames[0:len(argNames)-1], ", "))
+	// 	g.p("for _, param := range %v {", argNames[len(argNames)-1]).in()
+	// 	g.p("params = append(params, param)")
+	// 	g.out().p("}")
+	// } else {
+	g.p("params := []pegomock.Param{%v}", callArgs)
 
-	}
+	// }
 	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", params, []reflect.Type{%v})",
 		r, method.Name, strings.Join(reflectReturnTypes, ", "))
 	if len(method.Out) > 0 {
@@ -368,15 +368,15 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 	g.p("}")
 
 	g.p("func (verifier *Verifier%v) %v(%v) *%v {", interfaceName, method.Name, argString, returnTypeString)
-	if method.Variadic != nil {
-		g.p("params := []pegomock.Param{%v}", strings.Join(argNames[0:len(argNames)-1], ", "))
-		g.p("for _, param := range %v {", argNames[len(argNames)-1]).in()
-		g.p("params = append(params, param)")
-		g.out().p("}")
-	} else {
-		g.p("params := []pegomock.Param{%v}", argNamesString)
+	// if method.Variadic != nil {
+	// 	g.p("params := []pegomock.Param{%v}", strings.Join(argNames[0:len(argNames)-1], ", "))
+	// 	g.p("for _, param := range %v {", argNames[len(argNames)-1]).in()
+	// 	g.p("params = append(params, param)")
+	// 	g.out().p("}")
+	// } else {
+	g.p("params := []pegomock.Param{%v}", argNamesString)
 
-	}
+	// }
 
 	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", params)", method.Name)
 	g.p("return &%v{verifier.mock}", returnTypeString)
