@@ -9,3 +9,7 @@ install:
 
 script:
   - ./run_tests.sh
+
+branches:
+  except:
+  - /^wip.*$/
