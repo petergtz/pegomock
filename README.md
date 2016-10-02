@@ -178,6 +178,22 @@ phoneBook.VerifyWasCalledOnce().GetPhoneNumber("Tom")
 -	By default, for all methods that return a value, a mock will return zero values.
 -	Once stubbed, the method will always return a stubbed value, regardless of how many times it is called.
 
+Stubbing Functions That Have no Return Value
+--------------------------------------------
+
+Stubbing functions that have no return value requires a slightly different approach, because such functions cannot be passed directly to another function. However, we can wrap them in an anonymous function:
+
+```go
+// creating mock:
+display := NewMockDisplay()
+
+// stubbing
+When(func() { display.Show("Hello World!") }).ThenPanic("Panicking")
+
+// panics:
+display.Show("Hello World!")
+```
+
 Argument Matchers
 -----------------
 
