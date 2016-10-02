@@ -366,6 +366,36 @@ For more flags, run:
 pegomock --help
 ```
 
+Generating mocks with `go generate`
+----------------------------------
+
+`pegomock` can be used with `go generate`. Simply add the directive to your source file. Example:
+
+```go
+// display.go
+
+package display
+
+type Display interface {
+	Show(text string)
+}
+```
+
+```go
+// calculator_test.go
+
+package calculator_test
+
+//go:generate pegomock generate package/path/to/display Display
+
+// Use generated mock
+mockDisplay := NewMockDisplay()
+...
+```
+
+While you could add the directive adjacent to the interface definition, the author's opinion is that this violates clean dependency management and would pollute the package of the interface.
+It's better to generate the mock in the same package, where it is used (if this coincides with the interface package, that's fine). That way, not only stays the interface's package clean, the tests also don't need to prefix the mock with a package, or use a dot-import.
+
 Continuously Generating Mocks
 -----------------------------
 
