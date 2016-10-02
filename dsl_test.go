@@ -537,6 +537,21 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
+	Describe("Verifying methods that have variadic arguments", func() {
+		It("Can do", func() {
+			display.VariadicParam("one", "two")
+			display.VerifyWasCalledOnce().VariadicParam("one", "two")
+		})
+
+		FIt("GetCapturedArgs", func() {
+			display.VariadicParam("one", "two")
+			args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString()).getCapturedArguments()
+			Expect(args[0]).To(Equal("one"))
+			Expect(args[1]).To(Equal("two"))
+		})
+
+	})
+
 })
 
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {

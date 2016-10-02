@@ -271,7 +271,7 @@ func (g *generator) GenerateMockInterface(iface *model.Interface, selfPackage st
 // GenerateMockMethod generates a mock method implementation.
 // If non-empty, pkgOverride is the package in which unqualified types reside.
 func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
-	_, _, argString, returnTypes, retString, callArgs := getStuff(method, g, pkgOverride)
+	_, argNames, argString, returnTypes, retString, callArgs := getStuff(method, g, pkgOverride)
 	g.p("func (mock *%v) %v(%v)%v {", mockType, method.Name, argString, retString)
 	g.in()
 	r := ""
@@ -282,8 +282,18 @@ func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pk
 	for i, returnType := range returnTypes {
 		reflectReturnTypes[i] = fmt.Sprintf("reflect.TypeOf((*%v)(nil)).Elem()", returnType)
 	}
-	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", []pegomock.Param{%v}, []reflect.Type{%v})",
-		r, method.Name, callArgs, strings.Join(reflectReturnTypes, ", "))
+	// TODO: this is repeated in verifier generation
+	if method.Variadic != nil {
+		g.p("params := []pegomock.Param{%v}", strings.Join(argNames[0:len(argNames)-1], ", "))
+		g.p("for _, param := range %v {", argNames[len(argNames)-1]).in()
+		g.p("params = append(params, param)")
+		g.out().p("}")
+	} else {
+		g.p("params := []pegomock.Param{%v}", callArgs)
+
+	}
+	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", params, []reflect.Type{%v})",
+		r, method.Name, strings.Join(reflectReturnTypes, ", "))
 	if len(method.Out) > 0 {
 		// TODO: translate LastInvocation into a Matcher so it can be used as key for Stubbings
 		for i, returnType := range returnTypes {
@@ -317,13 +327,19 @@ func resultCast(returnTypes []string) string {
 
 func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.Method, pkgOverride string) *generator {
 	args, argNames, argString, _, _, argNamesString := getStuff(method, g, pkgOverride)
+	// TODO: argTypesFrom should not be necessary. This stuff should be done in getStuff
 	argTypes := argTypesFrom(args)
+
+	if method.Variadic != nil {
+		argTypes[len(argTypes)-1] = strings.Replace(argTypes[len(argTypes)-1], "...", "[]", 1)
+	}
 
 	returnTypeString := fmt.Sprintf("%v_%v_OngoingVerification", interfaceName, method.Name)
 
 	argsAsArray := make([]string, len(args))
 	for i, arg := range args {
 		_, t := splitArg(arg)
+		t = strings.Replace(t, "...", "[]", 1)
 		argsAsArray[i] = fmt.Sprintf("_param%v []%v", i, t)
 	}
 
@@ -352,7 +368,17 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 	g.p("}")
 
 	g.p("func (verifier *Verifier%v) %v(%v) *%v {", interfaceName, method.Name, argString, returnTypeString)
-	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", []pegomock.Param{%v})", method.Name, argNamesString)
+	if method.Variadic != nil {
+		g.p("params := []pegomock.Param{%v}", strings.Join(argNames[0:len(argNames)-1], ", "))
+		g.p("for _, param := range %v {", argNames[len(argNames)-1]).in()
+		g.p("params = append(params, param)")
+		g.out().p("}")
+	} else {
+		g.p("params := []pegomock.Param{%v}", argNamesString)
+
+	}
+
+	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", params)", method.Name)
 	g.p("return &%v{verifier.mock}", returnTypeString)
 
 	g.p("}")
@@ -379,9 +405,10 @@ func calcParams(g *generator, argString string, args []string, methodName string
 		g.p("params := pegomock.GetGenericMockFrom(c.mock).GetInvocationParams(\"%v\")", methodName)
 		g.p("if len(params) > 0 {")
 		for i, arg := range args {
-			g.p("_param%v = make([]%v, len(params[%v]))", i, strings.Split(arg, " ")[1], i)
+			paramType := strings.Replace(strings.Split(arg, " ")[1], "...", "[]", -1)
+			g.p("_param%v = make([]%v, len(params[%v]))", i, paramType, i)
 			g.p("for u, param := range params[%v] {", i)
-			g.p("_param%v[u]=param.(%v)", i, strings.Split(arg, " ")[1])
+			g.p("_param%v[u]=param.(%v)", i, paramType)
 			g.p("}")
 		}
 		g.p("}")
