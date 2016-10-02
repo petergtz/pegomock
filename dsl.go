@@ -82,7 +82,7 @@ func (genericMock *GenericMock) Verify(
 	inOrderContext *InOrderContext,
 	invocationCountMatcher Matcher,
 	methodName string,
-	params []Param) {
+	params []Param) []MethodInvocation {
 	if GlobalFailHandler == nil {
 		panic("No GlobalFailHandler set. Please use either RegisterMockFailHandler or RegisterMockTestingT to set a fail handler.")
 	}
@@ -115,27 +115,31 @@ func (genericMock *GenericMock) Verify(
 				methodName, globalArgMatchers, invocationCountMatcher.FailureMessage()))
 		}
 	}
+	return methodInvocations
 }
 
-func (genericMock *GenericMock) GetInvocationParams(methodName string) [][]Param {
-	if len(genericMock.mockedMethods[methodName].invocations) == 0 {
+func (genericMock *GenericMock) GetInvocationParams(methodInvocations []MethodInvocation) [][]Param {
+	if len(methodInvocations) == 0 {
 		return nil
 	}
-	result := make([][]Param, len(genericMock.mockedMethods[methodName].invocations[len(genericMock.mockedMethods[methodName].invocations)-1].params))
-	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
+	result := make([][]Param, len(methodInvocations[len(methodInvocations)-1].params))
+	for i, invocation := range methodInvocations {
 		for u, param := range invocation.params {
-			result[u] = append(result[u], param)
+			if result[u] == nil {
+				result[u] = make([]Param, len(methodInvocations))
+			}
+			result[u][i] = param
 		}
 	}
 	return result
 }
 
-func (genericMock *GenericMock) methodInvocations(methodName string, params []Param, matchers []Matcher) []methodInvocation {
+func (genericMock *GenericMock) methodInvocations(methodName string, params []Param, matchers []Matcher) []MethodInvocation {
 	if len(matchers) != 0 {
 		return genericMock.methodInvocationsUsingMatchers(methodName, matchers)
 	}
 
-	invocations := make([]methodInvocation, 0)
+	invocations := make([]MethodInvocation, 0)
 	if _, exists := genericMock.mockedMethods[methodName]; exists {
 		for _, invocation := range genericMock.mockedMethods[methodName].invocations {
 			if reflect.DeepEqual(params, invocation.params) {
@@ -146,8 +150,8 @@ func (genericMock *GenericMock) methodInvocations(methodName string, params []Pa
 	return invocations
 }
 
-func (genericMock *GenericMock) methodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) []methodInvocation {
-	invocations := make([]methodInvocation, 0)
+func (genericMock *GenericMock) methodInvocationsUsingMatchers(methodName string, paramMatchers Matchers) []MethodInvocation {
+	invocations := make([]MethodInvocation, 0)
 	for _, invocation := range genericMock.mockedMethods[methodName].invocations {
 		if paramMatchers.Matches(invocation.params) {
 			invocations = append(invocations, invocation)
@@ -158,12 +162,12 @@ func (genericMock *GenericMock) methodInvocationsUsingMatchers(methodName string
 
 type mockedMethod struct {
 	name        string
-	invocations []methodInvocation
+	invocations []MethodInvocation
 	stubbings   Stubbings
 }
 
 func (method *mockedMethod) Invoke(params []Param) ReturnValues {
-	method.invocations = append(method.invocations, methodInvocation{params, globalInvocationCounter.nextNumber()})
+	method.invocations = append(method.invocations, MethodInvocation{params, globalInvocationCounter.nextNumber()})
 	stubbing := method.stubbings.find(params)
 	if stubbing == nil {
 		return ReturnValues{}
@@ -200,7 +204,7 @@ func (counter *Counter) nextNumber() (nextNumber int) {
 
 var globalInvocationCounter Counter
 
-type methodInvocation struct {
+type MethodInvocation struct {
 	params                   []Param
 	orderingInvocationNumber int
 }
@@ -263,9 +267,9 @@ func (stubbing *Stubbing) Invoke(params []Param) ReturnValues {
 type Matchers []Matcher
 
 func (matchers Matchers) Matches(params []Param) bool {
-	verify.Argument(len(matchers) == len(params),
-		"Number of params and matchers different: params: %v, matchers: %v",
-		params, matchers)
+	if len(matchers) != len(params) { // Technically, this is not an error. Variadic arguments can cause this
+		return false
+	}
 	for i := range params {
 		if !matchers[i].Matches(params[i]) {
 			return false

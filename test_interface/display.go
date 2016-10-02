@@ -32,4 +32,6 @@ type Display interface {
 	NetHttpRequestParam(r http.Request)
 	NetHttpRequestPtrParam(r *http.Request)
 	FuncReturnValue() func()
+	VariadicParam(v ...string)
+	NormalAndVariadicParam(s string, i int, v ...string)
 }

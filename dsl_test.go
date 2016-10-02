@@ -537,6 +537,98 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
+	Describe("Verifying methods that have variadic arguments", func() {
+		Context("One single variadic argument", func() {
+
+			It("succeeds when verifying one invocation with same parameters", func() {
+				display.VariadicParam("one", "two")
+				display.VerifyWasCalledOnce().VariadicParam("one", "two")
+			})
+
+			It("succeeds when verifying two different invocations with same parameters", func() {
+				display.VariadicParam("one", "two")
+				display.VariadicParam("three", "four", "five")
+				display.VerifyWasCalledOnce().VariadicParam("three", "four", "five")
+				display.VerifyWasCalledOnce().VariadicParam("one", "two")
+			})
+
+			It("succeeds when verifying one invocation with arg matchers", func() {
+				display.VariadicParam("one", "two")
+				display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString())
+			})
+
+			It("succeeds when verifying two different invocations with arg matchers", func() {
+				display.VariadicParam("one", "two")
+				display.VariadicParam("three", "four", "five")
+				display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString(), AnyString())
+				display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString())
+			})
+
+			It("succeeds when verifying captured arguments", func() {
+				display.VariadicParam("one", "two")
+				args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString()).getCapturedArguments()
+				Expect(args[0]).To(Equal("one"))
+				Expect(args[1]).To(Equal("two"))
+			})
+
+			It("succeeds when verifying all captured arguments", func() {
+				display.VariadicParam("one", "two")
+				display.VariadicParam("three", "four", "five")
+				args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString(), AnyString()).getCapturedArguments()
+				Expect(args[0]).To(Equal("three"))
+				Expect(args[1]).To(Equal("four"))
+				Expect(args[2]).To(Equal("five"))
+			})
+
+		})
+
+		Context("2 normal arguments and one variadic", func() {
+			It("succeeds when verifying all captured arguments (one invocation match)", func() {
+				display.NormalAndVariadicParam("one", 2, "three", "four")
+				display.NormalAndVariadicParam("five", 6, "seven", "eight", "nine")
+
+				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString()).getAllCapturedArguments()
+				Expect(stringArg[0]).To(Equal("one"))
+				Expect(intArg[0]).To(Equal(2))
+				Expect(varArgs[0][0]).To(Equal("three"))
+				Expect(varArgs[0][1]).To(Equal("four"))
+
+				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString(), AnyString()).getAllCapturedArguments()
+				Expect(stringArg[0]).To(Equal("five"))
+				Expect(intArg[0]).To(Equal(6))
+				Expect(varArgs[0][0]).To(Equal("seven"))
+				Expect(varArgs[0][1]).To(Equal("eight"))
+				Expect(varArgs[0][2]).To(Equal("nine"))
+			})
+
+			It("succeeds when verifying all captured arguments (multiple invocation matches)", func() {
+				display.NormalAndVariadicParam("one", 2, "three", "four")
+				display.NormalAndVariadicParam("five", 6, "seven", "eight", "nine")
+				display.NormalAndVariadicParam("ten", 11, "twelf", "thirteen", "fourteen")
+
+				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString()).getAllCapturedArguments()
+				Expect(stringArg[0]).To(Equal("one"))
+				Expect(intArg[0]).To(Equal(2))
+				Expect(varArgs[0][0]).To(Equal("three"))
+				Expect(varArgs[0][1]).To(Equal("four"))
+
+				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString(), AnyString()).getAllCapturedArguments()
+				Expect(stringArg[0]).To(Equal("five"))
+				Expect(intArg[0]).To(Equal(6))
+				Expect(varArgs[0][0]).To(Equal("seven"))
+				Expect(varArgs[0][1]).To(Equal("eight"))
+				Expect(varArgs[0][2]).To(Equal("nine"))
+
+				Expect(stringArg[1]).To(Equal("ten"))
+				Expect(intArg[1]).To(Equal(11))
+				Expect(varArgs[1][0]).To(Equal("twelf"))
+				Expect(varArgs[1][1]).To(Equal("thirteen"))
+				Expect(varArgs[1][2]).To(Equal("fourteen"))
+			})
+		})
+
+	})
+
 })
 
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {
