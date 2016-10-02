@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+// Generate matchers:
+//
+//     go generate github.com/petergtz/pegomock/generate_matchers
+
+//go:generate go run matcher_generation.go
+
 func main() {
 	err := ioutil.WriteFile(
 		"../matcher_factories.go",
