@@ -43,18 +43,20 @@ type invocation struct {
 	MethodName  string
 	Params      []Param
 	ReturnTypes []reflect.Type
+	IsVariadic  bool
 }
 
 type GenericMock struct {
 	mockedMethods map[string]*mockedMethod
 }
 
-func (genericMock *GenericMock) Invoke(methodName string, params []Param, returnTypes []reflect.Type) ReturnValues {
+func (genericMock *GenericMock) Invoke(methodName string, params []Param, isVariadic bool, returnTypes []reflect.Type) ReturnValues {
 	lastInvocation = &invocation{
 		genericMock: genericMock,
 		MethodName:  methodName,
 		Params:      params,
 		ReturnTypes: returnTypes,
+		IsVariadic:  isVariadic,
 	}
 	return genericMock.getOrCreateMockedMethod(methodName).Invoke(params)
 }
@@ -82,7 +84,8 @@ func (genericMock *GenericMock) Verify(
 	inOrderContext *InOrderContext,
 	invocationCountMatcher Matcher,
 	methodName string,
-	params []Param) {
+	params []Param,
+	isVariadic bool) {
 	if GlobalFailHandler == nil {
 		panic("No GlobalFailHandler set. Please use either RegisterMockFailHandler or RegisterMockTestingT to set a fail handler.")
 	}
@@ -91,7 +94,10 @@ func (genericMock *GenericMock) Verify(
 	// FIXME: should manipulate globalArgMatchers to group variadic part into a SliceMatcher made up of the individual variadic arg matchers
 
 	if len(globalArgMatchers) != 0 {
-		verifyArgMatcherUse(globalArgMatchers, params)
+		if isVariadic {
+			globalArgMatchers = groupVariadicPartIntoSliceMatcher(globalArgMatchers, len(params))
+		}
+		verifyArgMatcherUse(globalArgMatchers, params, isVariadic)
 	}
 
 	methodInvocations := genericMock.methodInvocations(methodName, params, globalArgMatchers)
@@ -117,6 +123,30 @@ func (genericMock *GenericMock) Verify(
 				methodName, globalArgMatchers, invocationCountMatcher.FailureMessage()))
 		}
 	}
+}
+
+type SliceMatcher struct {
+}
+
+func (matcher *SliceMatcher) Matches(param Param) bool {
+	return false
+}
+
+func (matcher *SliceMatcher) FailureMessage() string {
+	return ""
+}
+
+func (matcher *SliceMatcher) String() string {
+	return ""
+}
+
+func groupVariadicPartIntoSliceMatcher(matchers Matchers, numRegularParams int) Matchers {
+	result := make([]Matcher, numRegularParams+1)
+	for i := 0; i < numRegularParams; i++ {
+		result[i] = matchers[i]
+	}
+	result[numRegularParams] = &SliceMatcher{}
+	return result
 }
 
 func (genericMock *GenericMock) GetInvocationParams(methodName string) [][]Param {
@@ -297,7 +327,7 @@ func When(invocation ...interface{}) *ongoingStubbing {
 	}()
 	lastInvocation.genericMock.mockedMethods[lastInvocation.MethodName].removeLastInvocation()
 
-	paramMatchers := paramMatchersFromArgMatchersOrParams(globalArgMatchers, lastInvocation.Params)
+	paramMatchers := paramMatchersFromArgMatchersOrParams(globalArgMatchers, lastInvocation.Params, lastInvocation.IsVariadic)
 	lastInvocation.genericMock.reset(lastInvocation.MethodName, paramMatchers)
 	return &ongoingStubbing{
 		genericMock:   lastInvocation.genericMock,
@@ -326,15 +356,15 @@ func actualTypeOf(iface interface{}) reflect.Type {
 	return reflect.TypeOf(iface)
 }
 
-func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param) []Matcher {
+func paramMatchersFromArgMatchersOrParams(argMatchers []Matcher, params []Param, isVariadic bool) []Matcher {
 	if len(argMatchers) != 0 {
-		verifyArgMatcherUse(argMatchers, params)
+		verifyArgMatcherUse(argMatchers, params, isVariadic)
 		return argMatchers
 	}
 	return transformParamsIntoEqMatchers(params)
 }
 
-func verifyArgMatcherUse(argMatchers []Matcher, params []Param) {
+func verifyArgMatcherUse(argMatchers []Matcher, params []Param, isVariadic bool) {
 	verify.Argument(len(argMatchers) == len(params),
 		"Invalid use of matchers!\n\n %v matchers expected, %v recorded.\n\n"+
 			"This error may occur if matchers are combined with raw values:\n"+

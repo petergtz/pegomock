@@ -292,8 +292,8 @@ func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pk
 	g.p("params := []pegomock.Param{%v}", callArgs)
 
 	// }
-	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", params, []reflect.Type{%v})",
-		r, method.Name, strings.Join(reflectReturnTypes, ", "))
+	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", params, %v, []reflect.Type{%v})",
+		r, method.Name, method.Variadic != nil, strings.Join(reflectReturnTypes, ", "))
 	if len(method.Out) > 0 {
 		// TODO: translate LastInvocation into a Matcher so it can be used as key for Stubbings
 		for i, returnType := range returnTypes {
@@ -378,7 +378,8 @@ func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.M
 
 	// }
 
-	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", params)", method.Name)
+	g.p("pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", params, %v)",
+		method.Name, method.Variadic != nil)
 	g.p("return &%v{verifier.mock}", returnTypeString)
 
 	g.p("}")
