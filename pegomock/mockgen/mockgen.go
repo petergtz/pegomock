@@ -271,7 +271,7 @@ func (g *generator) GenerateMockInterface(iface *model.Interface, selfPackage st
 // GenerateMockMethod generates a mock method implementation.
 // If non-empty, pkgOverride is the package in which unqualified types reside.
 func (g *generator) GenerateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
-	_, argNames, argString, returnTypes, retString, callArgs := getStuff(method, g, pkgOverride)
+	_, argString, argNames, callArgs, returnTypes, retString := getStuff(method, g.packageMap, pkgOverride)
 	g.p("func (mock *%v) %v(%v)%v {", mockType, method.Name, argString, retString)
 	g.in()
 	r := ""
@@ -326,7 +326,7 @@ func resultCast(returnTypes []string) string {
 }
 
 func (g *generator) GenerateVerifierMethod(interfaceName string, method *model.Method, pkgOverride string) *generator {
-	args, argNames, argString, _, _, argNamesString := getStuff(method, g, pkgOverride)
+	args, argString, argNames, argNamesString, _, _ := getStuff(method, g.packageMap, pkgOverride)
 	// TODO: argTypesFrom should not be necessary. This stuff should be done in getStuff
 	argTypes := argTypesFrom(args)
 
@@ -431,13 +431,13 @@ func calcParams(g *generator, argString string, args []string, methodName string
 	}
 }
 
-func getStuff(method *model.Method, g *generator, pkgOverride string) (
+func getStuff(method *model.Method, packageMap map[string]string, pkgOverride string) (
 	args []string,
+	argsString string,
 	argNames []string,
-	argString string,
-	rets []string,
-	retString string,
 	argNamesString string,
+	rets []string,
+	retsString string,
 ) {
 	args = make([]string, len(method.In))
 	argNames = make([]string, len(method.In))
@@ -446,7 +446,7 @@ func getStuff(method *model.Method, g *generator, pkgOverride string) (
 		if name == "" {
 			name = fmt.Sprintf("_param%d", i)
 		}
-		ts := p.Type.String(g.packageMap, pkgOverride)
+		ts := p.Type.String(packageMap, pkgOverride)
 		args[i] = name + " " + ts
 		argNames[i] = name
 	}
@@ -455,37 +455,25 @@ func getStuff(method *model.Method, g *generator, pkgOverride string) (
 		if name == "" {
 			name = fmt.Sprintf("_param%d", len(method.In))
 		}
-		ts := method.Variadic.Type.String(g.packageMap, pkgOverride)
+		ts := method.Variadic.Type.String(packageMap, pkgOverride)
 		args = append(args, name+" ..."+ts)
 		argNames = append(argNames, name)
 	}
-	argString = strings.Join(args, ", ")
+	argsString = strings.Join(args, ", ")
 
 	rets = make([]string, len(method.Out))
 	for i, p := range method.Out {
-		rets[i] = p.Type.String(g.packageMap, pkgOverride)
+		rets[i] = p.Type.String(packageMap, pkgOverride)
 	}
-	retString = strings.Join(rets, ", ")
+	retsString = strings.Join(rets, ", ")
 	if len(rets) > 1 {
-		retString = "(" + retString + ")"
+		retsString = "(" + retsString + ")"
 	}
-	if retString != "" {
-		retString = " " + retString
+	if retsString != "" {
+		retsString = " " + retsString
 	}
 
 	argNamesString = strings.Join(argNames, ", ")
-	// TODO: variadic arguments
-	// if method.Variadic != nil {
-	// 	// Non-trivial. The generated code must build a []interface{},
-	// 	// but the variadic argument may be any type.
-	// 	g.p("_s := []interface{}{%s}", strings.Join(argNames[:len(argNames)-1], ", "))
-	// 	g.p("for _, _x := range %s {", argNames[len(argNames)-1])
-	// 	g.in()
-	// 	g.p("_s = append(_s, _x)")
-	// 	g.out()
-	// 	g.p("}")
-	// 	callArgs = ", _s..."
-	// }
 	return
 }
 
