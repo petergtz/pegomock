@@ -480,9 +480,3 @@ func (g *generator) Output() []byte {
 	}
 	return src
 }
-
-func panicOnError(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
