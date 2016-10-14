@@ -119,22 +119,7 @@ func (g *generator) p(format string, args ...interface{}) *generator {
 	return g
 }
 
-func (g *generator) emptyLine() *generator {
-	g.p("")
-	return g
-}
-
-func (g *generator) in() *generator {
-	g.indent += "\t"
-	return g
-}
-
-func (g *generator) out() *generator {
-	if len(g.indent) > 0 {
-		g.indent = g.indent[0 : len(g.indent)-1]
-	}
-	return g
-}
+func (g *generator) emptyLine() *generator { return g.p("") }
 
 func removeDot(s string) string {
 	if len(s) > 0 && s[len(s)-1] == '.' {
