@@ -404,6 +404,13 @@ func importsOfFile(file *ast.File) map[string]string {
 	return m
 }
 
+func removeDot(s string) string {
+	if len(s) > 0 && s[len(s)-1] == '.' {
+		return s[0 : len(s)-1]
+	}
+	return s
+}
+
 type namedInterface struct {
 	name *ast.Ident
 	it   *ast.InterfaceType
