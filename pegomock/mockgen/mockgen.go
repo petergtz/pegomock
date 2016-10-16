@@ -36,6 +36,7 @@ import (
 	"unicode"
 
 	"github.com/petergtz/pegomock/model"
+	"github.com/petergtz/pegomock/modelgen/gomock"
 	"github.com/petergtz/pegomock/pegomock/util"
 )
 
@@ -83,13 +84,13 @@ func GenerateMockSourceCode(args []string, packageOut string, selfPackage string
 	var ast *model.Package
 	var src string
 	if util.SourceMode(args) {
-		ast, err = ParseFile(args[0])
+		ast, err = gomock.ParseFile(args[0])
 		src = args[0]
 	} else {
 		if len(args) != 2 {
 			log.Fatal("Expected exactly two arguments, but got " + fmt.Sprint(args))
 		}
-		ast, err = Reflect(args[0], strings.Split(args[1], ","))
+		ast, err = gomock.Reflect(args[0], strings.Split(args[1], ","))
 		src = fmt.Sprintf("%v (interfaces: %v)", args[0], args[1])
 	}
 	if err != nil {
