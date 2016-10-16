@@ -142,7 +142,7 @@ func (g *generator) generateCode(source string, pkg *model.Package, pkgName stri
 	g.p(")")
 
 	for _, iface := range pkg.Interfaces {
-		g.generateMockInterface(iface, selfPackage)
+		g.generateMockFor(iface, selfPackage)
 	}
 }
 
@@ -192,7 +192,7 @@ func sanitize(s string) string {
 	return t
 }
 
-func (g *generator) generateMockInterface(iface *model.Interface, selfPackage string) {
+func (g *generator) generateMockFor(iface *model.Interface, selfPackage string) {
 	mockTypeName := "Mock" + iface.Name
 	g.generateMockType(mockTypeName)
 	for _, method := range iface.Methods {
