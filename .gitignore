@@ -17,3 +17,6 @@ mockgen/mockgen
 #gomock/[568]\.out
 
 mock_display_test.go
+
+*/debug.test
+.vscode
