@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/petergtz/pegomock/pegomock/mockgen/model"
+	"github.com/petergtz/pegomock/model"
 )
 
 var (

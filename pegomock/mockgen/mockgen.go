@@ -35,7 +35,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/petergtz/pegomock/pegomock/mockgen/model"
+	"github.com/petergtz/pegomock/model"
 	"github.com/petergtz/pegomock/pegomock/util"
 )
 
