@@ -270,57 +270,66 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
-	Context("Calling Flash() twice", func() {
+	Describe("Invocation count matching", func() {
 
-		BeforeEach(func() {
-			display.Flash("Hello", 333)
-			display.Flash("Hello", 333)
+		Context("Calling Flash() twice", func() {
+
+			BeforeEach(func() {
+				display.Flash("Hello", 333)
+				display.Flash("Hello", 333)
+			})
+
+			It("succeeds verification if verifying with Times(2)", func() {
+				Expect(func() { display.VerifyWasCalled(Times(2)).Flash("Hello", 333) }).NotTo(Panic())
+			})
+
+			It("fails during verification if verifying with VerifyWasCalledOnce", func() {
+				Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 333) }).To(PanicWith(
+					"Mock invocation count for method \"Flash\" with params [Hello 333] " +
+						"does not match expectation.\n\n\tExpected: 1; but got: 2",
+				))
+			})
+
+			It("fails during verification if verifying with Times(1)", func() {
+				Expect(func() { display.VerifyWasCalled(Times(1)).Flash("Hello", 333) }).To(PanicWith(
+					"Mock invocation count for method \"Flash\" with params [Hello 333] " +
+						"does not match expectation.\n\n\tExpected: 1; but got: 2",
+				))
+			})
+
+			It("succeeds during verification when using AtLeast(1)", func() {
+				Expect(func() { display.VerifyWasCalled(AtLeast(1)).Flash("Hello", 333) }).NotTo(Panic())
+			})
+
+			It("succeeds during verification when using AtLeast(2)", func() {
+				Expect(func() { display.VerifyWasCalled(AtLeast(2)).Flash("Hello", 333) }).NotTo(Panic())
+			})
+
+			It("fails during verification when using AtLeast(3)", func() {
+				Expect(func() { display.VerifyWasCalled(AtLeast(3)).Flash("Hello", 333) }).To(PanicWith(
+					"Mock invocation count for method \"Flash\" with params [Hello 333] " +
+						"does not match expectation.\n\n\tExpected: at least 3; but got: 2",
+				))
+			})
+
+			It("succeeds during verification when using Never()", func() {
+				Expect(func() { display.VerifyWasCalled(Never()).Flash("Other value", 333) }).NotTo(Panic())
+			})
+
+			It("fails during verification when using Never()", func() {
+				Expect(func() { display.VerifyWasCalled(Never()).Flash("Hello", 333) }).To(PanicWith(
+					"Mock invocation count for method \"Flash\" with params [Hello 333] " +
+						"does not match expectation.\n\n\tExpected: 0; but got: 2",
+				))
+			})
 		})
 
-		It("succeeds verification if verifying with Times(2)", func() {
-			Expect(func() { display.VerifyWasCalled(Times(2)).Flash("Hello", 333) }).NotTo(Panic())
+		Context("Never calling Flash", func() {
+			It("succeeds during verification when using Never() and argument matchers", func() {
+				// https://github.com/petergtz/pegomock/issues/34
+				Expect(func() { display.VerifyWasCalled(Never()).Flash(AnyString(), AnyInt()) }).NotTo(Panic())
+			})
 		})
-
-		It("fails during verification if verifying with VerifyWasCalledOnce", func() {
-			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 333) }).To(PanicWith(
-				"Mock invocation count for method \"Flash\" with params [Hello 333] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 2",
-			))
-		})
-
-		It("fails during verification if verifying with Times(1)", func() {
-			Expect(func() { display.VerifyWasCalled(Times(1)).Flash("Hello", 333) }).To(PanicWith(
-				"Mock invocation count for method \"Flash\" with params [Hello 333] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 2",
-			))
-		})
-
-		It("succeeds during verification when using AtLeast(1)", func() {
-			Expect(func() { display.VerifyWasCalled(AtLeast(1)).Flash("Hello", 333) }).NotTo(Panic())
-		})
-
-		It("succeeds during verification when using AtLeast(2)", func() {
-			Expect(func() { display.VerifyWasCalled(AtLeast(2)).Flash("Hello", 333) }).NotTo(Panic())
-		})
-
-		It("fails during verification when using AtLeast(3)", func() {
-			Expect(func() { display.VerifyWasCalled(AtLeast(3)).Flash("Hello", 333) }).To(PanicWith(
-				"Mock invocation count for method \"Flash\" with params [Hello 333] " +
-					"does not match expectation.\n\n\tExpected: at least 3; but got: 2",
-			))
-		})
-
-		It("succeeds during verification when using Never()", func() {
-			Expect(func() { display.VerifyWasCalled(Never()).Flash("Other value", 333) }).NotTo(Panic())
-		})
-
-		It("fails during verification when using Never()", func() {
-			Expect(func() { display.VerifyWasCalled(Never()).Flash("Hello", 333) }).To(PanicWith(
-				"Mock invocation count for method \"Flash\" with params [Hello 333] " +
-					"does not match expectation.\n\n\tExpected: 0; but got: 2",
-			))
-		})
-
 	})
 
 	Context("Calling MultipleParamsAndReturnValue()", func() {
