@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/ginkgo"
-	"github.com/petergtz/pegomock/pegomock/mockgen"
+	"github.com/petergtz/pegomock/pegomock/filehandling"
 )
 
 func TestMockGeneration(t *testing.T) {
@@ -27,7 +27,7 @@ func TestMockGeneration(t *testing.T) {
 }
 
 var _ = It("Generate mocks", func() {
-	mockgen.GenerateMockFile([]string{"github.com/petergtz/pegomock/test_interface", "Display"},
+	filehandling.GenerateMockFile([]string{"github.com/petergtz/pegomock/test_interface", "Display"},
 		"../../mock_display_test.go", "pegomock_test",
 		"",
 		false,

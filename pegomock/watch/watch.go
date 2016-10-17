@@ -24,7 +24,7 @@ import (
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/petergtz/pegomock/pegomock/mockgen"
+	"github.com/petergtz/pegomock/pegomock/filehandling"
 	"github.com/petergtz/pegomock/pegomock/util"
 )
 
@@ -91,8 +91,8 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 		sourceArgs, err := util.SourceArgs(*lineArgs)
 		util.PanicOnError(err)
 
-		generatedMockSourceCode := mockgen.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, false, os.Stdout)
-		mockFilePath := mockgen.OutputFilePath(sourceArgs, ".", *destination)
+		generatedMockSourceCode := filehandling.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, false, os.Stdout)
+		mockFilePath := filehandling.OutputFilePath(sourceArgs, ".", *destination)
 		hasChanged := util.WriteFileIfChanged(mockFilePath, generatedMockSourceCode)
 
 		if hasChanged || updater.lastErrors[errorKey(*lineArgs)] != "" {

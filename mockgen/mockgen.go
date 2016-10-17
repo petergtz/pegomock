@@ -26,89 +26,17 @@ import (
 	"fmt"
 	"go/format"
 	"go/token"
-	"io"
-	"io/ioutil"
-	"log"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode"
 
 	"github.com/petergtz/pegomock/model"
-	"github.com/petergtz/pegomock/modelgen/gomock"
-	"github.com/petergtz/pegomock/pegomock/util"
 )
 
 const mockFrameworkImportPath = "github.com/petergtz/pegomock"
 
-func GenerateMockFileInOutputDir(
-	args []string,
-	outputDirPath string,
-	outputFilePathOverride string,
-	packageOut string,
-	selfPackage string,
-	debugParser bool,
-	out io.Writer) {
-	GenerateMockFile(
-		args,
-		OutputFilePath(args, outputDirPath, outputFilePathOverride),
-		packageOut,
-		selfPackage,
-		debugParser,
-		out)
-}
-
-func OutputFilePath(args []string, outputDirPath string, outputFilePathOverride string) string {
-	if outputFilePathOverride != "" {
-		return outputFilePathOverride
-	} else if util.SourceMode(args) {
-		return filepath.Join(outputDirPath, "mock_"+strings.TrimSuffix(args[0], ".go")+"_test.go")
-	} else {
-		return filepath.Join(outputDirPath, "mock_"+strings.ToLower(args[len(args)-1])+"_test.go")
-	}
-}
-
-func GenerateMockFile(args []string, outputFilePath string, packageOut string, selfPackage string, debugParser bool, out io.Writer) {
-	output := GenerateMockSourceCode(args, packageOut, selfPackage, debugParser, out)
-
-	err := ioutil.WriteFile(outputFilePath, output, 0664)
-	if err != nil {
-		panic(fmt.Errorf("Failed writing to destination: %v", err))
-	}
-}
-
-func GenerateMockSourceCode(args []string, packageOut string, selfPackage string, debugParser bool, out io.Writer) []byte {
-	var err error
-
-	var ast *model.Package
-	var src string
-	if util.SourceMode(args) {
-		ast, err = gomock.ParseFile(args[0])
-		src = args[0]
-	} else {
-		if len(args) != 2 {
-			log.Fatal("Expected exactly two arguments, but got " + fmt.Sprint(args))
-		}
-		ast, err = gomock.Reflect(args[0], strings.Split(args[1], ","))
-		src = fmt.Sprintf("%v (interfaces: %v)", args[0], args[1])
-	}
-	if err != nil {
-		panic(fmt.Errorf("Loading input failed: %v", err))
-	}
-
-	if debugParser {
-		ast.Print(out)
-	}
-
-	output, err := generateOutput(ast, src, packageOut, selfPackage)
-	if err != nil {
-		panic(fmt.Errorf("Failed generating mock: %v", err))
-	}
-	return output
-}
-
-func generateOutput(ast *model.Package, source string, packageOut string, selfPackage string) ([]byte, error) {
+func GenerateOutput(ast *model.Package, source string, packageOut string, selfPackage string) ([]byte, error) {
 	g := new(generator)
 	g.generateCode(source, ast, packageOut, selfPackage)
 	return g.formattedOutput(), nil

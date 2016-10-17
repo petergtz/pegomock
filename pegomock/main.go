@@ -22,7 +22,7 @@ import (
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/petergtz/pegomock/pegomock/mockgen"
+	"github.com/petergtz/pegomock/pegomock/filehandling"
 	"github.com/petergtz/pegomock/pegomock/util"
 	"github.com/petergtz/pegomock/pegomock/watch"
 )
@@ -68,7 +68,7 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			app.FatalUsage(err.Error())
 		}
 
-		mockgen.GenerateMockFileInOutputDir(
+		filehandling.GenerateMockFileInOutputDir(
 			sourceArgs,
 			workingDir,
 			*destination,
