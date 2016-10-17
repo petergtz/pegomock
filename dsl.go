@@ -402,18 +402,6 @@ type InOrderContext struct {
 	lastInvokedMethodParams []Param
 }
 
-type Stubber struct {
-	returnValue interface{}
-}
-
-func DoPanic(value interface{}) *Stubber {
-	return &Stubber{returnValue: value}
-}
-
-func (stubber *Stubber) When(mock interface{}) {
-
-}
-
 // Matcher ... it is guaranteed that FailureMessage will always be called after Matches
 // so an implementation can save state
 type Matcher interface {
