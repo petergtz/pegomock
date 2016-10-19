@@ -19,13 +19,23 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"testing"
 
 	. "github.com/petergtz/pegomock"
 
+	"github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
+	"github.com/petergtz/pegomock"
 	. "github.com/petergtz/pegomock/pegomock/testutil"
 )
+
+func TestDSL(t *testing.T) {
+	gomega.RegisterFailHandler(ginkgo.Fail)
+	pegomock.RegisterMockFailHandler(func(message string, callerSkip ...int) { panic(message) })
+	ginkgo.RunSpecs(t, "DSL Suite")
+}
 
 func AnyError() error {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*error)(nil)).Elem()))
