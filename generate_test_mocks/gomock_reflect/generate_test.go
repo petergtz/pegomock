@@ -15,7 +15,6 @@
 package mockgen_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -24,13 +23,11 @@ import (
 )
 
 func TestMockGeneration(t *testing.T) {
-	RunSpecs(t, "Pegomock mock generation from source suite")
+	RunSpecs(t, "Generating mocks with GoMock-reflect")
 }
 
 var _ = It("Generate mocks", func() {
-	dir, _ := os.Getwd()
-	fmt.Println(dir)
-	filehandling.GenerateMockFile([]string{"../../test_interface/display.go"},
+	filehandling.GenerateMockFile([]string{"github.com/petergtz/pegomock/test_interface", "Display"},
 		"../../mock_display_test.go", "pegomock_test",
 		"",
 		false,

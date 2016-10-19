@@ -8,7 +8,7 @@ install:
   - go get gopkg.in/alecthomas/kingpin.v2
 
 script:
-  - ./run_tests.sh
+  - ./scripts/run_tests.sh
 
 branches:
   except:

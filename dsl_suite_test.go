@@ -25,5 +25,5 @@ import (
 func TestPegomock(t *testing.T) {
 	gomega.RegisterFailHandler(ginkgo.Fail)
 	pegomock.RegisterMockFailHandler(func(message string, callerSkip ...int) { panic(message) })
-	ginkgo.RunSpecs(t, "Pegomock DSL Suite")
+	ginkgo.RunSpecs(t, "DSL Suite")
 }

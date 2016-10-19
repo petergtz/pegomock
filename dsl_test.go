@@ -397,7 +397,7 @@ var _ = Describe("MockDisplay", func() {
 		It("Returns arguments when verifying with argument capture", func() {
 			display.Flash("Hello", 111)
 
-			arg1, arg2 := display.VerifyWasCalledOnce().Flash(AnyString(), AnyInt()).getCapturedArguments()
+			arg1, arg2 := display.VerifyWasCalledOnce().Flash(AnyString(), AnyInt()).GetCapturedArguments()
 
 			Expect(arg1).To(Equal("Hello"))
 			Expect(arg2).To(Equal(111))
@@ -407,7 +407,7 @@ var _ = Describe("MockDisplay", func() {
 			display.Flash("Hello", 111)
 			display.Flash("Again", 222)
 
-			arg1, arg2 := display.VerifyWasCalled(AtLeast(1)).Flash(AnyString(), AnyInt()).getCapturedArguments()
+			arg1, arg2 := display.VerifyWasCalled(AtLeast(1)).Flash(AnyString(), AnyInt()).GetCapturedArguments()
 
 			Expect(arg1).To(Equal("Again"))
 			Expect(arg2).To(Equal(222))
@@ -417,7 +417,7 @@ var _ = Describe("MockDisplay", func() {
 			display.Flash("Hello", 111)
 			display.Flash("Again", 222)
 
-			args1, args2 := display.VerifyWasCalled(AtLeast(1)).Flash(AnyString(), AnyInt()).getAllCapturedArguments()
+			args1, args2 := display.VerifyWasCalled(AtLeast(1)).Flash(AnyString(), AnyInt()).GetAllCapturedArguments()
 
 			Expect(args1).To(ConsistOf("Hello", "Again"))
 			Expect(args2).To(ConsistOf(111, 222))
@@ -427,7 +427,7 @@ var _ = Describe("MockDisplay", func() {
 			display.ArrayParam([]string{"one", "two"})
 			display.ArrayParam([]string{"4", "5", "3"})
 
-			args := display.VerifyWasCalled(AtLeast(1)).ArrayParam(AnyStringSlice()).getAllCapturedArguments()
+			args := display.VerifyWasCalled(AtLeast(1)).ArrayParam(AnyStringSlice()).GetAllCapturedArguments()
 
 			Expect(flattenStringSliceOfSlices(args)).To(ConsistOf("one", "two", "3", "4", "5"))
 		})
@@ -575,7 +575,7 @@ var _ = Describe("MockDisplay", func() {
 
 			It("succeeds when verifying captured arguments", func() {
 				display.VariadicParam("one", "two")
-				args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString()).getCapturedArguments()
+				args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString()).GetCapturedArguments()
 				Expect(args[0]).To(Equal("one"))
 				Expect(args[1]).To(Equal("two"))
 			})
@@ -583,7 +583,7 @@ var _ = Describe("MockDisplay", func() {
 			It("succeeds when verifying all captured arguments", func() {
 				display.VariadicParam("one", "two")
 				display.VariadicParam("three", "four", "five")
-				args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString(), AnyString()).getCapturedArguments()
+				args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString(), AnyString()).GetCapturedArguments()
 				Expect(args[0]).To(Equal("three"))
 				Expect(args[1]).To(Equal("four"))
 				Expect(args[2]).To(Equal("five"))
@@ -596,13 +596,13 @@ var _ = Describe("MockDisplay", func() {
 				display.NormalAndVariadicParam("one", 2, "three", "four")
 				display.NormalAndVariadicParam("five", 6, "seven", "eight", "nine")
 
-				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString()).getAllCapturedArguments()
+				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString()).GetAllCapturedArguments()
 				Expect(stringArg[0]).To(Equal("one"))
 				Expect(intArg[0]).To(Equal(2))
 				Expect(varArgs[0][0]).To(Equal("three"))
 				Expect(varArgs[0][1]).To(Equal("four"))
 
-				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString(), AnyString()).getAllCapturedArguments()
+				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString(), AnyString()).GetAllCapturedArguments()
 				Expect(stringArg[0]).To(Equal("five"))
 				Expect(intArg[0]).To(Equal(6))
 				Expect(varArgs[0][0]).To(Equal("seven"))
@@ -615,13 +615,13 @@ var _ = Describe("MockDisplay", func() {
 				display.NormalAndVariadicParam("five", 6, "seven", "eight", "nine")
 				display.NormalAndVariadicParam("ten", 11, "twelf", "thirteen", "fourteen")
 
-				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString()).getAllCapturedArguments()
+				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString()).GetAllCapturedArguments()
 				Expect(stringArg[0]).To(Equal("one"))
 				Expect(intArg[0]).To(Equal(2))
 				Expect(varArgs[0][0]).To(Equal("three"))
 				Expect(varArgs[0][1]).To(Equal("four"))
 
-				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString(), AnyString()).getAllCapturedArguments()
+				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString(), AnyString()).GetAllCapturedArguments()
 				Expect(stringArg[0]).To(Equal("five"))
 				Expect(intArg[0]).To(Equal(6))
 				Expect(varArgs[0][0]).To(Equal("seven"))

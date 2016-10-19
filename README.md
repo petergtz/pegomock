@@ -323,7 +323,7 @@ display.Show("Hello, again")
 display.Show("And again")
 
 // Verification and getting captured arguments
-text := display.VerifyWasCalled(AtLeast(1)).Show(AnyString()).getCapturedArguments()
+text := display.VerifyWasCalled(AtLeast(1)).Show(AnyString()).GetCapturedArguments()
 
 // Captured arguments are from last invocation
 Expect(text).To(Equal("And again"))
@@ -333,7 +333,7 @@ You can also get all captured arguments:
 
 ```go
 // Verification and getting all captured arguments
-texts := display.VerifyWasCalled(AtLeast(1)).Show(AnyString()).getAllCapturedArguments()
+texts := display.VerifyWasCalled(AtLeast(1)).Show(AnyString()).GetAllCapturedArguments()
 
 // Captured arguments are a slice
 Expect(texts).To(ConsistOf("Hello", "Hello, again", "And again"))

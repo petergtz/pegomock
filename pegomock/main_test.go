@@ -36,10 +36,10 @@ var (
 
 func TestPegomock(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Pegomock CLI Suite")
+	RunSpecs(t, "CLI Suite")
 }
 
-var _ = Describe("Testing pegomock CLI", func() {
+var _ = Describe("CLI", func() {
 
 	var (
 		packageDir, subPackageDir string

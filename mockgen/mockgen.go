@@ -245,13 +245,13 @@ func (g *generator) generateOngoingVerificationType(interfaceName string, ongoin
 }
 
 func (g *generator) generateOngoingVerificationGetCapturedArguments(ongoingVerificationStructName string, argNames []string, argTypes []string) *generator {
-	g.p("func (c *%v) getCapturedArguments() (%v) {", ongoingVerificationStructName, join(argTypes))
+	g.p("func (c *%v) GetCapturedArguments() (%v) {", ongoingVerificationStructName, join(argTypes))
 	if len(argNames) > 0 {
 		indexedArgNames := make([]string, len(argNames))
 		for i, argName := range argNames {
 			indexedArgNames[i] = argName + "[len(" + argName + ")-1]"
 		}
-		g.p("%v := c.getAllCapturedArguments()", join(argNames))
+		g.p("%v := c.GetAllCapturedArguments()", join(argNames))
 		g.p("return %v", strings.Join(indexedArgNames, ", "))
 	}
 	g.p("}")
@@ -264,7 +264,7 @@ func (g *generator) generateOngoingVerificationGetAllCapturedArguments(ongoingVe
 	for i, argType := range argTypes {
 		argsAsArray[i] = fmt.Sprintf("_param%v []%v", i, argType)
 	}
-	g.p("func (c *%v) getAllCapturedArguments() (%v) {", ongoingVerificationStructName, strings.Join(argsAsArray, ", "))
+	g.p("func (c *%v) GetAllCapturedArguments() (%v) {", ongoingVerificationStructName, strings.Join(argsAsArray, ", "))
 	if len(argTypes) > 0 {
 		g.p("params := pegomock.GetGenericMockFrom(c.mock).GetInvocationParams(c.methodInvocations)")
 		g.p("if len(params) > 0 {")
