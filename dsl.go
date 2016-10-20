@@ -190,7 +190,7 @@ func (counter *Counter) nextNumber() (nextNumber int) {
 	return
 }
 
-var globalInvocationCounter Counter
+var globalInvocationCounter = Counter{1}
 
 type MethodInvocation struct {
 	params                   []Param
