@@ -28,7 +28,6 @@ import (
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
 	"github.com/petergtz/pegomock"
-	. "github.com/petergtz/pegomock/pegomock/testutil"
 )
 
 func TestDSL(t *testing.T) {
@@ -378,7 +377,7 @@ var _ = Describe("MockDisplay", func() {
 				display.VerifyWasCalledInOrder(Once(), inOrderContext).Flash("Hello", 111)
 				display.VerifyWasCalledInOrder(Once(), inOrderContext).Flash("again", 222)
 				display.VerifyWasCalledInOrder(Once(), inOrderContext).Flash("and again", 333)
-			}).NotTo(PanicButReport())
+			}).NotTo(Panic())
 		})
 
 		It("succeeds during InOrder verification when order is correct, but not all invocations are verified", func() {
@@ -387,7 +386,7 @@ var _ = Describe("MockDisplay", func() {
 				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("Hello", 111)
 				// not checking for the 2nd call here
 				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("and again", 333)
-			}).NotTo(PanicButReport())
+			}).NotTo(Panic())
 		})
 
 		It("fails during InOrder verification when order is not correct", func() {
