@@ -27,10 +27,8 @@ func TestMockGeneration(t *testing.T) {
 }
 
 var _ = It("Generate mocks", func() {
-	filehandling.GenerateMockFile([]string{"github.com/petergtz/pegomock/test_interface", "Display"},
+	filehandling.GenerateMockFile(
+		[]string{"github.com/petergtz/pegomock/test_interface", "Display"},
 		"../../mock_display_test.go", "pegomock_test",
-		"",
-		false,
-		os.Stdout,
-		true)
+		"", false, os.Stdout, true)
 })

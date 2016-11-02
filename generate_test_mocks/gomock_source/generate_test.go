@@ -22,15 +22,11 @@ import (
 	"github.com/petergtz/pegomock/pegomock/filehandling"
 )
 
-func TestMockGeneration(t *testing.T) {
-	RunSpecs(t, "Generating mocks with GoMock-source")
-}
+func TestMockGeneration(t *testing.T) { RunSpecs(t, "Generating mocks with GoMock-source") }
 
 var _ = It("Generate mocks", func() {
-	filehandling.GenerateMockFile([]string{"../../test_interface/display.go"},
+	filehandling.GenerateMockFile(
+		[]string{"../../test_interface/display.go"},
 		"../../mock_display_test.go", "pegomock_test",
-		"",
-		false,
-		os.Stdout,
-		false)
+		"", false, os.Stdout, false)
 })
