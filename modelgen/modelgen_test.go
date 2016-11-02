@@ -15,9 +15,12 @@
 package pegomock_test
 
 import (
+	"fmt"
+	"sort"
 	"testing"
 
 	. "github.com/petergtz/pegomock"
+	"github.com/petergtz/pegomock/model"
 	"github.com/petergtz/pegomock/modelgen/gomock"
 	"github.com/petergtz/pegomock/modelgen/loader"
 
@@ -35,13 +38,43 @@ func TestDSL(t *testing.T) {
 	ginkgo.RunSpecs(t, "modelgen Suite")
 }
 
+type alphabetically []*model.Method
+
+func (a alphabetically) Len() int           { return len(a) }
+func (a alphabetically) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a alphabetically) Less(i, j int) bool { return a[i].Name < a[j].Name }
+
 var _ = Describe("MockDisplay", func() {
 	It("Bla", func() {
 		pkgFromReflect, e := gomock.Reflect("github.com/petergtz/pegomock/test_interface", []string{"Display"})
 		Expect(e).NotTo(HaveOccurred())
+		sort.Sort(alphabetically(pkgFromReflect.Interfaces[0].Methods))
+
 		pkgFromLoader, e := loader.GenerateModel("github.com/petergtz/pegomock/test_interface", "Display")
 		Expect(e).NotTo(HaveOccurred())
-		// spew.Dump(pkg)
-		Expect(pkgFromLoader).To(Equal(pkgFromReflect))
+		sort.Sort(alphabetically(pkgFromLoader.Interfaces[0].Methods))
+
+		Expect(pkgFromLoader.Name).To(Equal(pkgFromReflect.Name))
+		Expect(pkgFromLoader.Interfaces).To(HaveLen(1))
+		Expect(pkgFromLoader.Interfaces[0].Name).To(Equal("Display"))
+
+		for i := range pkgFromReflect.Interfaces[0].Methods {
+			ExpectMethodsEqual(pkgFromLoader.Interfaces[0].Methods[i], pkgFromReflect.Interfaces[0].Methods[i])
+		}
 	})
 })
+
+func ExpectMethodsEqual(actual, expected *model.Method) {
+	Expect(actual.Name).To(Equal(expected.Name))
+	ExpectParamsEqual(actual.Name, actual.In, expected.In)
+	ExpectParamsEqual(actual.Name, actual.Out, expected.Out)
+}
+
+func ExpectParamsEqual(methodName string, actual, expected []*model.Parameter) {
+	for i := range expected {
+		if actual[i].Name != expected[i].Name {
+			fmt.Printf("Note: In method %v, param names differ \"%v\" != \"%v\"\n", methodName, actual[i].Name, expected[i].Name)
+		}
+		Expect(actual[i].Type).To(Equal(expected[i].Type))
+	}
+}
