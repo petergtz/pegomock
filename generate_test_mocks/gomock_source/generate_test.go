@@ -31,5 +31,6 @@ var _ = It("Generate mocks", func() {
 		"../../mock_display_test.go", "pegomock_test",
 		"",
 		false,
-		os.Stdout)
+		os.Stdout,
+		false)
 })

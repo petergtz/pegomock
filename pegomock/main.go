@@ -47,8 +47,13 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 		// TODO: self_package was taken as is from GoMock.
 		//       Still don't understand what it's really there for.
 		//       So for now it's not tested.
-		selfPackage     = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
-		debugParser     = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
+		selfPackage             = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
+		debugParser             = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
+		useExperimentalModelGen = generateCmd.Flag("use-experimental-model-gen", "pegomock includes a new experimental source parser based on "+
+			"golang.org/x/tools/go/loader. It's currently experimental, but should be more powerful "+
+			"than the current reflect-based modelgen. E.g. reflect cannot detect method parameter names,"+
+			" and has to generate them based on a pattern. In a code editor with code assistence, this doesn't provide good help. "+
+			"\n\nThis option only works when specifying package path + interface, not with .go source files. Also, you can only specify *one* interface. This option cannot be used with the watch command.").Bool()
 		generateCmdArgs = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
 		watchCmd       = app.Command("watch", "Watch ")
@@ -75,7 +80,8 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			*packageOut,
 			*selfPackage,
 			*debugParser,
-			out)
+			out,
+			*useExperimentalModelGen)
 
 	case watchCmd.FullCommand():
 		var targetPaths []string

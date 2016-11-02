@@ -23,7 +23,7 @@ import (
 )
 
 func TestMockGeneration(t *testing.T) {
-	RunSpecs(t, "Generating mocks with GoMock-reflect")
+	RunSpecs(t, "Generating mocks with golang.org/x/tools/go/loader")
 }
 
 var _ = It("Generate mocks", func() {
@@ -32,5 +32,5 @@ var _ = It("Generate mocks", func() {
 		"",
 		false,
 		os.Stdout,
-		false)
+		true)
 })
