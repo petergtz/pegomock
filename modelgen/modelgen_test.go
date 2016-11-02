@@ -55,18 +55,18 @@ var _ = Describe("modelgen/loader", func() {
 		Expect(pkgFromLoader.Interfaces[0].Name).To(Equal("Display"))
 
 		for i := range pkgFromReflect.Interfaces[0].Methods {
-			ExpectMethodsEqual(pkgFromLoader.Interfaces[0].Methods[i], pkgFromReflect.Interfaces[0].Methods[i])
+			expectMethodsEqual(pkgFromLoader.Interfaces[0].Methods[i], pkgFromReflect.Interfaces[0].Methods[i])
 		}
 	})
 })
 
-func ExpectMethodsEqual(actual, expected *model.Method) {
+func expectMethodsEqual(actual, expected *model.Method) {
 	Expect(actual.Name).To(Equal(expected.Name))
-	ExpectParamsEqual(actual.Name, actual.In, expected.In)
-	ExpectParamsEqual(actual.Name, actual.Out, expected.Out)
+	expectParamsEqual(actual.Name, actual.In, expected.In)
+	expectParamsEqual(actual.Name, actual.Out, expected.Out)
 }
 
-func ExpectParamsEqual(methodName string, actual, expected []*model.Parameter) {
+func expectParamsEqual(methodName string, actual, expected []*model.Parameter) {
 	for i := range expected {
 		if actual[i].Name != expected[i].Name {
 			fmt.Printf("Note: In method %v, param names differ \"%v\" != \"%v\"\n", methodName, actual[i].Name, expected[i].Name)
