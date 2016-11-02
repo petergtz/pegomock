@@ -119,6 +119,7 @@ import (
 	"reflect"
 
 	"github.com/petergtz/pegomock/model"
+	"github.com/petergtz/pegomock/modelgen/gomock"
 
 	pkg_ {{printf "%q" .ImportPath}}
 )
@@ -140,7 +141,7 @@ func main() {
 	}
 
 	for _, it := range its {
-		intf, err := model.InterfaceFromInterfaceType(it.typ)
+		intf, err := gomock.InterfaceFromInterfaceType(it.typ)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Reflection: %v\n", err)
 			os.Exit(1)
