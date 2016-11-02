@@ -19,7 +19,6 @@ import (
 	"sort"
 	"testing"
 
-	. "github.com/petergtz/pegomock"
 	"github.com/petergtz/pegomock/model"
 	"github.com/petergtz/pegomock/modelgen/gomock"
 	"github.com/petergtz/pegomock/modelgen/loader"
