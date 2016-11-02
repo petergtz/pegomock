@@ -58,6 +58,29 @@ var _ = Describe("modelgen/loader", func() {
 			expectMethodsEqual(pkgFromLoader.Interfaces[0].Methods[i], pkgFromReflect.Interfaces[0].Methods[i])
 		}
 	})
+
+	It("generates a model with the basic properties", func() {
+		pkg, e := loader.GenerateModel("github.com/petergtz/pegomock/modelgen/test_data/default_test_interface", "Display")
+		Expect(e).NotTo(HaveOccurred())
+
+		Expect(pkg.Name).To(Equal("test_interface"))
+		Expect(pkg.Interfaces).To(HaveLen(1))
+		Expect(pkg.Interfaces[0].Name).To(Equal("Display"))
+
+		Expect(pkg.Interfaces[0].Methods).To(ContainElement(
+			&model.Method{
+				Name: "Show",
+				In: []*model.Parameter{
+					&model.Parameter{
+						Name: "_param0",
+						Type: model.PredeclaredType("string"),
+					},
+				},
+			},
+		))
+
+		// TODO add more test cases
+	})
 })
 
 func expectMethodsEqual(actual, expected *model.Method) {
