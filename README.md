@@ -382,6 +382,27 @@ For more flags, run:
 pegomock --help
 ```
 
+Generating Mocks with `--use-experimental-model-gen`
+----------------------------------------------------
+
+There are a number of shortcomings in the current reflection-based implementation.
+To overcome these, there is now an option to use a new, experimental implementation that is based on [golang.org/x/tools/go/loader](https://godoc.org/golang.org/x/tools/go/loader).
+To use it when generating your mocks, invoke `pegomock` like this:
+
+```
+pegomock generate --use-experimental-model-gen [<flags>] [<packagepath>] <interfacename>
+```
+
+What are the benefits?
+- The current default uses the [reflect](https://golang.org/pkg/reflect/) package to introspect the interface for which a mock should be generated. But reflection cannot determine method parameter names, only types. This forces the generator to generate them based on a pattern. In a code editor with code assistence, those pattern-based names (such as `_param0`, `_param1`) are non-descriptive and provide less help while writing code. The new implementation properly parses the source (including *all* dependent packages) and subsequently uses the same names as used in the interface definition.
+- With the current default you cannot generate an interface that lives in the `main` package. It's due to the way this implementation works: it imports the interface's package into temporarily generated code that gets compiled on the fly. This compilation fails, because there are now two `main`functions.
+- The new implementation is simpler and will probably become the default in the future, because it will be easier to maintain.
+
+What are the drawbacks?
+- There is only one drawback: maturity. The new implementation is not complete yet, and also might have some bugs that still need to be fixed.
+
+Users of Pegomock are encouraged to use this new option and report any problems by [opening an issue](https://github.com/petergtz/pegomock/issues/new). Help to stabilize it is greatly appreciated.
+
 Generating mocks with `go generate`
 ----------------------------------
 
