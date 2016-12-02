@@ -15,10 +15,12 @@
 package pegomock
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/onsi/gomega/format"
 	"github.com/petergtz/pegomock/internal/verify"
 )
 
@@ -408,4 +410,22 @@ type Matcher interface {
 	Matches(param Param) bool
 	FailureMessage() string
 	fmt.Stringer
+}
+
+func DumpInvocationsFor(mock Mock) {
+	fmt.Print(SDumpInvocationsFor(mock))
+}
+
+func SDumpInvocationsFor(mock Mock) string {
+	result := &bytes.Buffer{}
+	for _, mockedMethod := range GetGenericMockFrom(mock).mockedMethods {
+		for _, invocation := range mockedMethod.invocations {
+			fmt.Fprintf(result, "Method invocation: %v (\n", mockedMethod.name)
+			for _, param := range invocation.params {
+				fmt.Fprint(result, format.Object(param, 1), ",\n")
+			}
+			fmt.Fprintln(result, ")")
+		}
+	}
+	return result.String()
 }
