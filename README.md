@@ -8,7 +8,8 @@ Getting Pegomock
 Just `go get` it:
 
 ```
-go get github.com/petergtz/pegomock/pegomock
+go get github.com/petergtz/pegomock
+go install github.com/petergtz/pegomock/pegomock # yes, that repetition of pegomock is necessary
 ```
 
 This will download the package and install an executable `pegomock` in your `$GOPATH/bin`.
