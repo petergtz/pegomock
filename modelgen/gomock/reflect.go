@@ -39,11 +39,13 @@ var (
 
 func Reflect(importPath string, symbols []string) (*model.Package, error) {
 	// TODO: sanity check arguments
-
 	progPath := *execOnly
 	if *execOnly == "" {
-		// We use TempDir instead of TempFile so we can control the filename.
-		tmpDir, err := ioutil.TempDir("", "gomock_reflect_")
+		workingDir, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		tmpDir, err := ioutil.TempDir(workingDir, ".tmp_gomock_reflect_")
 		if err != nil {
 			return nil, err
 		}
