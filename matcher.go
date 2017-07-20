@@ -14,7 +14,7 @@ type EqMatcher struct {
 
 func (matcher *EqMatcher) Matches(param Param) bool {
 	matcher.actual = param
-	return matcher.Value == param
+	return reflect.DeepEqual(matcher.Value, param)
 }
 
 func (matcher *EqMatcher) FailureMessage() string {

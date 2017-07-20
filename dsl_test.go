@@ -443,6 +443,16 @@ var _ = Describe("MockDisplay", func() {
 
 	})
 
+	Context("Stubbing using string slice", func() {
+		It("does not panic when comparing the slices in the matcher", func() {
+			When(func() { display.ArrayParam([]string{"one", "two"}) }).Then(func([]Param) ReturnValues {
+				// do nothing, because that's not our focus here.
+				return nil
+			})
+			display.ArrayParam([]string{"one", "two"})
+		})
+	})
+
 	Describe("Different \"Any\" matcher scenarios", func() {
 		It("Succeeds when int-parameter is passed as int but veryfied as float", func() {
 			display.FloatParam(1)
