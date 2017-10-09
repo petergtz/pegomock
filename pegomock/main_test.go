@@ -17,6 +17,7 @@ package main_test
 import (
 	"bytes"
 	"os"
+	"go/build"
 	"path/filepath"
 	"strings"
 
@@ -49,7 +50,7 @@ var _ = Describe("CLI", func() {
 	)
 
 	BeforeEach(func() {
-		packageDir = joinPath(os.Getenv("GOPATH"), "src", "pegomocktest")
+		packageDir = joinPath(build.Default.GOPATH, "src", "pegomocktest")
 		Expect(os.MkdirAll(packageDir, 0755)).To(Succeed())
 		subPackageDir = joinPath(packageDir, "subpackage")
 		Expect(os.MkdirAll(subPackageDir, 0755)).To(Succeed())

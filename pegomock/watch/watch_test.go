@@ -15,6 +15,7 @@
 package watch_test
 
 import (
+	"go/build"
 	"os"
 	"path/filepath"
 	"testing"
@@ -41,7 +42,7 @@ var _ = Describe("NewMockFileUpdater", func() {
 	)
 
 	BeforeEach(func() {
-		packageDir = joinPath(os.Getenv("GOPATH"), "src", "pegomocktest")
+		packageDir = joinPath(build.Default.GOPATH, "src", "pegomocktest")
 		Expect(os.MkdirAll(packageDir, 0755)).To(Succeed())
 		subPackageDir = joinPath(packageDir, "subpackage")
 		Expect(os.MkdirAll(subPackageDir, 0755)).To(Succeed())
