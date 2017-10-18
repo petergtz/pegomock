@@ -21,6 +21,7 @@ func GenerateMockFileInOutputDir(
 	outputFilePathOverride string,
 	packageOut string,
 	selfPackage string,
+	vendorPath string,
 	debugParser bool,
 	out io.Writer,
 	useExperimentalModelGen bool) {
@@ -29,6 +30,7 @@ func GenerateMockFileInOutputDir(
 		OutputFilePath(args, outputDirPath, outputFilePathOverride),
 		packageOut,
 		selfPackage,
+		vendorPath,
 		debugParser,
 		out,
 		useExperimentalModelGen)
@@ -44,8 +46,8 @@ func OutputFilePath(args []string, outputDirPath string, outputFilePathOverride 
 	}
 }
 
-func GenerateMockFile(args []string, outputFilePath string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool) {
-	output := GenerateMockSourceCode(args, packageOut, selfPackage, debugParser, out, useExperimentalModelGen)
+func GenerateMockFile(args []string, outputFilePath string, packageOut string, selfPackage string, vendorPath string, debugParser bool, out io.Writer, useExperimentalModelGen bool) {
+	output := GenerateMockSourceCode(args, packageOut, selfPackage, vendorPath, debugParser, out, useExperimentalModelGen)
 
 	err := ioutil.WriteFile(outputFilePath, output, 0664)
 	if err != nil {
@@ -53,7 +55,7 @@ func GenerateMockFile(args []string, outputFilePath string, packageOut string, s
 	}
 }
 
-func GenerateMockSourceCode(args []string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool) []byte {
+func GenerateMockSourceCode(args []string, packageOut string, selfPackage string, vendorPath string, debugParser bool, out io.Writer, useExperimentalModelGen bool) []byte {
 	var err error
 
 	var ast *model.Package
@@ -81,7 +83,7 @@ func GenerateMockSourceCode(args []string, packageOut string, selfPackage string
 		ast.Print(out)
 	}
 
-	output, err := mockgen.GenerateOutput(ast, src, packageOut, selfPackage)
+	output, err := mockgen.GenerateOutput(ast, src, packageOut, selfPackage, vendorPath)
 	if err != nil {
 		panic(fmt.Errorf("Failed generating mock: %v", err))
 	}
