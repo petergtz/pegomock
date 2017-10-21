@@ -70,8 +70,6 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 		destination := lineCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
 		packageOut := lineCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(targetPath) + "_test").String()
 		selfPackage := lineCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
-		vendorPath := lineCmd.Flag("vendor_path", "If set, the vendor path that has to be handled. "+
-			"This has to be the full path to the vendor package import path. Example: --vendor_path=github.com/petergtz/pegomock/vendor").String()
 		lineArgs := lineCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
 		_, parseErr := lineCmd.Parse(lineParts)
@@ -93,7 +91,7 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 		sourceArgs, err := util.SourceArgs(*lineArgs)
 		util.PanicOnError(err)
 
-		generatedMockSourceCode := filehandling.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, *vendorPath, false, os.Stdout, false)
+		generatedMockSourceCode := filehandling.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, false, os.Stdout, false)
 		mockFilePath := filehandling.OutputFilePath(sourceArgs, ".", *destination)
 		hasChanged := util.WriteFileIfChanged(mockFilePath, generatedMockSourceCode)
 

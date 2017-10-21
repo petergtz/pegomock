@@ -48,8 +48,6 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 		//       Still don't understand what it's really there for.
 		//       So for now it's not tested.
 		selfPackage             = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
-		vendorPath              = generateCmd.Flag("vendor_path", "If set, the vendor path that has to be handled. "+
-			"This has to be the full path to the vendor package import path. Example: --vendor_path=github.com/petergtz/pegomock/vendor").String()
 		debugParser             = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
 		useExperimentalModelGen = generateCmd.Flag("use-experimental-model-gen", "pegomock includes a new experimental source parser based on "+
 			"golang.org/x/tools/go/loader. It's currently experimental, but should be more powerful "+
@@ -81,7 +79,6 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			*destination,
 			*packageOut,
 			*selfPackage,
-			*vendorPath,
 			*debugParser,
 			out,
 			*useExperimentalModelGen)

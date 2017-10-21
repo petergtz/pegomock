@@ -109,7 +109,7 @@ var _ = Describe("NewMockFileUpdater", func() {
 		Context(`and specifying the vendor path`, func() {
 
 			It(`Eventually creates a file containing the import ( vendored_package "github.com/petergtz/vendored_package" )'`, func() {
-				WriteFile(joinPath(packageDir, "interfaces_to_mock"), "--vendor_path=pegomocktest/vendor VendorDisplay")
+				WriteFile(joinPath(packageDir, "interfaces_to_mock"), "VendorDisplay")
 
 				watch.NewMockFileUpdater([]string{packageDir}, false).Update()
 
