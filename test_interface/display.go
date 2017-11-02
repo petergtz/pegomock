@@ -24,6 +24,7 @@ type Display interface {
 	MultipleValues() (string, int, float32)
 	MultipleParamsAndReturnValue(s string, i int) string
 	ArrayParam(array []string)
+	MapParam(m map[string]http.Request)
 	FloatParam(float32)
 	InterfaceParam(interface{})
 	InterfaceReturnValue() interface{}

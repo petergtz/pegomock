@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	. "github.com/petergtz/pegomock"
+	. "github.com/petergtz/pegomock/matchers"
 
 	"github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo"
@@ -534,7 +535,26 @@ var _ = Describe("MockDisplay", func() {
 			display.NetHttpRequestPtrParam(&http.Request{})
 			display.VerifyWasCalledOnce().NetHttpRequestPtrParam(AnyRequestPtr())
 		})
+	})
 
+	Describe("Generated matchers", func() {
+		It("Succeeds when map-parameter is passed to interface{} and verified as any map", func() {
+			display.InterfaceParam(map[string]http.Request{"foo": http.Request{}})
+			display.VerifyWasCalledOnce().InterfaceParam(AnyMapOfStringToHttpRequest())
+		})
+
+		It("Fails when string parameter is passed to interface{} and verified as any map", func() {
+			display.InterfaceParam("This will not match")
+			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(AnyMapOfStringToHttpRequest()) }).To(PanicWithMessageTo(SatisfyAll(
+				ContainSubstring("InterfaceParam(Any(map[string]http.Request))"),
+				ContainSubstring("InterfaceParam(\"This will not match\")"),
+			)))
+		})
+
+		It("Succeeds when map-parameter is passed to interface{} and verified as eq map", func() {
+			display.InterfaceParam(map[string]http.Request{"foo": http.Request{}})
+			display.VerifyWasCalledOnce().InterfaceParam(EqMapOfStringToHttpRequest(map[string]http.Request{"foo": http.Request{}}))
+		})
 	})
 
 	Describe("Logic around matchers and verification", func() {
