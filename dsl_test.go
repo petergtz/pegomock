@@ -71,8 +71,7 @@ var _ = Describe("MockDisplay", func() {
 
 		It("fails during verification when mock was not called", func() {
 			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"MultipleParamsAndReturnValue\" with params [Hello 333] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				"Mock invocation count for MultipleParamsAndReturnValue(\"Hello\", 333) does not match expectation.\n\n\tExpected: 1; but got: 0",
 			)))
 		})
 
@@ -83,8 +82,7 @@ var _ = Describe("MockDisplay", func() {
 
 		It("succeeds verification when verification and invocation are mixed", func() {
 			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"MultipleParamsAndReturnValue\" with params [Hello 333] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "MultipleParamsAndReturnValue(\"Hello\", 333)", expected: "1", actual: "0"}.string(),
 			)))
 			display.MultipleParamsAndReturnValue("Hello", 333)
 			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).NotTo(Panic())
@@ -96,8 +94,7 @@ var _ = Describe("MockDisplay", func() {
 			When(display.MultipleParamsAndReturnValue(AnyString(), EqInt(333))).ThenReturn("Bla")
 
 			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"MultipleParamsAndReturnValue\" with params [Hello 333] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "MultipleParamsAndReturnValue(\"Hello\", 333)", expected: "1", actual: "0"}.string(),
 			)))
 
 			display.MultipleParamsAndReturnValue("Hello", 333)
@@ -109,8 +106,7 @@ var _ = Describe("MockDisplay", func() {
 			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("And again", 333) }).NotTo(Panic())
 
 			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("And again", 444) }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"MultipleParamsAndReturnValue\" with params [And again 444] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "MultipleParamsAndReturnValue(\"And again\", 444)", expected: "1", actual: "0"}.string(),
 			)))
 
 		})
@@ -157,8 +153,7 @@ var _ = Describe("MockDisplay", func() {
 
 		It("fails if verify is called on mock that was not invoked.", func() {
 			Expect(func() { display.VerifyWasCalledOnce().Show("Some parameter") }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"Show\" with params [Some parameter] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "Show(\"Some parameter\")", expected: "1", actual: "0"}.string(),
 			)))
 		})
 
@@ -166,8 +161,7 @@ var _ = Describe("MockDisplay", func() {
 			display.Show("param")
 			display.Show("param")
 			Expect(func() { display.VerifyWasCalledOnce().Show("param") }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"Show\" with params [param] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 2",
+				expectation{method: "Show(\"param\")", expected: "1", actual: "2"}.string(),
 			)))
 
 		})
@@ -230,7 +224,7 @@ var _ = Describe("MockDisplay", func() {
 		It("fails during verification", func() {
 			When(display.SomeValue()).ThenReturn("Hello")
 			Expect(func() { display.VerifyWasCalledOnce().SomeValue() }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"SomeValue\" with params [] does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "SomeValue()", expected: "1", actual: "0"}.string(),
 			)))
 		})
 	})
@@ -245,8 +239,7 @@ var _ = Describe("MockDisplay", func() {
 
 		It("fails during verification if values are not matching", func() {
 			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 666) }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"Flash\" with params [Hello 666] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "Flash(\"Hello\", 666)", expected: "1", actual: "0"}.string(),
 			)))
 		})
 
@@ -260,8 +253,7 @@ var _ = Describe("MockDisplay", func() {
 
 		It("fails during verification when using invalid Eq-matchers ", func() {
 			Expect(func() { display.VerifyWasCalledOnce().Flash(EqString("Invalid"), EqInt(-1)) }).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"Flash\" with params [Eq(Invalid) Eq(-1)] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "Flash(Eq(Invalid), Eq(-1))", expected: "1", actual: "0"}.string(),
 			)))
 		})
 
@@ -294,15 +286,13 @@ var _ = Describe("MockDisplay", func() {
 
 			It("fails during verification if verifying with VerifyWasCalledOnce", func() {
 				Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", 333) }).To(PanicWithMessageTo(HavePrefix(
-					"Mock invocation count for method \"Flash\" with params [Hello 333] " +
-						"does not match expectation.\n\n\tExpected: 1; but got: 2",
+					expectation{method: "Flash(\"Hello\", 333)", expected: "1", actual: "2"}.string(),
 				)))
 			})
 
 			It("fails during verification if verifying with Times(1)", func() {
 				Expect(func() { display.VerifyWasCalled(Times(1)).Flash("Hello", 333) }).To(PanicWithMessageTo(HavePrefix(
-					"Mock invocation count for method \"Flash\" with params [Hello 333] " +
-						"does not match expectation.\n\n\tExpected: 1; but got: 2",
+					expectation{method: "Flash(\"Hello\", 333)", expected: "1", actual: "2"}.string(),
 				)))
 			})
 
@@ -316,8 +306,7 @@ var _ = Describe("MockDisplay", func() {
 
 			It("fails during verification when using AtLeast(3)", func() {
 				Expect(func() { display.VerifyWasCalled(AtLeast(3)).Flash("Hello", 333) }).To(PanicWithMessageTo(HavePrefix(
-					"Mock invocation count for method \"Flash\" with params [Hello 333] " +
-						"does not match expectation.\n\n\tExpected: at least 3; but got: 2",
+					expectation{method: "Flash(\"Hello\", 333)", expected: "at least 3", actual: "2"}.string(),
 				)))
 			})
 
@@ -327,8 +316,7 @@ var _ = Describe("MockDisplay", func() {
 
 			It("fails during verification when using Never()", func() {
 				Expect(func() { display.VerifyWasCalled(Never()).Flash("Hello", 333) }).To(PanicWithMessageTo(HavePrefix(
-					"Mock invocation count for method \"Flash\" with params [Hello 333] " +
-						"does not match expectation.\n\n\tExpected: 0; but got: 2",
+					expectation{method: "Flash(\"Hello\", 333)", expected: "0", actual: "2"}.string(),
 				)))
 			})
 		})
@@ -396,7 +384,7 @@ var _ = Describe("MockDisplay", func() {
 				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("Hello", 111)
 				display.VerifyWasCalledInOrder(Once(), inOrder).Flash("and again", 333)
 			}).To(PanicWithMessageTo(HavePrefix(
-				"Expected function call \"Flash\" with params [Hello 111] before function call \"Flash\" with params [again 222]",
+				"Expected function call Flash(\"Hello\", 111) before function call Flash(\"again\", 222)",
 			)))
 		})
 
@@ -464,8 +452,7 @@ var _ = Describe("MockDisplay", func() {
 				display.InterfaceParam(3)
 				display.VerifyWasCalledOnce().InterfaceParam(AnyFloat32())
 			}).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"InterfaceParam\" with params [Any(float32)] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "InterfaceParam(Any(float32))", expected: "1", actual: "0"}.string(),
 			)))
 		})
 
@@ -474,8 +461,7 @@ var _ = Describe("MockDisplay", func() {
 				display.InterfaceParam(3.141)
 				display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
 			}).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"InterfaceParam\" with params [Any(int)] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "InterfaceParam(Any(int))", expected: "1", actual: "0"}.string(),
 			)))
 		})
 
@@ -494,8 +480,7 @@ var _ = Describe("MockDisplay", func() {
 				display.InterfaceParam(nil)
 				display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
 			}).To(PanicWithMessageTo(HavePrefix(
-				"Mock invocation count for method \"InterfaceParam\" with params [Any(int)] " +
-					"does not match expectation.\n\n\tExpected: 1; but got: 0",
+				expectation{method: "InterfaceParam(Any(int))", expected: "1", actual: "0"}.string(),
 			)))
 		})
 
@@ -553,7 +538,7 @@ var _ = Describe("MockDisplay", func() {
 			display.Flash("Again", 456)
 
 			Expect(func() { display.VerifyWasCalledOnce().Flash("wrong string", -987) }).To(PanicWith(
-				"Mock invocation count for method \"Flash\" with params [wrong string -987] " +
+				"Mock invocation count for Flash(\"wrong string\", -987) " +
 					"does not match expectation.\n\n\tExpected: 1; but got: 0\n\n" +
 					"\tBut other interactions with this mock were:\n" +
 					"\tFlash(\"Hello\", 123)\n" +
@@ -566,7 +551,7 @@ var _ = Describe("MockDisplay", func() {
 			display.Flash("Hello", 123)
 
 			Expect(func() { display.VerifyWasCalledOnce().Flash("wrong string", -987) }).To(PanicWith(
-				"Mock invocation count for method \"Flash\" with params [wrong string -987] " +
+				"Mock invocation count for Flash(\"wrong string\", -987) " +
 					"does not match expectation.\n\n\tExpected: 1; but got: 0\n\n" +
 					"\tBut other interactions with this mock were:\n" +
 					"\tFlash(\"Hello\", 123)\n" +
@@ -577,7 +562,7 @@ var _ = Describe("MockDisplay", func() {
 		It("formats params in interactions with Go syntax for better readability", func() {
 			display.NetHttpRequestParam(http.Request{Host: "x.com"})
 			Expect(func() { display.VerifyWasCalledOnce().NetHttpRequestParam(http.Request{Host: "y.com"}) }).To(PanicWith(
-				`Mock invocation count for method "NetHttpRequestParam" with params [{ <nil>  0 0 map[] <nil> <nil> 0 [] false y.com map[] map[] <nil> map[]   <nil> <nil> <nil> <nil>}] does not match expectation.
+				`Mock invocation count for NetHttpRequestParam(http.Request{Method:"", URL:(*url.URL)(nil), Proto:"", ProtoMajor:0, ProtoMinor:0, Header:http.Header(nil), Body:io.ReadCloser(nil), GetBody:(func() (io.ReadCloser, error))(nil), ContentLength:0, TransferEncoding:[]string(nil), Close:false, Host:"y.com", Form:url.Values(nil), PostForm:url.Values(nil), MultipartForm:(*multipart.Form)(nil), Trailer:http.Header(nil), RemoteAddr:"", RequestURI:"", TLS:(*tls.ConnectionState)(nil), Cancel:(<-chan struct {})(nil), Response:(*http.Response)(nil), ctx:context.Context(nil)}) does not match expectation.
 
 	Expected: 1; but got: 0
 
@@ -589,7 +574,7 @@ var _ = Describe("MockDisplay", func() {
 
 		It("shows no interactions if there were none", func() {
 			Expect(func() { display.VerifyWasCalledOnce().Flash("wrong string", -987) }).To(PanicWith(
-				"Mock invocation count for method \"Flash\" with params [wrong string -987] " +
+				"Mock invocation count for Flash(\"wrong string\", -987) " +
 					"does not match expectation.\n\n\tExpected: 1; but got: 0\n\n" +
 					"\tThere were no other interactions with this mock",
 			))
@@ -713,4 +698,15 @@ func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {
 		result = append(result, slice...)
 	}
 	return
+}
+
+type expectation struct {
+	method   string
+	expected string
+	actual   string
+}
+
+func (e expectation) string() string {
+	return fmt.Sprintf("Mock invocation count for %v does not match expectation.\n\n\tExpected: %v; but got: %v",
+		e.method, e.expected, e.actual)
 }

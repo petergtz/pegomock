@@ -99,8 +99,8 @@ func (genericMock *GenericMock) Verify(
 	if inOrderContext != nil {
 		for _, methodInvocation := range methodInvocations {
 			if methodInvocation.orderingInvocationNumber <= inOrderContext.invocationCounter {
-				GlobalFailHandler(fmt.Sprintf("Expected function call \"%v\" with params %v before function call \"%v\" with params %v",
-					methodName, params, inOrderContext.lastInvokedMethodName, inOrderContext.lastInvokedMethodParams))
+				GlobalFailHandler(fmt.Sprintf("Expected function call %v(%v) before function call %v(%v)",
+					methodName, formatParams(params), inOrderContext.lastInvokedMethodName, formatParams(inOrderContext.lastInvokedMethodParams)))
 			}
 			inOrderContext.invocationCounter = methodInvocation.orderingInvocationNumber
 			inOrderContext.lastInvokedMethodName = methodName
@@ -108,12 +108,12 @@ func (genericMock *GenericMock) Verify(
 		}
 	}
 	if !invocationCountMatcher.Matches(len(methodInvocations)) {
-		var paramsOrMatchers interface{} = params
+		var paramsOrMatchers interface{} = formatParams(params)
 		if len(globalArgMatchers) != 0 {
-			paramsOrMatchers = globalArgMatchers
+			paramsOrMatchers = formatMatchers(globalArgMatchers)
 		}
 		GlobalFailHandler(fmt.Sprintf(
-			"Mock invocation count for method \"%s\" with params %v does not match expectation.\n\n\t%v\n\n\t%v",
+			"Mock invocation count for %v(%v) does not match expectation.\n\n\t%v\n\n\t%v",
 			methodName, paramsOrMatchers, invocationCountMatcher.FailureMessage(), formatInteractions(genericMock.allInteractions())))
 	}
 	return methodInvocations
@@ -174,6 +174,16 @@ func formatParams(params []Param) (result string) {
 			result += ", "
 		}
 		result += fmt.Sprintf("%#v", param)
+	}
+	return
+}
+
+func formatMatchers(matchers []Matcher) (result string) {
+	for i, matcher := range matchers {
+		if i > 0 {
+			result += ", "
+		}
+		result += fmt.Sprintf("%v", matcher)
 	}
 	return
 }
