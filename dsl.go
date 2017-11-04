@@ -140,11 +140,17 @@ func (genericMock *GenericMock) methodInvocations(methodName string, params []Pa
 	var invocations []MethodInvocation
 	if _, exists := genericMock.mockedMethods[methodName]; exists {
 		for _, invocation := range genericMock.mockedMethods[methodName].invocations {
-			if (len(matchers) != 0 && Matchers(matchers).Matches(invocation.params)) ||
-				(reflect.DeepEqual(params, invocation.params) ||
-					(len(params) == 0 && len(invocation.params) == 0)) {
-				invocations = append(invocations, invocation)
+			if len(matchers) != 0 {
+				if Matchers(matchers).Matches(invocation.params) {
+					invocations = append(invocations, invocation)
+				}
+			} else {
+				if reflect.DeepEqual(params, invocation.params) ||
+					(len(params) == 0 && len(invocation.params) == 0) {
+					invocations = append(invocations, invocation)
+				}
 			}
+
 		}
 	}
 	return invocations

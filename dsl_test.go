@@ -46,6 +46,20 @@ func AnyRequest() http.Request {
 	return http.Request{}
 }
 
+type NeverMatcher struct{}
+
+func (matcher *NeverMatcher) Matches(param Param) bool { return false }
+func (matcher *NeverMatcher) FailureMessage() string {
+	return "This matcher never matches (and is only for testing purposes)"
+}
+func (matcher *NeverMatcher) String() string { return "NeverMatching" }
+
+func NeverMatchingRequest() http.Request {
+	fmt.Printf("%#v", reflect.TypeOf((*http.Request)(nil)))
+	RegisterMatcher(&NeverMatcher{})
+	return http.Request{}
+}
+
 func AnyRequestPtr() *http.Request {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*http.Request)(nil))))
 	return nil
@@ -509,6 +523,21 @@ var _ = Describe("MockDisplay", func() {
 			display.VerifyWasCalledOnce().NetHttpRequestPtrParam(AnyRequestPtr())
 		})
 
+	})
+
+	Describe("Logic around matchers and verification", func() {
+		// TODO maybe this should go somewhere else
+		It("Fails when http.Request-parameter is passed as null value and verified as never matching http.Request", func() {
+			display.NetHttpRequestParam(http.Request{})
+			Expect(func() { display.VerifyWasCalledOnce().NetHttpRequestParam(NeverMatchingRequest()) }).
+				To(PanicWithMessageTo(Equal(`Mock invocation count for NetHttpRequestParam(NeverMatching) does not match expectation.
+
+	Expected: 1; but got: 0
+
+	But other interactions with this mock were:
+	NetHttpRequestParam(http.Request{Method:"", URL:(*url.URL)(nil), Proto:"", ProtoMajor:0, ProtoMinor:0, Header:http.Header(nil), Body:io.ReadCloser(nil), GetBody:(func() (io.ReadCloser, error))(nil), ContentLength:0, TransferEncoding:[]string(nil), Close:false, Host:"", Form:url.Values(nil), PostForm:url.Values(nil), MultipartForm:(*multipart.Form)(nil), Trailer:http.Header(nil), RemoteAddr:"", RequestURI:"", TLS:(*tls.ConnectionState)(nil), Cancel:(<-chan struct {})(nil), Response:(*http.Response)(nil), ctx:context.Context(nil)})
+`)))
+		})
 	})
 
 	Describe("Stubbing with multiple ThenReturns versus multiple stubbings with same parameters", func() {
