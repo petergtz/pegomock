@@ -42,8 +42,13 @@ func AnyError() error {
 }
 
 func AnyRequest() http.Request {
-	RegisterMatcher(NewAnyMatcher(reflect.TypeOf(http.Request{})))
+	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*http.Request)(nil)).Elem()))
 	return http.Request{}
+}
+
+func AnyRequestPtr() *http.Request {
+	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((**http.Request)(nil)).Elem()))
+	return nil
 }
 
 type NeverMatcher struct{}
@@ -55,14 +60,8 @@ func (matcher *NeverMatcher) FailureMessage() string {
 func (matcher *NeverMatcher) String() string { return "NeverMatching" }
 
 func NeverMatchingRequest() http.Request {
-	fmt.Printf("%#v", reflect.TypeOf((*http.Request)(nil)))
 	RegisterMatcher(&NeverMatcher{})
 	return http.Request{}
-}
-
-func AnyRequestPtr() *http.Request {
-	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*http.Request)(nil))))
-	return nil
 }
 
 var _ = Describe("MockDisplay", func() {
@@ -511,6 +510,19 @@ var _ = Describe("MockDisplay", func() {
 		It("Succeeds when http.Request-parameter is passed as null value and verified as any http.Request", func() {
 			display.NetHttpRequestParam(http.Request{})
 			display.VerifyWasCalledOnce().NetHttpRequestParam(AnyRequest())
+		})
+
+		It("Succeeds when http.Request-parameter is passed as null value to interface{} and verified as any http.Request", func() {
+			display.InterfaceParam(http.Request{})
+			display.VerifyWasCalledOnce().InterfaceParam(AnyRequest())
+		})
+
+		It("Fails when *pointer* to http.Request-parameter is passed to interface{} and verified as any http.Request", func() {
+			display.InterfaceParam(&http.Request{})
+			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(AnyRequest()) }).To(PanicWithMessageTo(SatisfyAll(
+				ContainSubstring("InterfaceParam(Any(http.Request))"),
+				ContainSubstring("InterfaceParam(&http.Request{Method"),
+			)))
 		})
 
 		It("Succeeds when http.Request-Pointer-parameter is passed as nil and verified as any *http.Request", func() {
