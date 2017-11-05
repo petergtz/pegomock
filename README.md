@@ -236,6 +236,9 @@ When(contactList.getContactByFullName(EqString("Dan"), AnyString())).thenReturn(
 ```
 
 ### Writing Your Own Argument Matchers
+
+**Important:** `Eq...` and `Any...` matchers for types used in mock methods, can now be _auto-generated_ while generating the mock. So writing your own argument matchers is not necessary for most use cases. See section [The Pegomock CLI](#generating-mocks) for more information.
+
 You can also write your own matchers for non-basic types. E.g. if you have a `struct MyType`, you can write an _Equals_ and _Any_ matcher like this:
 ```go
 func EqMyType(value MyType) MyType {
@@ -376,6 +379,8 @@ Flags can be any of the following:
 -	`--output,-o`: Output file; defaults to mock_<interface>_test.go.
 
 -	`--package`: Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test
+
+- `--generate-matchers,-m`: This will auto-generate argument matchers and place them in a `matchers` directory alongside the mock source code itself.
 
 For more flags, run:
 
