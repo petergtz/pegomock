@@ -36,8 +36,8 @@ import (
 
 const mockFrameworkImportPath = "github.com/petergtz/pegomock"
 
-func GenerateOutput(ast *model.Package, source, packageOut, selfPackage string) ([]byte, map[string][]byte) {
-	g := generator{typesSet: make(map[string][]byte)}
+func GenerateOutput(ast *model.Package, source, packageOut, selfPackage string) ([]byte, map[string]string) {
+	g := generator{typesSet: make(map[string]string)}
 	g.generateCode(source, ast, packageOut, selfPackage)
 	return g.formattedOutput(), g.typesSet
 }
@@ -45,7 +45,7 @@ func GenerateOutput(ast *model.Package, source, packageOut, selfPackage string) 
 type generator struct {
 	buf        bytes.Buffer
 	packageMap map[string]string // map from import path to package name
-	typesSet   map[string][]byte
+	typesSet   map[string]string
 }
 
 func (g *generator) generateCode(source string, pkg *model.Package, pkgName, selfPackage string) {
@@ -346,7 +346,7 @@ func argDataFor(method *model.Method, packageMap map[string]string, pkgOverride 
 	return
 }
 
-func addTypesFromMethodParamsTo(typesSet map[string][]byte, params []*model.Parameter, packageMap map[string]string) {
+func addTypesFromMethodParamsTo(typesSet map[string]string, params []*model.Parameter, packageMap map[string]string) {
 	for _, param := range params {
 		switch typedType := param.Type.(type) {
 		case *model.NamedType, *model.PointerType, *model.ArrayType, *model.MapType, *model.ChanType:
@@ -364,8 +364,8 @@ func addTypesFromMethodParamsTo(typesSet map[string][]byte, params []*model.Para
 	}
 }
 
-func generateMatcherSourceCode(t model.Type, packageMap map[string]string) []byte {
-	return []byte(fmt.Sprintf(`package matchers
+func generateMatcherSourceCode(t model.Type, packageMap map[string]string) string {
+	return fmt.Sprintf(`package matchers
 
 import (
 	"reflect"
@@ -395,7 +395,7 @@ func Eq%v(value %v) %v {
 		t.String(packageMap, ""),
 		t.String(packageMap, ""),
 		t.String(packageMap, ""),
-	))
+	)
 }
 
 func optionalPackageOf(t model.Type, packageMap map[string]string) string {
@@ -419,24 +419,24 @@ func optionalPackageOf(t model.Type, packageMap map[string]string) string {
 	}
 }
 
-func underscoreNameFor(t model.Type, packageMap map[string]string) string {
+func spaceSeparatedNameFor(t model.Type, packageMap map[string]string) string {
 	switch typedType := t.(type) {
 	case model.PredeclaredType:
 		return typedType.String(packageMap, "")
 	case *model.NamedType:
-		return strings.Replace(strings.ToLower(typedType.String(packageMap, "")), ".", "_", -1)
+		return strings.Replace((typedType.String(packageMap, "")), ".", " ", -1)
 	case *model.PointerType:
-		return "ptr_to_" + underscoreNameFor(typedType.Type, packageMap)
+		return "ptr to " + spaceSeparatedNameFor(typedType.Type, packageMap)
 	case *model.ArrayType:
 		if typedType.Len == -1 {
-			return "slice_of_" + underscoreNameFor(typedType.Type, packageMap)
+			return "slice of " + spaceSeparatedNameFor(typedType.Type, packageMap)
 		} else {
-			return "array_of_" + underscoreNameFor(typedType.Type, packageMap)
+			return "array of " + spaceSeparatedNameFor(typedType.Type, packageMap)
 		}
 	case *model.MapType:
-		return "map_of_" + underscoreNameFor(typedType.Key, packageMap) + "_to_" + underscoreNameFor(typedType.Value, packageMap)
+		return "map of " + spaceSeparatedNameFor(typedType.Key, packageMap) + " to " + spaceSeparatedNameFor(typedType.Value, packageMap)
 	case *model.ChanType:
-		return "chan_of_" + underscoreNameFor(typedType.Type, packageMap)
+		return "chan of " + spaceSeparatedNameFor(typedType.Type, packageMap)
 	// TODO:
 	// case *model.FuncType:
 	default:
@@ -445,7 +445,11 @@ func underscoreNameFor(t model.Type, packageMap map[string]string) string {
 }
 
 func camelcaseNameFor(t model.Type, packageMap map[string]string) string {
-	return strings.Replace(strings.Title(strings.Replace(underscoreNameFor(t, packageMap), "_", " ", -1)), " ", "", -1)
+	return strings.Replace(strings.Title(strings.Replace(spaceSeparatedNameFor(t, packageMap), "_", " ", -1)), " ", "", -1)
+}
+
+func underscoreNameFor(t model.Type, packageMap map[string]string) string {
+	return strings.ToLower(strings.Replace(spaceSeparatedNameFor(t, packageMap), " ", "_", -1))
 }
 
 func (g *generator) p(format string, args ...interface{}) *generator {

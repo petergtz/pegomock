@@ -62,7 +62,7 @@ func GenerateMockFile(args []string, outputFilePath string, packageOut string, s
 			panic(fmt.Errorf("Failed making dirs \"%v\": %v", matchersPath, err))
 		}
 		for matcherTypeName, matcherSourceCode := range matcherSourceCodes {
-			err := ioutil.WriteFile(filepath.Join(matchersPath, matcherTypeName+".go"), matcherSourceCode, 0664)
+			err := ioutil.WriteFile(filepath.Join(matchersPath, matcherTypeName+".go"), []byte(matcherSourceCode), 0664)
 			if err != nil {
 				panic(fmt.Errorf("Failed writing to destination: %v", err))
 			}
@@ -70,7 +70,7 @@ func GenerateMockFile(args []string, outputFilePath string, packageOut string, s
 	}
 }
 
-func GenerateMockSourceCode(args []string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool) ([]byte, map[string][]byte) {
+func GenerateMockSourceCode(args []string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool) ([]byte, map[string]string) {
 	var err error
 
 	var ast *model.Package
