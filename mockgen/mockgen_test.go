@@ -16,7 +16,7 @@ var _ = Describe("Mockgen", func() {
 			_, matcherSourceCodes := mockgen.GenerateOutput(ast, "irrelevant", "test_package", "")
 
 			Expect(matcherSourceCodes).To(SatisfyAll(
-				HaveLen(4),
+				HaveLen(5),
 				HaveKeyWithValue("http_request", SatisfyAll(
 					ContainSubstring("http \"net/http\""),
 					ContainSubstring("func AnyHttpRequest() http.Request"),
@@ -31,6 +31,9 @@ var _ = Describe("Mockgen", func() {
 				HaveKeyWithValue("map_of_string_to_http_request", SatisfyAll(
 					ContainSubstring("http \"net/http\""),
 					ContainSubstring("func AnyMapOfStringToHttpRequest() map[string]http.Request"),
+				)),
+				HaveKeyWithValue("io_readcloser", SatisfyAll(
+					ContainSubstring("func AnyIoReadCloser() io.ReadCloser"),
 				)),
 			))
 		})
