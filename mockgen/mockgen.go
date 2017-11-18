@@ -97,13 +97,16 @@ func generateUniquePackageNamesFor(importPaths map[string]bool) (packageMap, non
 		packageMap[importPath] = packageName
 		packageNamesAlreadyUsed[packageName] = true
 
-		vendorParsedImportPath := importPath
-		if split := strings.Split(importPath, "/vendor/"); len(split) > 1 {
-			vendorParsedImportPath = split[1]
-		}
-		nonVendorPackageMap[vendorParsedImportPath] = packageName
+		nonVendorPackageMap[vendorCleaned(importPath)] = packageName
 	}
 	return
+}
+
+func vendorCleaned(importPath string) string {
+	if split := strings.Split(importPath, "/vendor/"); len(split) > 1 {
+		return split[1]
+	}
+	return importPath
 }
 
 // sanitize cleans up a string to make a suitable package name.
@@ -403,7 +406,7 @@ func optionalPackageOf(t model.Type, packageMap map[string]string) string {
 	case model.PredeclaredType:
 		return ""
 	case *model.NamedType:
-		return fmt.Sprintf("%v \"%v\"", packageMap[typedType.Package], typedType.Package)
+		return fmt.Sprintf("%v \"%v\"", packageMap[typedType.Package], vendorCleaned(typedType.Package))
 	case *model.PointerType:
 		return optionalPackageOf(typedType.Type, packageMap)
 	case *model.ArrayType:
