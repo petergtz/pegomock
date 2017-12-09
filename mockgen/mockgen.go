@@ -426,7 +426,7 @@ func optionalPackageOf(t model.Type, packageMap map[string]string) string {
 func spaceSeparatedNameFor(t model.Type, packageMap map[string]string) string {
 	switch typedType := t.(type) {
 	case model.PredeclaredType:
-		// replace call non-alphanumeric characters from type string
+		// replace all non-alphanumeric characters from type string
 		rgx := regexp.MustCompile("[^a-zA-Z0-9]+")
 		return rgx.ReplaceAllString(typedType.String(packageMap, ""), "")
 	case *model.NamedType:
