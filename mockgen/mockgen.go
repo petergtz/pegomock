@@ -425,7 +425,13 @@ func optionalPackageOf(t model.Type, packageMap map[string]string) string {
 func spaceSeparatedNameFor(t model.Type, packageMap map[string]string) string {
 	switch typedType := t.(type) {
 	case model.PredeclaredType:
-		return typedType.String(packageMap, "")
+		tt := typedType.String(packageMap, "")
+		if tt == "interface{}" {
+			// if a predeclared type is interface
+			// return a string type without curly brackets
+			return "interface"
+		}
+		return tt
 	case *model.NamedType:
 		return strings.Replace((typedType.String(packageMap, "")), ".", " ", -1)
 	case *model.PointerType:

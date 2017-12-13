@@ -37,4 +37,5 @@ type Display interface {
 	VariadicParam(v ...string)
 	NormalAndVariadicParam(s string, i int, v ...string)
 	CamelCaseTypeParam(camelCaseParam io.ReadCloser)
+	MapOfStringToInterfaceParam(m map[string]interface{})
 }
