@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+	"sync"
 
 	. "github.com/petergtz/pegomock"
 	. "github.com/petergtz/pegomock/matchers"
@@ -747,6 +748,23 @@ var _ = Describe("MockDisplay", func() {
 				Expect(varArgs[1][0]).To(Equal("twelf"))
 				Expect(varArgs[1][1]).To(Equal("thirteen"))
 				Expect(varArgs[1][2]).To(Equal("fourteen"))
+			})
+		})
+
+		Context("Data race", func(){
+			It("detect", func() {
+				Expect(func() {
+					wg := sync.WaitGroup{}
+					for i := 0; i < 10; i++ {
+						wg.Add(1)
+
+						go func() {
+							display.SomeValue()
+							wg.Done()
+						}()
+					}
+					wg.Wait()
+				}).ToNot(Panic())
 			})
 		})
 
