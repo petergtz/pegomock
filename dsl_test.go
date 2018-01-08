@@ -751,8 +751,8 @@ var _ = Describe("MockDisplay", func() {
 			})
 		})
 
-		Context("Data race", func(){
-			It("detect", func() {
+		Context("Concurrent access to mock", func() {
+			It("does not panic", func() {
 				Expect(func() {
 					wg := sync.WaitGroup{}
 					for i := 0; i < 10; i++ {
