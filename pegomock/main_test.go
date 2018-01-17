@@ -16,8 +16,8 @@ package main_test
 
 import (
 	"bytes"
-	"os"
 	"go/build"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -25,7 +25,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/petergtz/pegomock/pegomock"
+	main "github.com/petergtz/pegomock/pegomock"
 	. "github.com/petergtz/pegomock/pegomock/testutil"
 
 	"testing"
@@ -139,6 +139,16 @@ var _ = Describe("CLI", func() {
 				var buf bytes.Buffer
 				main.Run(cmd("pegomock generate -d mydisplay.go"), &buf, app, done)
 				Expect(buf.String()).To(ContainSubstring("- method Show"))
+			})
+		})
+
+		Context("with args -o where output override is a path with a non-existing directory", func() {
+			It(`creates an output directory before code generation`, func() {
+				var buf bytes.Buffer
+				main.Run(cmd("pegomock generate mydisplay.go -o testoutput/test.go"), &buf, app, done)
+				Expect(joinPath(packageDir, "testoutput/test.go")).To(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package pegomocktest_test")))
 			})
 		})
 
