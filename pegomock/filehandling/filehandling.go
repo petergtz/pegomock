@@ -26,6 +26,15 @@ func GenerateMockFileInOutputDir(
 	out io.Writer,
 	useExperimentalModelGen bool,
 	shouldGenerateMatchers bool) {
+
+	// if a file path override is specified
+	// ensure all directories in the path are created
+	if outputFilePathOverride != "" {
+		if err := os.MkdirAll(filepath.Dir(outputFilePathOverride), 0755); err != nil {
+			panic(fmt.Errorf("Failed to make output directory, error: %v", err))
+		}
+	}
+
 	GenerateMockFile(
 		args,
 		OutputFilePath(args, outputDirPath, outputFilePathOverride),
