@@ -51,6 +51,8 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 		debugParser            = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
 		shouldGenerateMatchers = generateCmd.Flag("generate-matchers", "Generate matchers for all non built-in types in a \"matchers\" "+
 			"directory in the same directory where the mock file gets generated.").Short('m').Default("false").Bool()
+		matchersDestination = generateCmd.Flag("matchers-dir", "Generate matchers in the specified directory; defaults to "+
+			filepath.Join("<mockdir>", "matchers")).Short('p').String()
 		useExperimentalModelGen = generateCmd.Flag("use-experimental-model-gen", "pegomock includes a new experimental source parser based on "+
 			"golang.org/x/tools/go/loader. It's currently experimental, but should be more powerful "+
 			"than the current reflect-based modelgen. E.g. reflect cannot detect method parameter names,"+
@@ -84,7 +86,8 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			*debugParser,
 			out,
 			*useExperimentalModelGen,
-			*shouldGenerateMatchers)
+			*shouldGenerateMatchers,
+			*matchersDestination)
 
 	case watchCmd.FullCommand():
 		var targetPaths []string

@@ -152,6 +152,16 @@ var _ = Describe("CLI", func() {
 			})
 		})
 
+		Context("with args for specifying matcher directory", func() {
+			It(`creates matchers in the specified directory`, func() {
+				var buf bytes.Buffer
+				main.Run(cmd("pegomock generate --generate-matchers --matchers-dir custom/matcher/dir VendorDisplay"), &buf, app, done)
+
+				Expect(joinPath(packageDir, "custom/matcher/dir")).To(BeADirectory())
+				Expect(joinPath(packageDir, "custom/matcher/dir/vendored_package_interface.go")).To(BeAnExistingFile())
+			})
+		})
+
 		Context("with too many args", func() {
 
 			It(`reports an error and the usage`, func() {
