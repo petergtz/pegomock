@@ -54,6 +54,8 @@ pegomock.RegisterMockFailHandler(ginkgo.Fail)
 
 before you start your test suite.
 
+**Note:** Ginkgo introduced a new keyword in its DSL: `When`. This causes name collisions when dot-importing both Ginkgo and Pegomock. To avoid this, you can follow [these Ginkgo import instructions](https://onsi.github.io/ginkgo/#avoiding-dot-imports).
+
 Generating Your First Mock and Using It
 ---------------------------------------
 
