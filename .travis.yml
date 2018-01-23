@@ -1,6 +1,6 @@
 language: go
 go:
-  - stable
+  - tip
 
 install:
   - go get github.com/onsi/gomega
