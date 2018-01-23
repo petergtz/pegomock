@@ -19,17 +19,23 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"testing"
 	"sync"
+	"testing"
 
 	. "github.com/petergtz/pegomock"
 	. "github.com/petergtz/pegomock/matchers"
 
 	"github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
 	"github.com/petergtz/pegomock"
+)
+
+var (
+	BeforeEach = ginkgo.BeforeEach
+	It         = ginkgo.It
+	Describe   = ginkgo.Describe
+	Context    = ginkgo.Context
 )
 
 func TestDSL(t *testing.T) {
