@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"sync"
 	"testing"
 
 	"github.com/onsi/gomega/format"
@@ -49,16 +50,19 @@ type invocation struct {
 }
 
 type GenericMock struct {
+	sync.Mutex
 	mockedMethods map[string]*mockedMethod
 }
 
 func (genericMock *GenericMock) Invoke(methodName string, params []Param, returnTypes []reflect.Type) ReturnValues {
+	genericMock.Lock()
 	lastInvocation = &invocation{
 		genericMock: genericMock,
 		MethodName:  methodName,
 		Params:      params,
 		ReturnTypes: returnTypes,
 	}
+	genericMock.Unlock()
 	return genericMock.getOrCreateMockedMethod(methodName).Invoke(params)
 }
 
@@ -71,6 +75,8 @@ func (genericMock *GenericMock) stubWithCallback(methodName string, paramMatcher
 }
 
 func (genericMock *GenericMock) getOrCreateMockedMethod(methodName string) *mockedMethod {
+	genericMock.Lock()
+	defer genericMock.Unlock()
 	if _, ok := genericMock.mockedMethods[methodName]; !ok {
 		genericMock.mockedMethods[methodName] = &mockedMethod{name: methodName}
 	}
@@ -216,13 +222,16 @@ func (genericMock *GenericMock) allInteractions() map[string][]MethodInvocation 
 }
 
 type mockedMethod struct {
+	sync.Mutex
 	name        string
 	invocations []MethodInvocation
 	stubbings   Stubbings
 }
 
 func (method *mockedMethod) Invoke(params []Param) ReturnValues {
+	method.Lock()
 	method.invocations = append(method.invocations, MethodInvocation{params, globalInvocationCounter.nextNumber()})
+	method.Unlock()
 	stubbing := method.stubbings.find(params)
 	if stubbing == nil {
 		return ReturnValues{}
@@ -413,9 +422,14 @@ func transformParamsIntoEqMatchers(params []Param) []Matcher {
 	return paramMatchers
 }
 
-var genericMocks = make(map[Mock]*GenericMock)
+var (
+	genericMocksMutex sync.Mutex
+	genericMocks      = make(map[Mock]*GenericMock)
+)
 
 func GetGenericMockFrom(mock Mock) *GenericMock {
+	genericMocksMutex.Lock()
+	defer genericMocksMutex.Unlock()
 	if genericMocks[mock] == nil {
 		genericMocks[mock] = &GenericMock{mockedMethods: make(map[string]*mockedMethod)}
 	}

@@ -62,7 +62,6 @@ func (g *generator) generateCode(source string, pkg *model.Package, pkgName, sel
 	g.emptyLine()
 	g.p("import (")
 	g.p("\"reflect\"")
-	g.p("\"sync\"")
 	for packagePath, packageName := range nonVendorPackageMap {
 		if packagePath != selfPackage {
 			g.p("%v %q", packageName, packagePath)
@@ -162,7 +161,6 @@ func (g *generator) generateMockType(mockTypeName string) {
 		emptyLine().
 		p("type %v struct {", mockTypeName).
 		p("	fail func(message string, callerSkip ...int)").
-		p("	sync.Mutex").
 		p("}").
 		emptyLine().
 		p("func New%v() *%v {", mockTypeName, mockTypeName).
@@ -175,8 +173,6 @@ func (g *generator) generateMockType(mockTypeName string) {
 func (g *generator) generateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
 	args, argNames, _, returnTypes := argDataFor(method, g.packageMap, pkgOverride)
 	g.p("func (mock *%v) %v(%v) (%v) {", mockType, method.Name, join(args), join(returnTypes))
-	g.p("	mock.Lock()")
-	g.p("	defer mock.Unlock()")
 	g.GenerateParamsDeclaration(argNames, method.Variadic != nil)
 	reflectReturnTypes := make([]string, len(returnTypes))
 	for i, returnType := range returnTypes {

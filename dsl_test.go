@@ -34,6 +34,7 @@ import (
 var (
 	BeforeEach = ginkgo.BeforeEach
 	It         = ginkgo.It
+	FIt        = ginkgo.FIt
 	Describe   = ginkgo.Describe
 	Context    = ginkgo.Context
 )
@@ -771,6 +772,18 @@ var _ = Describe("MockDisplay", func() {
 					}
 					wg.Wait()
 				}).ToNot(Panic())
+			})
+
+			Context("Concurrent access due to one mock calling the other", func() {
+				It("does not deadlock", func() {
+					When(display.SomeValue()).Then(func(params []Param) ReturnValues {
+						display.Show("Some irrelevant string")
+						return []ReturnValue{}
+					})
+					display.SomeValue()
+
+					display.VerifyWasCalledOnce().Show(AnyString())
+				})
 			})
 		})
 
