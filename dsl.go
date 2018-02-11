@@ -35,8 +35,10 @@ func RegisterMockTestingT(t *testing.T) {
 	RegisterMockFailHandler(BuildTestingTGomegaFailHandler(t))
 }
 
-var lastInvocation *invocation
-var lastInvocationMutex sync.Mutex
+var (
+	lastInvocation      *invocation
+	lastInvocationMutex sync.Mutex
+)
 
 var globalArgMatchers Matchers
 
@@ -336,6 +338,7 @@ func (stubbing *Stubbing) Invoke(params []Param) ReturnValues {
 }
 
 type Matchers []Matcher
+
 var matchersMutex sync.Mutex
 
 func (matchers Matchers) Matches(params []Param) bool {
