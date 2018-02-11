@@ -785,6 +785,44 @@ var _ = Describe("MockDisplay", func() {
 					display.VerifyWasCalledOnce().Show(AnyString())
 				})
 			})
+
+			Context("Concurrent access with multiple stubbing and validation", func() {
+				It("does not panic", func() {
+					pegomock.
+						When(display.MultipleValues()).
+						Then(func(params []pegomock.Param) pegomock.ReturnValues {
+						return pegomock.ReturnValues{"MultipleValues", 42, float32(3.14)}
+					})
+
+					pegomock.
+						When(display.MultipleParamsAndReturnValue(AnyString(), AnyInt())).
+						Then(func(params []pegomock.Param) pegomock.ReturnValues {
+						return pegomock.ReturnValues{"MultipleParamsAndReturnValue" + params[0].(string)}
+					})
+
+					Expect(func() {
+						wg := sync.WaitGroup{}
+
+						go display.SomeValue()
+
+						for i := 0; i < 10; i++ {
+							wg.Add(1)
+
+							go func() {
+								display.MultipleValues()
+								display.MultipleParamsAndReturnValue("TestString", 42)
+								wg.Done()
+							}()
+						}
+
+						wg.Wait()
+
+						display.VerifyWasCalled(Times(10)).MultipleValues()
+						display.VerifyWasCalled(Times(10)).MultipleParamsAndReturnValue(AnyString(), AnyInt())
+						display.VerifyWasCalledOnce().SomeValue()
+					}).ToNot(Panic())
+				})
+			})
 		})
 
 	})
