@@ -149,7 +149,6 @@ func (genericMock *GenericMock) GetInvocationParams(methodInvocations []MethodIn
 func (genericMock *GenericMock) methodInvocations(methodName string, params []Param, matchers []Matcher) []MethodInvocation {
 	var invocations []MethodInvocation
 	if method, exists := genericMock.mockedMethods[methodName]; exists {
-		method.Lock()
 		for _, invocation := range method.invocations {
 			if len(matchers) != 0 {
 				if Matchers(matchers).Matches(invocation.params) {
@@ -162,7 +161,6 @@ func (genericMock *GenericMock) methodInvocations(methodName string, params []Pa
 				}
 			}
 		}
-		method.Unlock()
 	}
 	return invocations
 }
@@ -339,15 +337,11 @@ func (stubbing *Stubbing) Invoke(params []Param) ReturnValues {
 
 type Matchers []Matcher
 
-var matchersMutex sync.Mutex
-
 func (matchers Matchers) Matches(params []Param) bool {
 	if len(matchers) != len(params) { // Technically, this is not an error. Variadic arguments can cause this
 		return false
 	}
 
-	matchersMutex.Lock()
-	defer matchersMutex.Unlock()
 	for i := range params {
 		if !matchers[i].Matches(params[i]) {
 			return false
@@ -357,8 +351,6 @@ func (matchers Matchers) Matches(params []Param) bool {
 }
 
 func (matchers *Matchers) append(matcher Matcher) {
-	matchersMutex.Lock()
-	defer matchersMutex.Unlock()
 	*matchers = append(*matchers, matcher)
 }
 

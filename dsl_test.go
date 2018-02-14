@@ -803,8 +803,6 @@ var _ = Describe("MockDisplay", func() {
 					Expect(func() {
 						wg := sync.WaitGroup{}
 
-						go display.SomeValue()
-
 						for i := 0; i < 10; i++ {
 							wg.Add(1)
 
@@ -819,7 +817,7 @@ var _ = Describe("MockDisplay", func() {
 
 						display.VerifyWasCalled(Times(10)).MultipleValues()
 						display.VerifyWasCalled(Times(10)).MultipleParamsAndReturnValue(AnyString(), AnyInt())
-						display.VerifyWasCalledOnce().SomeValue()
+						display.VerifyWasCalled(Never()).SomeValue()
 					}).ToNot(Panic())
 				})
 			})
