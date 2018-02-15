@@ -35,7 +35,11 @@ func RegisterMockTestingT(t *testing.T) {
 	RegisterMockFailHandler(BuildTestingTGomegaFailHandler(t))
 }
 
-var lastInvocation *invocation
+var (
+	lastInvocation      *invocation
+	lastInvocationMutex sync.Mutex
+)
+
 var globalArgMatchers Matchers
 
 func RegisterMatcher(matcher Matcher) {
@@ -55,14 +59,14 @@ type GenericMock struct {
 }
 
 func (genericMock *GenericMock) Invoke(methodName string, params []Param, returnTypes []reflect.Type) ReturnValues {
-	genericMock.Lock()
+	lastInvocationMutex.Lock()
 	lastInvocation = &invocation{
 		genericMock: genericMock,
 		MethodName:  methodName,
 		Params:      params,
 		ReturnTypes: returnTypes,
 	}
-	genericMock.Unlock()
+	lastInvocationMutex.Unlock()
 	return genericMock.getOrCreateMockedMethod(methodName).Invoke(params)
 }
 
@@ -144,8 +148,8 @@ func (genericMock *GenericMock) GetInvocationParams(methodInvocations []MethodIn
 
 func (genericMock *GenericMock) methodInvocations(methodName string, params []Param, matchers []Matcher) []MethodInvocation {
 	var invocations []MethodInvocation
-	if _, exists := genericMock.mockedMethods[methodName]; exists {
-		for _, invocation := range genericMock.mockedMethods[methodName].invocations {
+	if method, exists := genericMock.mockedMethods[methodName]; exists {
+		for _, invocation := range method.invocations {
 			if len(matchers) != 0 {
 				if Matchers(matchers).Matches(invocation.params) {
 					invocations = append(invocations, invocation)
@@ -156,7 +160,6 @@ func (genericMock *GenericMock) methodInvocations(methodName string, params []Pa
 					invocations = append(invocations, invocation)
 				}
 			}
-
 		}
 	}
 	return invocations
@@ -258,15 +261,19 @@ func (method *mockedMethod) reset(paramMatchers Matchers) {
 
 type Counter struct {
 	count int
+	sync.Mutex
 }
 
 func (counter *Counter) nextNumber() (nextNumber int) {
+	counter.Lock()
+	defer counter.Unlock()
+
 	nextNumber = counter.count
 	counter.count++
 	return
 }
 
-var globalInvocationCounter = Counter{1}
+var globalInvocationCounter = Counter{count: 1}
 
 type MethodInvocation struct {
 	params                   []Param
@@ -334,6 +341,7 @@ func (matchers Matchers) Matches(params []Param) bool {
 	if len(matchers) != len(params) { // Technically, this is not an error. Variadic arguments can cause this
 		return false
 	}
+
 	for i := range params {
 		if !matchers[i].Matches(params[i]) {
 			return false
@@ -358,7 +366,10 @@ func When(invocation ...interface{}) *ongoingStubbing {
 	verify.Argument(lastInvocation != nil,
 		"When() requires an argument which has to be 'a method call on a mock'.")
 	defer func() {
+		lastInvocationMutex.Lock()
 		lastInvocation = nil
+		lastInvocationMutex.Unlock()
+
 		globalArgMatchers = nil
 	}()
 	lastInvocation.genericMock.mockedMethods[lastInvocation.MethodName].removeLastInvocation()
