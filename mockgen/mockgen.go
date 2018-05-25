@@ -173,6 +173,9 @@ func (g *generator) generateMockType(mockTypeName string) {
 func (g *generator) generateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
 	args, argNames, _, returnTypes := argDataFor(method, g.packageMap, pkgOverride)
 	g.p("func (mock *%v) %v(%v) (%v) {", mockType, method.Name, join(args), join(returnTypes))
+	g.p("if mock == nil {").
+		p("	panic(\"mock must not be nil. Use myMock := NewMock%v().\")", mockType).
+		p("}")
 	g.GenerateParamsDeclaration(argNames, method.Variadic != nil)
 	reflectReturnTypes := make([]string, len(returnTypes))
 	for i, returnType := range returnTypes {
