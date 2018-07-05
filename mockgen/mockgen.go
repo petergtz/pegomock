@@ -174,7 +174,7 @@ func (g *generator) generateMockMethod(mockType string, method *model.Method, pk
 	args, argNames, _, returnTypes := argDataFor(method, g.packageMap, pkgOverride)
 	g.p("func (mock *%v) %v(%v) (%v) {", mockType, method.Name, join(args), join(returnTypes))
 	g.p("if mock == nil {").
-		p("	panic(\"mock must not be nil. Use myMock := NewMock%v().\")", mockType).
+		p("	panic(\"mock must not be nil. Use myMock := New%v().\")", mockType).
 		p("}")
 	g.GenerateParamsDeclaration(argNames, method.Variadic != nil)
 	reflectReturnTypes := make([]string, len(returnTypes))
