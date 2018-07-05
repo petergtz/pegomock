@@ -79,7 +79,6 @@ func (genericMock *GenericMock) stubWithCallback(methodName string, paramMatcher
 }
 
 func (genericMock *GenericMock) getOrCreateMockedMethod(methodName string) *mockedMethod {
-	fmt.Fprintf(nil, "")
 	genericMock.Lock()
 	defer genericMock.Unlock()
 	if _, ok := genericMock.mockedMethods[methodName]; !ok {
