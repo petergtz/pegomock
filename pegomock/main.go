@@ -60,7 +60,7 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			"\n\nThis option only works when specifying package path + interface, not with .go source files. Also, you can only specify *one* interface. This option cannot be used with the watch command.").Bool()
 		generateCmdArgs = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
-		watchCmd       = app.Command("watch", "Watch ")
+		watchCmd       = app.Command("watch", "Watch over changes in interfaces and regenerate mocks if changes are detected.")
 		watchRecursive = watchCmd.Flag("recursive", "Recursively watch sub-directories as well.").Short('r').Bool()
 		watchPackages  = watchCmd.Arg("directories...", "One or more directories of Go packages to watch").Strings()
 	)
