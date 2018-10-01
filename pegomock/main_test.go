@@ -152,6 +152,27 @@ var _ = Describe("CLI", func() {
 			})
 		})
 
+		Context("with args --output-dir", func() {
+			It(`creates the mocks in output dir with the dir's basename as package name`, func() {
+				var buf bytes.Buffer
+				main.Run(cmd("pegomock generate MyDisplay --output-dir fakes"), &buf, app, done)
+				Expect(joinPath(packageDir, "fakes/mock_mydisplay.go")).To(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package fakes")))
+			})
+		})
+
+		Context("with args --output-dir and --package", func() {
+			It(`creates the mocks in output dir with the specified package name`, func() {
+				var buf bytes.Buffer
+				main.Run(cmd("pegomock generate MyDisplay --output-dir fakes --package other"), &buf, app, done)
+
+				Expect(joinPath(packageDir, "fakes/mock_mydisplay.go")).To(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("package other")))
+			})
+		})
+
 		Context("with args for specifying matcher directory", func() {
 			It(`creates matchers in the specified directory`, func() {
 				var buf bytes.Buffer

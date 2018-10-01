@@ -18,6 +18,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -41,9 +42,10 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 	app.FatalIfError(err, "")
 
 	var (
-		generateCmd = app.Command("generate", "Generate mocks based on the args provided. ")
-		destination = generateCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
-		packageOut  = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(workingDir) + "_test").String()
+		generateCmd    = app.Command("generate", "Generate mocks based on the args provided. ")
+		destination    = generateCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
+		destinationDir = generateCmd.Flag("output-dir", "Output directory; defaults to current directory. If set, package name defaults to this directory, unless explicitly overridden.").String()
+		packageOut     = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").String()
 		// TODO: self_package was taken as is from GoMock.
 		//       Still don't understand what it's really there for.
 		//       So for now it's not tested.
@@ -77,11 +79,35 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			app.FatalUsage(err.Error())
 		}
 
+		if *destination != "" && *destinationDir != "" {
+			app.FatalUsage("Cannot use --output and --output-dir together")
+		}
+
+		realPackageOut := *packageOut
+		if *packageOut == "" {
+			realPackageOut = filepath.Base(workingDir) + "_test"
+		}
+
+		realDestination := *destination
+		realDestinationDir := workingDir
+		if *destinationDir != "" {
+			realDestinationDir, err = filepath.Abs(*destinationDir)
+			app.FatalIfError(err, "")
+			if *packageOut == "" {
+				realPackageOut = *destinationDir
+			}
+			if util.SourceMode(sourceArgs) {
+				realDestination = filepath.Join(*destinationDir, "mock_"+strings.TrimSuffix(sourceArgs[0], ".go")+".go")
+			} else {
+				realDestination = filepath.Join(*destinationDir, "mock_"+strings.ToLower(sourceArgs[len(sourceArgs)-1])+".go")
+			}
+		}
+
 		filehandling.GenerateMockFileInOutputDir(
 			sourceArgs,
-			workingDir,
-			*destination,
-			*packageOut,
+			realDestinationDir,
+			realDestination,
+			realPackageOut,
 			*selfPackage,
 			*debugParser,
 			out,
