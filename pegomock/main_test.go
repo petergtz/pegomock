@@ -257,7 +257,7 @@ var _ = Describe("CLI", func() {
 						main.Run(cmd("pegomock remove -n"), &buf, os.Stdin, app, done)
 
 						Expect(buf.String()).To(ContainSubstring(`Deleting the following files:
-/Users/pego/workspace/go/src/pegomocktest/mock_mydisplay_test.go`))
+` + build.Default.GOPATH + `/src/pegomocktest/mock_mydisplay_test.go`))
 						Expect(joinPath(packageDir, "mock_mydisplay_test.go")).NotTo(BeAnExistingFile())
 						Expect(joinPath(subPackageDir, "mock_subdisplay.go")).To(BeAnExistingFile())
 					})
@@ -270,8 +270,8 @@ var _ = Describe("CLI", func() {
 						main.Run(cmd("pegomock remove -n -r"), &buf, os.Stdin, app, done)
 
 						Expect(buf.String()).To(ContainSubstring(`Deleting the following files:
-/Users/pego/workspace/go/src/pegomocktest/mock_mydisplay_test.go
-/Users/pego/workspace/go/src/pegomocktest/subpackage/mock_subdisplay.go`))
+` + build.Default.GOPATH + `/src/pegomocktest/mock_mydisplay_test.go
+` + build.Default.GOPATH + `/src/pegomocktest/subpackage/mock_subdisplay.go`))
 						Expect(joinPath(packageDir, "mock_mydisplay_test.go")).NotTo(BeAnExistingFile())
 						Expect(joinPath(subPackageDir, "mock_subdisplay.go")).NotTo(BeAnExistingFile())
 					})
@@ -296,7 +296,7 @@ var _ = Describe("CLI", func() {
 						main.Run(cmd("pegomock remove -n "+subPackageDir), &buf, os.Stdin, app, done)
 
 						Expect(buf.String()).To(ContainSubstring(`Deleting the following files:
-/Users/pego/workspace/go/src/pegomocktest/subpackage/mock_subdisplay.go`))
+` + build.Default.GOPATH + `/src/pegomocktest/subpackage/mock_subdisplay.go`))
 						Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(BeAnExistingFile())
 						Expect(joinPath(subPackageDir, "mock_subdisplay.go")).NotTo(BeAnExistingFile())
 					})
@@ -311,7 +311,7 @@ var _ = Describe("CLI", func() {
 						main.Run(cmd("pegomock remove"), &buf, strings.NewReader("yes\n"), app, done)
 
 						Expect(buf.String()).To(ContainSubstring(`Will delete the following files:
-/Users/pego/workspace/go/src/pegomocktest/mock_mydisplay_test.go
+` + build.Default.GOPATH + `/src/pegomocktest/mock_mydisplay_test.go
 Continue? [y/n]:`))
 						Expect(joinPath(packageDir, "mock_mydisplay_test.go")).NotTo(BeAnExistingFile())
 						Expect(joinPath(subPackageDir, "mock_subdisplay.go")).To(BeAnExistingFile())
@@ -325,7 +325,7 @@ Continue? [y/n]:`))
 						main.Run(cmd("pegomock remove"), &buf, strings.NewReader("no\n"), app, done)
 
 						Expect(buf.String()).To(ContainSubstring(`Will delete the following files:
-/Users/pego/workspace/go/src/pegomocktest/mock_mydisplay_test.go
+` + build.Default.GOPATH + `/src/pegomocktest/mock_mydisplay_test.go
 Continue? [y/n]:`))
 						Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(BeAnExistingFile())
 						Expect(joinPath(subPackageDir, "mock_subdisplay.go")).To(BeAnExistingFile())
@@ -340,7 +340,7 @@ Continue? [y/n]:`))
 					main.Run(cmd("pegomock remove --dry-run"), &buf, os.Stdin, app, done)
 
 					Expect(buf.String()).To(ContainSubstring(`Would delete the following files:
-/Users/pego/workspace/go/src/pegomocktest/mock_mydisplay_test.go`))
+` + build.Default.GOPATH + `/src/pegomocktest/mock_mydisplay_test.go`))
 					Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(BeAnExistingFile())
 					Expect(joinPath(subPackageDir, "mock_subdisplay.go")).To(BeAnExistingFile())
 				})
