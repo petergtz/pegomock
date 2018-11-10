@@ -94,7 +94,7 @@ func Run(cliArgs []string, out io.Writer, app *kingpin.Application, done chan bo
 			realDestinationDir, err = filepath.Abs(*destinationDir)
 			app.FatalIfError(err, "")
 			if *packageOut == "" {
-				realPackageOut = *destinationDir
+				realPackageOut = filepath.Base(*destinationDir)
 			}
 			if util.SourceMode(sourceArgs) {
 				realDestination = filepath.Join(*destinationDir, "mock_"+strings.TrimSuffix(sourceArgs[0], ".go")+".go")
