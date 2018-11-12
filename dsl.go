@@ -110,7 +110,9 @@ func (genericMock *GenericMock) Verify(
 	startTime := time.Now()
 	// timeoutLoop:
 	for {
+		genericMock.Lock()
 		methodInvocations := genericMock.methodInvocations(methodName, params, globalArgMatchers)
+		genericMock.Unlock()
 		if inOrderContext != nil {
 			for _, methodInvocation := range methodInvocations {
 				if methodInvocation.orderingInvocationNumber <= inOrderContext.invocationCounter {
@@ -167,6 +169,7 @@ func (genericMock *GenericMock) GetInvocationParams(methodInvocations []MethodIn
 func (genericMock *GenericMock) methodInvocations(methodName string, params []Param, matchers []Matcher) []MethodInvocation {
 	var invocations []MethodInvocation
 	if method, exists := genericMock.mockedMethods[methodName]; exists {
+		method.Lock()
 		for _, invocation := range method.invocations {
 			if len(matchers) != 0 {
 				if Matchers(matchers).Matches(invocation.params) {
@@ -179,6 +182,7 @@ func (genericMock *GenericMock) methodInvocations(methodName string, params []Pa
 				}
 			}
 		}
+		method.Unlock()
 	}
 	return invocations
 }
