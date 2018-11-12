@@ -21,6 +21,7 @@ import (
 	"sort"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/onsi/gomega/format"
 	"github.com/petergtz/pegomock/internal/verify"
@@ -95,7 +96,9 @@ func (genericMock *GenericMock) Verify(
 	inOrderContext *InOrderContext,
 	invocationCountMatcher Matcher,
 	methodName string,
-	params []Param) []MethodInvocation {
+	params []Param,
+	timeout time.Duration,
+) []MethodInvocation {
 	if GlobalFailHandler == nil {
 		panic("No GlobalFailHandler set. Please use either RegisterMockFailHandler or RegisterMockTestingT to set a fail handler.")
 	}
@@ -104,29 +107,44 @@ func (genericMock *GenericMock) Verify(
 	if len(globalArgMatchers) != 0 {
 		verifyArgMatcherUse(globalArgMatchers, params)
 	}
-
-	methodInvocations := genericMock.methodInvocations(methodName, params, globalArgMatchers)
-	if inOrderContext != nil {
-		for _, methodInvocation := range methodInvocations {
-			if methodInvocation.orderingInvocationNumber <= inOrderContext.invocationCounter {
-				GlobalFailHandler(fmt.Sprintf("Expected function call %v(%v) before function call %v(%v)",
-					methodName, formatParams(params), inOrderContext.lastInvokedMethodName, formatParams(inOrderContext.lastInvokedMethodParams)))
+	startTime := time.Now()
+	// timeoutLoop:
+	for {
+		methodInvocations := genericMock.methodInvocations(methodName, params, globalArgMatchers)
+		if inOrderContext != nil {
+			for _, methodInvocation := range methodInvocations {
+				if methodInvocation.orderingInvocationNumber <= inOrderContext.invocationCounter {
+					// TODO: should introduce the following, in case we decide support "inorder" and "eventually"
+					// if time.Since(startTime) < timeout {
+					// 	continue timeoutLoop
+					// }
+					GlobalFailHandler(fmt.Sprintf("Expected function call %v(%v) before function call %v(%v)",
+						methodName, formatParams(params), inOrderContext.lastInvokedMethodName, formatParams(inOrderContext.lastInvokedMethodParams)))
+				}
+				inOrderContext.invocationCounter = methodInvocation.orderingInvocationNumber
+				inOrderContext.lastInvokedMethodName = methodName
+				inOrderContext.lastInvokedMethodParams = params
 			}
-			inOrderContext.invocationCounter = methodInvocation.orderingInvocationNumber
-			inOrderContext.lastInvokedMethodName = methodName
-			inOrderContext.lastInvokedMethodParams = params
 		}
-	}
-	if !invocationCountMatcher.Matches(len(methodInvocations)) {
-		var paramsOrMatchers interface{} = formatParams(params)
-		if len(globalArgMatchers) != 0 {
-			paramsOrMatchers = formatMatchers(globalArgMatchers)
+		if !invocationCountMatcher.Matches(len(methodInvocations)) {
+			if time.Since(startTime) < timeout {
+				time.Sleep(10 * time.Millisecond)
+				continue
+			}
+			var paramsOrMatchers interface{} = formatParams(params)
+			if len(globalArgMatchers) != 0 {
+				paramsOrMatchers = formatMatchers(globalArgMatchers)
+			}
+			timeoutInfo := ""
+			if timeout > 0 {
+				timeoutInfo = fmt.Sprintf(" after timeout of %v", timeout)
+			}
+			GlobalFailHandler(fmt.Sprintf(
+				"Mock invocation count for %v(%v) does not match expectation%v.\n\n\t%v\n\n\t%v",
+				methodName, paramsOrMatchers, timeoutInfo, invocationCountMatcher.FailureMessage(), formatInteractions(genericMock.allInteractions())))
 		}
-		GlobalFailHandler(fmt.Sprintf(
-			"Mock invocation count for %v(%v) does not match expectation.\n\n\t%v\n\n\t%v",
-			methodName, paramsOrMatchers, invocationCountMatcher.FailureMessage(), formatInteractions(genericMock.allInteractions())))
+		return methodInvocations
 	}
-	return methodInvocations
 }
 
 // TODO this doesn't need to be a method, can be a free function

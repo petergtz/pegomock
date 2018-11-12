@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"sync"
 	"testing"
+	"time"
 
 	. "github.com/petergtz/pegomock"
 	. "github.com/petergtz/pegomock/matchers"
@@ -791,14 +792,14 @@ var _ = Describe("MockDisplay", func() {
 					pegomock.
 						When(display.MultipleValues()).
 						Then(func(params []pegomock.Param) pegomock.ReturnValues {
-						return pegomock.ReturnValues{"MultipleValues", 42, float32(3.14)}
-					})
+							return pegomock.ReturnValues{"MultipleValues", 42, float32(3.14)}
+						})
 
 					pegomock.
 						When(display.MultipleParamsAndReturnValue(AnyString(), AnyInt())).
 						Then(func(params []pegomock.Param) pegomock.ReturnValues {
-						return pegomock.ReturnValues{"MultipleParamsAndReturnValue" + params[0].(string)}
-					})
+							return pegomock.ReturnValues{"MultipleParamsAndReturnValue" + params[0].(string)}
+						})
 
 					Expect(func() {
 						wg := sync.WaitGroup{}
@@ -821,6 +822,24 @@ var _ = Describe("MockDisplay", func() {
 					}).ToNot(Panic())
 				})
 			})
+		})
+
+	})
+
+	Describe("Using VerifyWasCalledEventually when object under test calls goroutine", func() {
+		It("correctly fails when timeout is shorter than mock invocation, and succeeds, when timeout is longer", func() {
+			go func() {
+				time.Sleep(1 * time.Second)
+				display.Show("hello")
+			}()
+			Expect(func() { display.VerifyWasCalledEventually(Once(), 100*time.Millisecond).Show("hello") }).
+				To(PanicWithMessageTo(SatisfyAll(
+					ContainSubstring("Mock invocation count for Show(\"hello\") does not match expectation"),
+					ContainSubstring("after timeout of 100ms"),
+					ContainSubstring("Expected: 1; but got: 0"),
+				)))
+
+			Expect(func() { display.VerifyWasCalledEventually(Once(), 2*time.Second).Show("hello") }).NotTo(Panic())
 		})
 
 	})

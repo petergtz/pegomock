@@ -62,6 +62,7 @@ func (g *generator) generateCode(source string, pkg *model.Package, pkgName, sel
 	g.emptyLine()
 	g.p("import (")
 	g.p("\"reflect\"")
+	g.p("\"time\"")
 	for packagePath, packageName := range nonVendorPackageMap {
 		if packagePath != selfPackage {
 			g.p("%v %q", packageName, packagePath)
@@ -213,6 +214,7 @@ func (g *generator) generateVerifierType(interfaceName string) *generator {
 		p("	mock *Mock%v", interfaceName).
 		p("	invocationCountMatcher pegomock.Matcher").
 		p("	inOrderContext *pegomock.InOrderContext").
+		p("	timeout time.Duration").
 		p("}").
 		emptyLine()
 }
@@ -220,15 +222,33 @@ func (g *generator) generateVerifierType(interfaceName string) *generator {
 func (g *generator) generateMockVerifyMethods(interfaceName string) {
 	g.
 		p("func (mock *Mock%v) VerifyWasCalledOnce() *Verifier%v {", interfaceName, interfaceName).
-		p("	return &Verifier%v{mock, pegomock.Times(1), nil}", interfaceName).
+		p("	return &Verifier%v{", interfaceName).
+		p("		mock: mock,").
+		p("		invocationCountMatcher: pegomock.Times(1),").
+		p("	}").
 		p("}").
 		emptyLine().
 		p("func (mock *Mock%v) VerifyWasCalled(invocationCountMatcher pegomock.Matcher) *Verifier%v {", interfaceName, interfaceName).
-		p("	return &Verifier%v{mock, invocationCountMatcher, nil}", interfaceName).
+		p("	return &Verifier%v{", interfaceName).
+		p("		mock: mock,").
+		p("		invocationCountMatcher: invocationCountMatcher,").
+		p("	}").
 		p("}").
 		emptyLine().
 		p("func (mock *Mock%v) VerifyWasCalledInOrder(invocationCountMatcher pegomock.Matcher, inOrderContext *pegomock.InOrderContext) *Verifier%v {", interfaceName, interfaceName).
-		p("	return &Verifier%v{mock, invocationCountMatcher, inOrderContext}", interfaceName).
+		p("	return &Verifier%v{", interfaceName).
+		p("		mock: mock,").
+		p("		invocationCountMatcher: invocationCountMatcher,").
+		p("		inOrderContext: inOrderContext,").
+		p("	}").
+		p("}").
+		emptyLine().
+		p("func (mock *Mock%v) VerifyWasCalledEventually(invocationCountMatcher pegomock.Matcher, timeout time.Duration) *Verifier%v {", interfaceName, interfaceName).
+		p("	return &Verifier%v{", interfaceName).
+		p("		mock: mock,").
+		p("		invocationCountMatcher: invocationCountMatcher,").
+		p("		timeout: timeout,").
+		p("	}").
 		p("}").
 		emptyLine()
 }
@@ -237,7 +257,7 @@ func (g *generator) generateVerifierMethod(interfaceName string, method *model.M
 	return g.
 		p("func (verifier *Verifier%v) %v(%v) *%v {", interfaceName, method.Name, join(args), returnTypeString).
 		GenerateParamsDeclaration(argNames, method.Variadic != nil).
-		p("methodInvocations := pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", params)", method.Name).
+		p("methodInvocations := pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", params, verifier.timeout)", method.Name).
 		p("return &%v{mock: verifier.mock, methodInvocations: methodInvocations}", returnTypeString).
 		p("}")
 }
