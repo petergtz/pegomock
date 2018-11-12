@@ -97,8 +97,12 @@ func (genericMock *GenericMock) Verify(
 	invocationCountMatcher Matcher,
 	methodName string,
 	params []Param,
-	timeout time.Duration,
+	options ...interface{},
 ) []MethodInvocation {
+	var timeout time.Duration
+	if len(options) == 1 {
+		timeout = options[0].(time.Duration)
+	}
 	if GlobalFailHandler == nil {
 		panic("No GlobalFailHandler set. Please use either RegisterMockFailHandler or RegisterMockTestingT to set a fail handler.")
 	}
