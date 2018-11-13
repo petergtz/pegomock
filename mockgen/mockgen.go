@@ -64,7 +64,7 @@ func (g *generator) generateCode(source string, pkg *model.Package, pkgName, sel
 	g.p("\"reflect\"")
 	g.p("\"time\"")
 	for packagePath, packageName := range nonVendorPackageMap {
-		if packagePath != selfPackage {
+		if packagePath != selfPackage && packagePath != "time" && packagePath != "reflect" {
 			g.p("%v %q", packageName, packagePath)
 		}
 	}

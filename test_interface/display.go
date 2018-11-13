@@ -14,8 +14,11 @@
 
 package test_interface
 
-import "net/http"
-import "io"
+import (
+	"io"
+	"net/http"
+	"time"
+)
 
 // Display is some sample interface to be mocked.
 type Display interface {
@@ -38,4 +41,5 @@ type Display interface {
 	NormalAndVariadicParam(s string, i int, v ...string)
 	CamelCaseTypeParam(camelCaseParam io.ReadCloser)
 	MapOfStringToInterfaceParam(m map[string]interface{})
+	UseTime(t time.Time)
 }
