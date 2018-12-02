@@ -844,6 +844,21 @@ var _ = Describe("MockDisplay", func() {
 
 	})
 
+	Describe("Manipulating out args (using pointers) in Then blocks", func() {
+		It("correctly manipulates the out args", func() {
+			type Entity struct{ i int }
+			var input = []Entity{}
+			When(func() { display.InterfaceParam(AnyInterface()) }).Then(func(params []pegomock.Param) pegomock.ReturnValues {
+				*params[0].(*[]Entity) = append(*params[0].(*[]Entity), Entity{3})
+				return nil
+			})
+
+			display.InterfaceParam(&input)
+
+			Expect(input).To(HaveLen(1))
+			Expect(input[0].i).To(Equal(3))
+		})
+	})
 })
 
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {
