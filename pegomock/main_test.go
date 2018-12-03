@@ -64,6 +64,8 @@ var _ = Describe("CLI", func() {
 
 		WriteFile(joinPath(packageDir, "mydisplay.go"),
 			"package pegomocktest; type MyDisplay interface {  Show(something string) }")
+		WriteFile(joinPath(packageDir, "http_request_handler.go"),
+			`package pegomocktest; import "net/http"; type RequestHandler interface {  Handler(r *http.Request) }`)
 		WriteFile(joinPath(subPackageDir, "subdisplay.go"),
 			"package subpackage; type SubDisplay interface {  ShowMe() }")
 		WriteFile(joinPath(vendorPackageDir, "iface.go"),
@@ -246,7 +248,6 @@ var _ = Describe("CLI", func() {
 				Expect(joinPath(subPackageDir, "mock_subdisplay.go")).To(SatisfyAll(
 					BeAnExistingFile(),
 					BeAFileContainingSubString("package subpackage")))
-
 			})
 
 			Context("Non-interactive", func() {
@@ -274,6 +275,49 @@ var _ = Describe("CLI", func() {
 ` + build.Default.GOPATH + `/src/pegomocktest/subpackage/mock_subdisplay.go`))
 						Expect(joinPath(packageDir, "mock_mydisplay_test.go")).NotTo(BeAnExistingFile())
 						Expect(joinPath(subPackageDir, "mock_subdisplay.go")).NotTo(BeAnExistingFile())
+					})
+
+					Context("custom matchers were generated", func() {
+						BeforeEach(func() {
+							main.Run(cmd("pegomock generate -m RequestHandler"), os.Stdout, os.Stdin, app, done)
+							Expect(joinPath(packageDir, "mock_requesthandler_test.go")).To(SatisfyAll(
+								BeAnExistingFile(),
+								BeAFileContainingSubString("package pegomocktest_test")))
+
+							Expect(joinPath(packageDir, "matchers", "ptr_to_http_request.go")).To(SatisfyAll(
+								BeAnExistingFile(),
+								BeAFileContainingSubString("package matchers"),
+							))
+							main.Run(cmd("pegomock generate -m --output-dir "+subPackageDir+" RequestHandler"), os.Stdout, os.Stdin, app, done)
+
+							Expect(joinPath(subPackageDir, "mock_requesthandler.go")).To(SatisfyAll(
+								BeAnExistingFile(),
+								BeAFileContainingSubString("package subpackage")))
+							Expect(joinPath(subPackageDir, "matchers", "ptr_to_http_request.go")).To(SatisfyAll(
+								BeAnExistingFile(),
+								BeAFileContainingSubString("package matchers"),
+							))
+
+						})
+
+						It("removes matchers and matchers dir too", func() {
+							var buf bytes.Buffer
+
+							main.Run(cmd("pegomock remove -n -r"), &buf, os.Stdin, app, done)
+
+							Expect(buf.String()).To(Equal(`Deleting the following files:
+`+build.Default.GOPATH+`/src/pegomocktest/matchers
+`+build.Default.GOPATH+`/src/pegomocktest/matchers/ptr_to_http_request.go
+`+build.Default.GOPATH+`/src/pegomocktest/mock_mydisplay_test.go
+`+build.Default.GOPATH+`/src/pegomocktest/mock_requesthandler_test.go
+`+build.Default.GOPATH+`/src/pegomocktest/subpackage/matchers
+`+build.Default.GOPATH+`/src/pegomocktest/subpackage/matchers/ptr_to_http_request.go
+`+build.Default.GOPATH+`/src/pegomocktest/subpackage/mock_requesthandler.go
+`+build.Default.GOPATH+`/src/pegomocktest/subpackage/mock_subdisplay.go
+`), buf.String())
+							Expect(joinPath(packageDir, "mock_mydisplay_test.go")).NotTo(BeAnExistingFile())
+							Expect(joinPath(subPackageDir, "mock_subdisplay.go")).NotTo(BeAnExistingFile())
+						})
 					})
 				})
 
