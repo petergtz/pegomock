@@ -859,6 +859,20 @@ var _ = Describe("MockDisplay", func() {
 			Expect(input[0].i).To(Equal(3))
 		})
 	})
+
+	Context("Mock created with custom fail handler", func() {
+		It("calls custom fail handler instead of global one", func() {
+			failHandlerCalled := false
+			display := NewMockDisplay(WithFailHandler(func(message string, callerSkip ...int) {
+				failHandlerCalled = true
+			}))
+
+			display.VerifyWasCalledOnce().Show("This was never called")
+
+			Expect(failHandlerCalled).To(BeTrue())
+		})
+	})
+
 })
 
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {

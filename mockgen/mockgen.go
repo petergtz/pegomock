@@ -164,9 +164,16 @@ func (g *generator) generateMockType(mockTypeName string) {
 		p("	fail func(message string, callerSkip ...int)").
 		p("}").
 		emptyLine().
-		p("func New%v() *%v {", mockTypeName, mockTypeName).
-		p("	return &%v{fail: pegomock.GlobalFailHandler}", mockTypeName).
+		p("func New%v(options ...pegomock.Option) *%v {", mockTypeName, mockTypeName).
+		p("	mock := &%v{}", mockTypeName).
+		p("	for _, option := range options {").
+		p("		option.Apply(mock)").
+		p("	}").
+		p("	return mock").
 		p("}").
+		emptyLine().
+		p("func (mock *%v) SetFailHandler(fh pegomock.FailHandler) { mock.fail = fh }", mockTypeName).
+		p("func (mock *%v) FailHandler() pegomock.FailHandler      { return mock.fail }", mockTypeName).
 		emptyLine()
 }
 
