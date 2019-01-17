@@ -375,6 +375,20 @@ texts := display.VerifyWasCalled(AtLeast(1)).Show(AnyString()).GetAllCapturedArg
 Expect(texts).To(ConsistOf("Hello", "Hello, again", "And again"))
 ```
 
+Verifying with Asynchronous Mock Invocations
+--------------------------------------------
+
+When the code exercising the mock is run as part of a Goroutine, it's necessary to verify in a polling fashion until a timeout kicks in. `VerifyWasCalledEventually` can help here:
+```go
+display := NewMockDisplay()
+
+go func() {
+	doSomething()
+	display.Show("Hello")
+}()
+
+display.VerifyWasCalledEventually(Once(), 2*time.Second).Show("Hello")
+```
 
 
 The Pegomock CLI
