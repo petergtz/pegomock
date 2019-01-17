@@ -209,6 +209,7 @@ phoneBook.VerifyWasCalledOnce().GetPhoneNumber("Tom")
 
 -	By default, for all methods that return a value, a mock will return zero values.
 -	Once stubbed, the method will always return a stubbed value, regardless of how many times it is called.
+- `ThenReturn` supports chaining, i.e. `ThenReturn(...).ThenReturn(...)` etc. The mock will return the values in the same order the chaining was done. The values from the last `ThenReturn` will be returned indefinitely when the number of call exceeds the `ThenReturn`s.
 
 Stubbing Functions That Have no Return Value
 --------------------------------------------
