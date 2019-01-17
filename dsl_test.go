@@ -28,16 +28,25 @@ import (
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
-	. "github.com/onsi/gomega"
 	"github.com/petergtz/pegomock"
 )
 
 var (
-	BeforeEach = ginkgo.BeforeEach
-	It         = ginkgo.It
-	FIt        = ginkgo.FIt
-	Describe   = ginkgo.Describe
-	Context    = ginkgo.Context
+	BeforeEach       = ginkgo.BeforeEach
+	It               = ginkgo.It
+	FIt              = ginkgo.FIt
+	Describe         = ginkgo.Describe
+	Context          = ginkgo.Context
+	BeNil            = gomega.BeNil
+	BeTrue           = gomega.BeTrue
+	ConsistOf        = gomega.ConsistOf
+	ContainSubstring = gomega.ContainSubstring
+	Equal            = gomega.Equal
+	Expect           = gomega.Expect
+	HaveLen          = gomega.HaveLen
+	HavePrefix       = gomega.HavePrefix
+	Panic            = gomega.Panic
+	SatisfyAll       = gomega.SatisfyAll
 )
 
 func TestDSL(t *testing.T) {
