@@ -20,6 +20,7 @@ func GenerateMockFileInOutputDir(
 	args []string,
 	outputDirPath string,
 	outputFilePathOverride string,
+	nameOut string,
 	packageOut string,
 	selfPackage string,
 	debugParser bool,
@@ -39,6 +40,7 @@ func GenerateMockFileInOutputDir(
 	GenerateMockFile(
 		args,
 		OutputFilePath(args, outputDirPath, outputFilePathOverride),
+		nameOut,
 		packageOut,
 		selfPackage,
 		debugParser,
@@ -58,8 +60,8 @@ func OutputFilePath(args []string, outputDirPath string, outputFilePathOverride 
 	}
 }
 
-func GenerateMockFile(args []string, outputFilePath string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool, shouldGenerateMatchers bool, matchersDestination string) {
-	mockSourceCode, matcherSourceCodes := GenerateMockSourceCode(args, packageOut, selfPackage, debugParser, out, useExperimentalModelGen)
+func GenerateMockFile(args []string, outputFilePath string, nameOut string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool, shouldGenerateMatchers bool, matchersDestination string) {
+	mockSourceCode, matcherSourceCodes := GenerateMockSourceCode(args, nameOut, packageOut, selfPackage, debugParser, out, useExperimentalModelGen)
 
 	err := ioutil.WriteFile(outputFilePath, mockSourceCode, 0664)
 	if err != nil {
@@ -84,7 +86,7 @@ func GenerateMockFile(args []string, outputFilePath string, packageOut string, s
 	}
 }
 
-func GenerateMockSourceCode(args []string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool) ([]byte, map[string]string) {
+func GenerateMockSourceCode(args []string, nameOut string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool) ([]byte, map[string]string) {
 	var err error
 
 	var ast *model.Package
@@ -112,5 +114,5 @@ func GenerateMockSourceCode(args []string, packageOut string, selfPackage string
 		ast.Print(out)
 	}
 
-	return mockgen.GenerateOutput(ast, src, packageOut, selfPackage)
+	return mockgen.GenerateOutput(ast, src, nameOut, packageOut, selfPackage)
 }

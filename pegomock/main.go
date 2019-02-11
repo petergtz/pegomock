@@ -46,6 +46,7 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 		generateCmd    = app.Command("generate", "Generate mocks based on the args provided. ")
 		destination    = generateCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
 		destinationDir = generateCmd.Flag("output-dir", "Output directory; defaults to current directory. If set, package name defaults to this directory, unless explicitly overridden.").String()
+		mockNameOut    = generateCmd.Flag("mock-name", "Struct name of the generated mock; defaults to the interface prefixed with Mock").String()
 		packageOut     = generateCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").String()
 		// TODO: self_package was taken as is from GoMock.
 		//       Still don't understand what it's really there for.
@@ -115,6 +116,7 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 			sourceArgs,
 			realDestinationDir,
 			realDestination,
+			*mockNameOut,
 			realPackageOut,
 			*selfPackage,
 			*debugParser,

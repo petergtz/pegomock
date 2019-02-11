@@ -100,6 +100,14 @@ var _ = Describe("CLI", func() {
 					BeAnExistingFile(),
 					BeAFileContainingSubString("package pegomocktest_test")))
 			})
+
+			It(`sets the default mock name "DisplayMock"`, func() {
+				main.Run(cmd("pegomock generate MyDisplay"), os.Stdout, os.Stdin, app, done)
+
+				Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("MockMyDisplay")))
+			})
 		})
 
 		Context(`with args "VendorDisplay""`, func() {
@@ -132,7 +140,9 @@ var _ = Describe("CLI", func() {
 
 				Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
 					BeAnExistingFile(),
-					BeAFileContainingSubString("package pegomocktest_test")))
+					BeAFileContainingSubString("package pegomocktest_test"),
+					BeAFileContainingSubString("MockMyDisplay"),
+				))
 			})
 		})
 
@@ -172,6 +182,16 @@ var _ = Describe("CLI", func() {
 				Expect(joinPath(packageDir, "fakes/mock_mydisplay.go")).To(SatisfyAll(
 					BeAnExistingFile(),
 					BeAFileContainingSubString("package other")))
+			})
+		})
+
+		Context("with args --mock-name", func() {
+			It(`sets the mock name as given`, func() {
+				main.Run(cmd("pegomock generate MyDisplay --mock-name RenamedMock"), os.Stdout, os.Stdin, app, done)
+
+				Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
+					BeAnExistingFile(),
+					BeAFileContainingSubString("RenamedMock")))
 			})
 		})
 
