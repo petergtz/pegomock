@@ -21,11 +21,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/alecthomas/kingpin.v2"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	main "github.com/petergtz/pegomock/pegomock"
+
 	. "github.com/petergtz/pegomock/pegomock/testutil"
 
 	"testing"
