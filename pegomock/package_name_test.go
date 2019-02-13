@@ -27,7 +27,7 @@ var _ = Describe("DetermineBla", func() {
 		Expect(os.RemoveAll(packageDir)).To(Succeed())
 	})
 
-	Context("only one go file", func() {
+	XContext("only one go file", func() {
 		It("names the package name after package name + _test suffix", func() {
 			WriteFile(joinPath(packageDir, "mydisplay.go"), "package package_name")
 
@@ -35,7 +35,7 @@ var _ = Describe("DetermineBla", func() {
 		})
 	})
 
-	Context("multiple go files with different package names", func() {
+	XContext("multiple go files with different package names", func() {
 		It("fails", func() {
 			WriteFile(joinPath(packageDir, "mydisplay.go"), "package package_name")
 			WriteFile(joinPath(packageDir, "other.go"), "package other_package_name")
@@ -45,7 +45,7 @@ var _ = Describe("DetermineBla", func() {
 		})
 	})
 
-	Context("go file and go test file", func() {
+	XContext("go file and go test file", func() {
 		It("determines the package name from the test file", func() {
 			WriteFile(joinPath(packageDir, "mydisplay.go"), "package package_name")
 			WriteFile(joinPath(packageDir, "mydisplay_test.go"), "package non_conventional_package_name_test")
