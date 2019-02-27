@@ -129,8 +129,17 @@ func (g *modelGenerator) modelTypeFrom(typesType types.Type) model.Type {
 			Value: g.modelTypeFrom(typedTyp.Elem()),
 		}
 	case *types.Chan:
+		var dir model.ChanDir
+		switch typedTyp.Dir() {
+		case types.SendOnly:
+			dir = model.SendDir
+		case types.RecvOnly:
+			dir = model.RecvDir
+		default:
+			dir = 0
+		}
 		return &model.ChanType{
-			Dir:  model.ChanDir(typedTyp.Dir()),
+			Dir:  dir,
 			Type: g.modelTypeFrom(typedTyp.Elem()),
 		}
 	case *types.Named:

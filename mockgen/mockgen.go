@@ -478,7 +478,14 @@ func spaceSeparatedNameFor(t model.Type, packageMap map[string]string) string {
 	case *model.MapType:
 		return "map of " + spaceSeparatedNameFor(typedType.Key, packageMap) + " to " + spaceSeparatedNameFor(typedType.Value, packageMap)
 	case *model.ChanType:
-		return "chan of " + spaceSeparatedNameFor(typedType.Type, packageMap)
+		switch typedType.Dir {
+		case model.RecvDir:
+			return "recv chan of " + spaceSeparatedNameFor(typedType.Type, packageMap)
+		case model.SendDir:
+			return "send chan of " + spaceSeparatedNameFor(typedType.Type, packageMap)
+		default:
+			return "chan of " + spaceSeparatedNameFor(typedType.Type, packageMap)
+		}
 	// TODO:
 	// case *model.FuncType:
 	default:

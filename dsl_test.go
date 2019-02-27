@@ -882,6 +882,13 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
+	Context("using send-/receive-only channels", func() {
+		It("generates the mock method with correct channel directions", func() {
+			var stringReadChan <-chan string
+			var errorWriteChan chan<- error
+			display.ChanParams(stringReadChan, errorWriteChan)
+		})
+	})
 })
 
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {

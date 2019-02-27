@@ -42,4 +42,5 @@ type Display interface {
 	CamelCaseTypeParam(camelCaseParam io.ReadCloser)
 	MapOfStringToInterfaceParam(m map[string]interface{})
 	UseTime(t time.Time)
+	ChanParams(<-chan string, chan<- error)
 }
