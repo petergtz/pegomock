@@ -13,7 +13,7 @@ var _ = Describe("Mockgen", func() {
 		It("uses correct naming pattern with underscores for keys, and correct types etc. in source code", func() {
 			ast, e := loader.GenerateModel("github.com/petergtz/pegomock/test_interface", "Display")
 			Expect(e).NotTo(HaveOccurred())
-			_, matcherSourceCodes := mockgen.GenerateOutput(ast, "irrelevant", "test_package", "")
+			_, matcherSourceCodes := mockgen.GenerateOutput(ast, "irrelevant", "MockDisplay", "test_package", "")
 
 			Expect(matcherSourceCodes).To(SatisfyAll(
 				HaveLen(7),

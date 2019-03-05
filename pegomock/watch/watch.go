@@ -68,6 +68,7 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 	for _, lineParts := range linesIn(wellKnownInterfaceListFile) {
 		lineCmd := kingpin.New("What should go in here", "And what should go in here")
 		destination := lineCmd.Flag("output", "Output file; defaults to mock_<interface>_test.go.").Short('o').String()
+		nameOut := lineCmd.Flag("name", "Struct name of the generated code; defaults to the name of the interface prefixed with Mock").Default(filepath.Base(targetPath) + "_test").String()
 		packageOut := lineCmd.Flag("package", "Package of the generated code; defaults to the package from which pegomock was executed suffixed with _test").Default(filepath.Base(targetPath) + "_test").String()
 		selfPackage := lineCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
 		lineArgs := lineCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
@@ -91,7 +92,7 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 		sourceArgs, err := util.SourceArgs(*lineArgs)
 		util.PanicOnError(err)
 
-		generatedMockSourceCode, _ := filehandling.GenerateMockSourceCode(sourceArgs, *packageOut, *selfPackage, false, os.Stdout, false)
+		generatedMockSourceCode, _ := filehandling.GenerateMockSourceCode(sourceArgs, *nameOut, *packageOut, *selfPackage, false, os.Stdout, false)
 		mockFilePath := filehandling.OutputFilePath(sourceArgs, ".", *destination)
 		hasChanged := util.WriteFileIfChanged(mockFilePath, generatedMockSourceCode)
 
