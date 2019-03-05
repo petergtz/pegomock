@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/alecthomas/kingpin.v2"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/petergtz/pegomock/pegomock/filehandling"
 	"github.com/petergtz/pegomock/pegomock/remove"
@@ -94,7 +94,8 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 
 		realPackageOut := *packageOut
 		if *packageOut == "" {
-			realPackageOut = filepath.Base(workingDir) + "_test"
+			realPackageOut, err = DeterminePackageNameIn(workingDir)
+			app.FatalIfError(err, "Could not determine package name.")
 		}
 
 		realDestination := *destination
