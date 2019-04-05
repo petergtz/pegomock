@@ -24,6 +24,7 @@ package mockgen
 import (
 	"bytes"
 	"fmt"
+	"github.com/petergtz/pegomock/mockgen/util"
 	"go/format"
 	"go/token"
 	"path"
@@ -85,7 +86,9 @@ func generateUniquePackageNamesFor(importPaths map[string]bool) (packageMap, non
 	packageMap = make(map[string]string, len(importPaths))
 	nonVendorPackageMap = make(map[string]string, len(importPaths))
 	packageNamesAlreadyUsed := make(map[string]bool, len(importPaths))
-	for importPath := range importPaths {
+
+	sortedImportPaths := util.SortedKeys(importPaths)
+	for _, importPath := range sortedImportPaths {
 		sanitizedPackagePathBaseName := sanitize(path.Base(importPath))
 
 		// Local names for an imported package can usually be the basename of the import path.
