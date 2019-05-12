@@ -29,6 +29,7 @@ import (
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	"github.com/petergtz/pegomock"
+	"github.com/petergtz/pegomock/test_interface"
 )
 
 var (
@@ -48,6 +49,8 @@ var (
 	Panic            = gomega.Panic
 	SatisfyAll       = gomega.SatisfyAll
 )
+
+var checkThatInterfaceIsImplemented test_interface.Display = NewMockDisplay()
 
 func TestDSL(t *testing.T) {
 	gomega.RegisterFailHandler(ginkgo.Fail)
@@ -882,11 +885,23 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
-	Context("using send-/receive-only channels", func() {
-		It("generates the mock method with correct channel directions", func() {
-			var stringReadChan <-chan string
-			var errorWriteChan chan<- error
-			display.ChanParams(stringReadChan, errorWriteChan)
+	Context("channels", func() {
+
+		Context("using send-/receive-only channels in return types", func() {
+			It("allows to return non-direction channels from callbacks", func() {
+				When(display.ChanReturnValues()).Then(func([]pegomock.Param) pegomock.ReturnValues {
+					return []ReturnValue{make(chan string), make(chan error)}
+				})
+				display.ChanReturnValues()
+			})
+		})
+
+		Context("using send-/receive-only channels", func() {
+			It("generates the mock method with correct channel directions", func() {
+				var stringReadChan <-chan string
+				var errorWriteChan chan<- error
+				display.ChanParams(stringReadChan, errorWriteChan)
+			})
 		})
 	})
 })

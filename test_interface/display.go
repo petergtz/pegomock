@@ -43,4 +43,5 @@ type Display interface {
 	MapOfStringToInterfaceParam(m map[string]interface{})
 	UseTime(t time.Time)
 	ChanParams(<-chan string, chan<- error)
+	ChanReturnValues() (<-chan string, chan<- error)
 }

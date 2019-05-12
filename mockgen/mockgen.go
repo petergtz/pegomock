@@ -24,13 +24,14 @@ package mockgen
 import (
 	"bytes"
 	"fmt"
-	"github.com/petergtz/pegomock/mockgen/util"
 	"go/format"
 	"go/token"
 	"path"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/petergtz/pegomock/mockgen/util"
 
 	"github.com/petergtz/pegomock/model"
 )
@@ -154,7 +155,7 @@ func (g *generator) generateMockFor(iface *model.Interface, mockTypeName, selfPa
 	g.generateVerifierType(mockTypeName)
 	for _, method := range iface.Methods {
 		ongoingVerificationTypeName := fmt.Sprintf("%v_%v_OngoingVerification", mockTypeName, method.Name)
-		args, argNames, argTypes, _ := argDataFor(method, g.packageMap, selfPackage)
+		args, argNames, argTypes, _, _ := argDataFor(method, g.packageMap, selfPackage)
 		g.generateVerifierMethod(mockTypeName, method, selfPackage, ongoingVerificationTypeName, args, argNames)
 		g.generateOngoingVerificationType(mockTypeName, ongoingVerificationTypeName)
 		g.generateOngoingVerificationGetCapturedArguments(ongoingVerificationTypeName, argNames, argTypes)
@@ -184,8 +185,8 @@ func (g *generator) generateMockType(mockTypeName string) {
 
 // If non-empty, pkgOverride is the package in which unqualified types reside.
 func (g *generator) generateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
-	args, argNames, _, returnTypes := argDataFor(method, g.packageMap, pkgOverride)
-	g.p("func (mock *%v) %v(%v) (%v) {", mockType, method.Name, join(args), join(returnTypes))
+	args, argNames, _, signatureReturnTypes, returnTypes := argDataFor(method, g.packageMap, pkgOverride)
+	g.p("func (mock *%v) %v(%v) (%v) {", mockType, method.Name, join(args), join(signatureReturnTypes))
 	g.p("if mock == nil {").
 		p("	panic(\"mock must not be nil. Use myMock := New%v().\")", mockType).
 		p("}")
@@ -352,6 +353,7 @@ func argDataFor(method *model.Method, packageMap map[string]string, pkgOverride 
 	args []string,
 	argNames []string,
 	argTypes []string,
+	signatureReturnTypes []string,
 	returnTypes []string,
 ) {
 	args = make([]string, len(method.In))
@@ -377,9 +379,17 @@ func argDataFor(method *model.Method, packageMap map[string]string, pkgOverride 
 		argNames = append(argNames, argName)
 		argTypes = append(argTypes, "[]"+argType)
 	}
+	signatureReturnTypes = make([]string, len(method.Out))
 	returnTypes = make([]string, len(method.Out))
 	for i, ret := range method.Out {
-		returnTypes[i] = ret.Type.String(packageMap, pkgOverride)
+		if chanType, isChanType := ret.Type.(*model.ChanType); isChanType {
+			chanTypeNoDir := *chanType
+			chanTypeNoDir.Dir = 0
+			returnTypes[i] = chanTypeNoDir.String(packageMap, pkgOverride)
+		} else {
+			returnTypes[i] = ret.Type.String(packageMap, pkgOverride)
+		}
+		signatureReturnTypes[i] = ret.Type.String(packageMap, pkgOverride)
 	}
 	return
 }
