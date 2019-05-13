@@ -42,6 +42,7 @@ var (
 	BeTrue           = gomega.BeTrue
 	ConsistOf        = gomega.ConsistOf
 	ContainSubstring = gomega.ContainSubstring
+	MatchError       = gomega.MatchError
 	Equal            = gomega.Equal
 	Expect           = gomega.Expect
 	HaveLen          = gomega.HaveLen
@@ -893,6 +894,24 @@ var _ = Describe("MockDisplay", func() {
 					return []ReturnValue{make(chan string), make(chan error)}
 				})
 				display.ChanReturnValues()
+			})
+
+			It("allows to return directed channels from callbacks", func() {
+				When(display.ChanReturnValues()).Then(func([]pegomock.Param) pegomock.ReturnValues {
+					return []ReturnValue{make(<-chan string), make(chan<- error)}
+				})
+				display.ChanReturnValues()
+			})
+
+			It("does not allow to return directed channels from callbacks with wrong direction", func() {
+				When(display.ChanReturnValues()).Then(func([]pegomock.Param) pegomock.ReturnValues {
+					return []ReturnValue{make(chan<- string), make(chan<- error)}
+				})
+
+				Expect(func() { display.ChanReturnValues() }).To(PanicWithMessageTo(MatchError(
+					"interface conversion: pegomock.ReturnValue is chan<- string, not <-chan string",
+				)))
+
 			})
 		})
 
