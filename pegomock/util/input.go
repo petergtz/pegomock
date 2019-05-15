@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"go/build"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -30,11 +32,7 @@ func SourceArgs(args []string) ([]string, error) {
 	if SourceMode(args) {
 		return args[:], nil
 	} else if len(args) == 1 {
-		workingDir, e := os.Getwd()
-		if e != nil {
-			panic(e)
-		}
-		packagePath, err := packagePathFromDirectory(build.Default.GOPATH, workingDir)
+		packagePath, err := packagePathFromWorkingDirectoryAndGoPathOrGoModule()
 		if err != nil {
 			return nil, fmt.Errorf("Couldn't determine package path from directory: %v", err)
 		}
@@ -53,10 +51,51 @@ func SourceMode(args []string) bool {
 	return false
 }
 
-func packagePathFromDirectory(gopath, dir string) (string, error) {
+func packagePathFromWorkingDirectoryAndGoPathOrGoModule() (string, error) {
+	dir, e := os.Getwd()
+	if e != nil {
+		panic(e)
+	}
+	if os.Getenv("GO111MODULE") == "off" ||
+		((os.Getenv("GO111MODULE") == "auto" || os.Getenv("GO111MODULE") == "") &&
+			os.Getenv("GOPATH") != "") {
+		return packagePathFromDirectoryAndGoPath(dir, build.Default.GOPATH)
+	}
+	return packagePathFromDirectoryAndGoMod(dir)
+}
+
+func packagePathFromDirectoryAndGoPath(dir string, gopath string) (string, error) {
 	relativePackagePath, err := filepath.Rel(filepath.Join(gopath, "src"), dir)
-	if err != nil {
+	if err != nil || strings.HasPrefix(relativePackagePath, "..") {
 		return "", errors.New("Directory is not within a Go package path. GOPATH:" + gopath + "; dir: " + dir)
 	}
 	return relativePackagePath, nil
+}
+
+func packagePathFromDirectoryAndGoMod(dir string) (string, error) {
+	gomodDir := dir
+	subPackage := ""
+	for {
+		if _, err := os.Stat(filepath.Join(gomodDir, "go.mod")); !os.IsNotExist(err) {
+			break
+		}
+		if gomodDir == "/" {
+			return "", errors.New("Not within a file tree that contains go.mod file. Current directory: " + dir)
+		}
+		subPackage = filepath.Join(filepath.Base(gomodDir), subPackage)
+		gomodDir = filepath.Dir(gomodDir)
+	}
+	gomodFilepath := filepath.Join(gomodDir, "go.mod")
+	content, e := ioutil.ReadFile(gomodFilepath)
+	if e != nil {
+		return "", errors.New("Could not read file " + gomodFilepath)
+	}
+	modulePathMatches := regexp.MustCompile(`^module (.*)\n`).FindSubmatch(content)
+	if len(modulePathMatches) != 2 {
+		return "", errors.New("Cannot parse" + gomodFilepath + "file. File does not start with 'module'")
+	}
+	return filepath.Join(
+			string(modulePathMatches[1]),
+			subPackage),
+		nil
 }
