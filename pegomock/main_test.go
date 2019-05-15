@@ -66,7 +66,9 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 			if !useGoModules {
 				packageDir = joinPath(build.Default.GOPATH, "src", "pegomocktest")
 			} else {
-				packageDir = "/private/tmp/pegomocktest"
+				tmpDir, e := filepath.EvalSymlinks(os.TempDir())
+				Expect(e).NotTo(HaveOccurred())
+				packageDir = filepath.Join(tmpDir, "pegomocktest")
 			}
 			Expect(os.MkdirAll(packageDir, 0755)).To(Succeed())
 			subPackageDir = joinPath(packageDir, "subpackage")
