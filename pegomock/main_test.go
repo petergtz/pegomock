@@ -59,7 +59,6 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 			app                                         *kingpin.Application
 			origWorkingDir                              string
 			done                                        chan bool = make(chan bool)
-			origGoPath                                  string
 		)
 
 		BeforeEach(func() {
@@ -89,8 +88,6 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 						github.com/onsi/gomega v1.5.0 // indirect
 						github.com/petergtz/pegomock v2.3.0+incompatible
 					)`)
-				origGoPath = os.Getenv("GOPATH")
-				os.Setenv("GOPATH", "")
 			}
 
 			WriteFile(joinPath(packageDir, "mydisplay.go"),
@@ -114,9 +111,6 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 		AfterEach(func() {
 			Expect(os.RemoveAll(packageDir)).To(Succeed())
 			os.Chdir(origWorkingDir)
-			if useGoModules {
-				os.Setenv("GOPATH", origGoPath)
-			}
 		})
 
 		Describe(`"generate" command`, func() {

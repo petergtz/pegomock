@@ -54,38 +54,46 @@ func SourceMode(args []string) bool {
 func packagePathFromWorkingDirectoryAndGoPathOrGoModule() (string, error) {
 	dir, e := os.Getwd()
 	if e != nil {
-		panic(e)
+		return "", e
 	}
-	if os.Getenv("GO111MODULE") == "off" ||
-		((os.Getenv("GO111MODULE") == "auto" || os.Getenv("GO111MODULE") == "") &&
-			os.Getenv("GOPATH") != "") {
-		return packagePathFromDirectoryAndGoPath(dir, build.Default.GOPATH)
+	if os.Getenv("GO111MODULE") == "on" {
+		return packagePathFromDirUsingGoMod(dir)
 	}
-	return packagePathFromDirectoryAndGoMod(dir)
+	if os.Getenv("GO111MODULE") == "off" {
+		return packagePathFromDirUsingGopath(dir)
+	}
+
+	if os.Getenv("GO111MODULE") == "auto" || os.Getenv("GO111MODULE") == "" {
+		if withinGopath(dir) {
+			return packagePathFromDirUsingGopath(dir)
+		}
+		return packagePathFromDirUsingGoMod(dir)
+	}
+
+	return "", errors.New("Not a valid value for $GO111MODULE: " + os.Getenv("GO111MODULE") + " \n" +
+		"Valid values are \"on\", \"off\", \"auto\", or \"\"")
 }
 
-func packagePathFromDirectoryAndGoPath(dir string, gopath string) (string, error) {
-	relativePackagePath, err := filepath.Rel(filepath.Join(gopath, "src"), dir)
+func packagePathFromDirUsingGopath(dir string) (string, error) {
+	gopaths := filepath.SplitList(build.Default.GOPATH)
+	if len(gopaths) == 0 || gopaths[0] == "" {
+		return "", errors.New("GO111MODULE=off, but no $GOPATH defined")
+	}
+	relativePackagePath, err := filepath.Rel(filepath.Join(gopaths[0], "src"), dir)
 	if err != nil || strings.HasPrefix(relativePackagePath, "..") {
-		return "", errors.New("Directory is not within a Go package path. GOPATH:" + gopath + "; dir: " + dir)
+		return "", errors.New("Directory is not within a Go package path. GOPATH:" + gopaths[0] + "; dir: " + dir)
 	}
 	return relativePackagePath, nil
 }
 
-func packagePathFromDirectoryAndGoMod(dir string) (string, error) {
-	gomodDir := dir
-	subPackage := ""
-	for {
-		if _, err := os.Stat(filepath.Join(gomodDir, "go.mod")); !os.IsNotExist(err) {
-			break
-		}
-		if gomodDir == "/" {
-			return "", errors.New("Not within a file tree that contains go.mod file. Current directory: " + dir)
-		}
-		subPackage = filepath.Join(filepath.Base(gomodDir), subPackage)
-		gomodDir = filepath.Dir(gomodDir)
+func packagePathFromDirUsingGoMod(dir string) (string, error) {
+	gomodDir := findModuleRoot(dir)
+	subPackage, e := filepath.Rel(gomodDir, dir)
+	if e != nil {
+		return "", errors.New("Could not get a relative path for " + dir + " based on path " + gomodDir)
 	}
 	gomodFilepath := filepath.Join(gomodDir, "go.mod")
+
 	content, e := ioutil.ReadFile(gomodFilepath)
 	if e != nil {
 		return "", errors.New("Could not read file " + gomodFilepath)
@@ -98,4 +106,39 @@ func packagePathFromDirectoryAndGoMod(dir string) (string, error) {
 			string(modulePathMatches[1]),
 			subPackage),
 		nil
+}
+
+func withinGopath(dir string) bool {
+	gopaths := filepath.SplitList(build.Default.GOPATH)
+	if len(gopaths) == 0 || gopaths[0] == "" {
+		return false
+	}
+
+	relPath, err := filepath.Rel(gopaths[0], dir)
+	if err != nil {
+		return false
+	}
+
+	if strings.HasPrefix(relPath, "..") {
+		return false
+	}
+	return true
+}
+
+// copied from https://github.com/golang/go/blob/ab724d43efe7e1a7516c1d13e40b55dca26a61b4/src/cmd/go/internal/modload/init.go#L480-L495:
+func findModuleRoot(dir string) (root string) {
+	dir = filepath.Clean(dir)
+
+	// Look for enclosing go.mod.
+	for {
+		if fi, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil && !fi.IsDir() {
+			return dir
+		}
+		d := filepath.Dir(dir)
+		if d == dir {
+			break
+		}
+		dir = d
+	}
+	return ""
 }
