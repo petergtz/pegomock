@@ -43,15 +43,15 @@ type modelGenerator struct {
 	info *loader.PackageInfo
 }
 
-func (g *modelGenerator) modelMethodsFrom(astMethods *ast.FieldList) (modelMethods []*model.Method) {
-	for _, astMethod := range astMethods.List {
-		switch astMethod.Type.(type) {
+func (g *modelGenerator) modelMethodsFrom(fields *ast.FieldList) (modelMethods []*model.Method) {
+	for _, field := range fields.List {
+		switch field.Type.(type) {
 		case *ast.FuncType:
-			modelMethods = append(modelMethods, g.modelMethodFrom(astMethod))
+			modelMethods = append(modelMethods, g.modelMethodFrom(field))
 		case *ast.Ident:
-			modelMethods = append(modelMethods, g.modelMethodsFrom(astMethod.Type.(*ast.Ident).Obj.Decl.(*ast.TypeSpec).Type.(*ast.InterfaceType).Methods)...)
+			modelMethods = append(modelMethods, g.modelMethodsFrom(field.Type.(*ast.Ident).Obj.Decl.(*ast.TypeSpec).Type.(*ast.InterfaceType).Methods)...)
 		default:
-			panic(fmt.Sprintf("Unexpected expression in interface definition. Only methods and embedded interfaces are allowed, but got: %#v", astMethod.Type))
+			panic(fmt.Sprintf("Unexpected expression in interface definition. Only methods and embedded interfaces are allowed, but got: %#v", field.Type))
 		}
 	}
 	return
