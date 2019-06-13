@@ -334,8 +334,8 @@ func (g *generator) generateOngoingVerificationGetAllCapturedArguments(ongoingVe
 			if isVariadic && i == len(argTypes)-1 {
 				variadicBasicType := strings.Replace(argType, "[]", "", 1)
 				g.
-					p("_param%v = make([]%v, len(params[%v]))", i, argType, i).
-					p("for u := range params[0] {"). // the number of invocations and hence len(params[x]) is equal for all x
+					p("_param%v = make([]%v, len(c.methodInvocations))", i, argType).
+					p("for u := 0; u < len(c.methodInvocations); u++ {").
 					p("_param%v[u] = make([]%v, len(params)-%v)", i, variadicBasicType, i).
 					p("for x := %v; x < len(params); x++ {", i).
 					p("if params[x][u] != nil {").
@@ -345,7 +345,7 @@ func (g *generator) generateOngoingVerificationGetAllCapturedArguments(ongoingVe
 					p("}")
 				break
 			} else {
-				g.p("_param%v = make([]%v, len(params[%v]))", i, argType, i)
+				g.p("_param%v = make([]%v, len(c.methodInvocations))", i, argType)
 				g.p("for u, param := range params[%v] {", i)
 				g.p("_param%v[u]=param.(%v)", i, argType)
 				g.p("}")

@@ -770,6 +770,13 @@ var _ = Describe("MockDisplay", func() {
 				Expect(varArgs[1][1]).To(Equal("thirteen"))
 				Expect(varArgs[1][2]).To(Equal("fourteen"))
 			})
+
+			It("does not panic when variadic arg has 0 params", func() {
+				display.VerifyWasCalled(Never()).NormalAndVariadicParam(AnyString(), AnyInt()).GetAllCapturedArguments()
+
+				display.NormalAndVariadicParam("one", 2)
+				display.VerifyWasCalledOnce().NormalAndVariadicParam(AnyString(), AnyInt()).GetAllCapturedArguments()
+			})
 		})
 
 		Context("Concurrent access to mock", func() {
