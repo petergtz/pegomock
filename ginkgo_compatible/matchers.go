@@ -56,4 +56,11 @@ var (
 	EqString           = pegomock.EqString
 	AnyString          = pegomock.AnyString
 	AnyStringSlice     = pegomock.AnyStringSlice
+
+	Times   = pegomock.Times
+	AtLeast = pegomock.AtLeast
+	AtMost  = pegomock.AtMost
+	Never   = pegomock.Never
+	Once    = pegomock.Once
+	Twice   = pegomock.Twice
 )
