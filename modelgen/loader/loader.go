@@ -8,13 +8,41 @@ import (
 
 	"github.com/petergtz/pegomock/model"
 	"golang.org/x/tools/go/loader"
+	"golang.org/x/tools/go/packages"
 )
 
 func GenerateModel(importPath string, interfaceName string) (*model.Package, error) {
+	var c packages.Config
+	c.Mode = packages.NeedName | packages.NeedFiles | packages.NeedCompiledGoFiles | packages.NeedImports | packages.NeedDeps | packages.NeedExportsFile | packages.NeedTypes | packages.NeedSyntax | packages.NeedTypesInfo | packages.NeedTypesSizes
+
+	pkgs, e := packages.Load(&c, importPath)
+
+	if e != nil {
+		fmt.Println("HERE WE GO WE'RE OUT 1")
+		panic(e)
+	}
+	for _, pkg := range pkgs {
+		if pkg.PkgPath == importPath {
+			// fmt.Printf("%#v\n\n", pkg)
+			// fmt.Printf("%#v\n\n", *pkg.Types)
+			for _, astFile := range pkg.Syntax {
+				for _, decl := range astFile.Decls {
+					if decl.(*ast.TypeSpec).Name == interfaceName {
+
+					}
+				}
+				fmt.Printf("%#v\n\n")
+
+			}
+
+		}
+		// pkg.
+	}
 	var conf loader.Config
 	conf.Import(importPath)
 	program, e := conf.Load()
 	if e != nil {
+		fmt.Println("HERE WE GO WE'RE OUT 2")
 		panic(e)
 	}
 	info := program.Imported[importPath]
