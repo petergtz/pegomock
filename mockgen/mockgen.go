@@ -150,6 +150,9 @@ func (g *generator) generateMockFor(iface *model.Interface, mockTypeName, selfPa
 
 		addTypesFromMethodParamsTo(g.typesSet, method.In, g.packageMap)
 		addTypesFromMethodParamsTo(g.typesSet, method.Out, g.packageMap)
+		if method.Variadic != nil {
+			addTypesFromMethodParamsTo(g.typesSet, []*model.Parameter{method.Variadic}, g.packageMap)
+		}
 	}
 	g.generateMockVerifyMethods(mockTypeName)
 	g.generateVerifierType(mockTypeName)

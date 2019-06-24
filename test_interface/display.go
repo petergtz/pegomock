@@ -44,4 +44,5 @@ type Display interface {
 	UseTime(t time.Time)
 	ChanParams(<-chan string, chan<- error)
 	ChanReturnValues() (<-chan string, chan<- error)
+	VariadicWithNonPrimitiveType(m ...map[int]int)
 }
