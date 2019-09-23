@@ -116,6 +116,33 @@ display.Show("Hello World!")
 display.VerifyWasCalledOnce().Show("Hello World!")
 ```
 
+Tracking the pegomock tool in your project
+------------------------------------------
+
+Go modules allow to pin not only a package but also a tool (that is, an executable). The steps are:
+
+1. Use a file named `tools.go` with contents similar to this:
+```go
+// +build tools
+
+// This file will never be compiled due (see the build constraint); it is used
+// simply to record dependencies on build tools.
+// See https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
+
+package tools
+
+import (
+	_ "github.com/petergtz/pegomock/pegomock"
+)
+```
+2. Set `$GOBIN` to a `bin` directory relative to your repo (this defines where tool dependencies will be installed)
+2. Install the tool with `go install`
+3. Use that path in your build script.
+
+See [Tools as dependencies] for details.
+
+[Tools as dependencies]: https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
+
 Why yet Another Mocking Framework for Go?
 =========================================
 
