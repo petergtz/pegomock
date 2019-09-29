@@ -125,8 +125,8 @@ Go modules allow to pin not only a package but also a tool (that is, an executab
 ```go
 // +build tools
 
-// This file will never be compiled due (see the build constraint); it is used
-// simply to record dependencies on build tools.
+// This file will never be compiled (see the build constraint above); it is
+// used to record dependencies on build tools with the Go modules machinery.
 // See https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
 
 package tools
@@ -135,9 +135,22 @@ import (
 	_ "github.com/petergtz/pegomock/pegomock"
 )
 ```
-2. Set `$GOBIN` to a `bin` directory relative to your repo (this defines where tool dependencies will be installed)
-2. Install the tool with `go install`
-3. Use that path in your build script.
+2. Set `$GOBIN` to a `bin` directory relative to your repo (this defines where tool dependencies will be installed).
+2. Install the tool with `go install`:
+```console
+$ cd /path/to/myproject
+$ export GOBIN=$PWD/bin
+$ go install github.com/petergtz/pegomock/pegomock
+```
+3. Use that `$GOBIN` when invoking `pegomock` for that project:
+```console
+$ $GOBIN/pegomock ...
+```
+or
+```console
+$ export PATH=$GOBIN:$PATH
+$ pegomock ...
+```
 
 See [Tools as dependencies] for details.
 
