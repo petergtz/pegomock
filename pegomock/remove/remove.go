@@ -157,6 +157,12 @@ func isPegomockGenerated(path string, out io.Writer) bool {
 		fmt.Fprintf(out, "Could not open file %v. Error: %v\n", path, e)
 		return false
 	}
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			fmt.Fprintf(out, "Could not close file %v. Error: %v\n", path, closeErr)
+		}
+	}()
+
 	b := make([]byte, 50)
 	_, e = file.Read(b)
 	if e != nil {
