@@ -76,10 +76,11 @@ func (g *generator) generateCode(source string, pkg *model.Package, structName, 
 	g.p(")")
 
 	for _, iface := range pkg.Interfaces {
-		if structName == "" {
-			structName = "Mock" + iface.Name
+		sName := structName
+		if sName == "" {
+			sName = "Mock" + iface.Name
 		}
-		g.generateMockFor(iface, structName, selfPackage)
+		g.generateMockFor(iface, sName, selfPackage)
 	}
 }
 
