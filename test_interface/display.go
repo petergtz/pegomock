@@ -45,4 +45,5 @@ type Display interface {
 	ChanParams(<-chan string, chan<- error)
 	ChanReturnValues() (<-chan string, chan<- error)
 	VariadicWithNonPrimitiveType(m ...map[int]int)
+	MapWithRedundantImports(m map[http.File]http.File)
 }
