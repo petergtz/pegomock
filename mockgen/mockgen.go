@@ -471,7 +471,12 @@ func optionalPackageOf(t model.Type, packageMap map[string]string) string {
 	case *model.ArrayType:
 		return optionalPackageOf(typedType.Type, packageMap)
 	case *model.MapType:
-		return optionalPackageOf(typedType.Key, packageMap) + "\n" + optionalPackageOf(typedType.Value, packageMap)
+		keyPackage := optionalPackageOf(typedType.Key, packageMap)
+		valuePackage := optionalPackageOf(typedType.Value, packageMap)
+		if keyPackage == valuePackage {
+			return keyPackage
+		}
+		return keyPackage + "\n" + valuePackage
 	case *model.ChanType:
 		return optionalPackageOf(typedType.Type, packageMap)
 		// TODO:
