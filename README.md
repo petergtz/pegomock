@@ -13,7 +13,7 @@ go get github.com/petergtz/pegomock/...
 
 This will download the package and install an executable `pegomock` in your `$GOPATH/bin`.
 
-See also section[Tracking the pegomock tool in your project](#tracking-the-pegomock-tool-in-your-project) for a per-project control of the tool version.
+See also section [Tracking the pegomock tool in your project](#tracking-the-pegomock-tool-in-your-project) for a per-project control of the tool version.
 
 Getting Started
 ===============
