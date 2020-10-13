@@ -157,7 +157,7 @@ func (g *modelGenerator) modelTypeFrom(typesType types.Type) model.Type {
 			Package: typedTyp.Obj().Pkg().Path(),
 			Type:    typedTyp.Obj().Name(),
 		}
-	case *types.Interface:
+	case *types.Interface, *types.Struct:
 		return model.PredeclaredType(typedTyp.String())
 	case *types.Signature:
 		in, variadic := g.generateInParamsFrom(typedTyp.Params())
