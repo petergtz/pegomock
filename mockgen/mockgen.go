@@ -490,12 +490,18 @@ func spaceSeparatedNameFor(t model.Type, packageMap map[string]string) string {
 	switch typedType := t.(type) {
 	case model.PredeclaredType:
 		tt := typedType.String(packageMap, "")
-		if tt == "interface{}" {
+		switch tt {
+		case "interface{}":
 			// if a predeclared type is interface
 			// return a string type without curly brackets
 			return "interface"
+		case "struct{}":
+			// if a predeclared type is an empty unnamed struct
+			// return a string type without curly brackets
+			return "empty unnamed struct"
+		default:
+			return tt
 		}
-		return tt
 	case *model.NamedType:
 		return strings.Replace((typedType.String(packageMap, "")), ".", " ", -1)
 	case *model.PointerType:
