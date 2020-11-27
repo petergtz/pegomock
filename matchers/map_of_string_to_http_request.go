@@ -2,10 +2,10 @@
 package matchers
 
 import (
-	"reflect"
 	"github.com/petergtz/pegomock"
-	
-http "net/http"
+	"reflect"
+
+	http "net/http"
 )
 
 func AnyMapOfStringToHttpRequest() map[string]http.Request {
