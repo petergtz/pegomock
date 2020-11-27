@@ -18,3 +18,15 @@ func EqPtrToHttpRequest(value *http.Request) *http.Request {
 	var nullValue *http.Request
 	return nullValue
 }
+
+func NotEqPtrToHttpRequest(value *http.Request) *http.Request {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue *http.Request
+	return nullValue
+}
+
+func PtrToHttpRequestThat(matcher pegomock.Matcher) *http.Request {
+	pegomock.RegisterMatcher(matcher)
+	var nullValue *http.Request
+	return nullValue
+}

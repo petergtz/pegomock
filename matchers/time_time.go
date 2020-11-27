@@ -18,3 +18,15 @@ func EqTimeTime(value time.Time) time.Time {
 	var nullValue time.Time
 	return nullValue
 }
+
+func NotEqTimeTime(value time.Time) time.Time {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue time.Time
+	return nullValue
+}
+
+func TimeTimeThat(matcher pegomock.Matcher) time.Time {
+	pegomock.RegisterMatcher(matcher)
+	var nullValue time.Time
+	return nullValue
+}

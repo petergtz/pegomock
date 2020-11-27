@@ -19,3 +19,15 @@ func EqMapOfStringToHttpRequest(value map[string]http.Request) map[string]http.R
 	var nullValue map[string]http.Request
 	return nullValue
 }
+
+func NotEqMapOfStringToHttpRequest(value map[string]http.Request) map[string]http.Request {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue map[string]http.Request
+	return nullValue
+}
+
+func MapOfStringToHttpRequestThat(matcher pegomock.Matcher) map[string]http.Request {
+	pegomock.RegisterMatcher(matcher)
+	var nullValue map[string]http.Request
+	return nullValue
+}

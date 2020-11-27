@@ -18,3 +18,15 @@ func EqIoReadCloser(value io.ReadCloser) io.ReadCloser {
 	var nullValue io.ReadCloser
 	return nullValue
 }
+
+func NotEqIoReadCloser(value io.ReadCloser) io.ReadCloser {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue io.ReadCloser
+	return nullValue
+}
+
+func IoReadCloserThat(matcher pegomock.Matcher) io.ReadCloser {
+	pegomock.RegisterMatcher(matcher)
+	var nullValue io.ReadCloser
+	return nullValue
+}
