@@ -18,3 +18,15 @@ func EqRecvChanOfString(value <-chan string) <-chan string {
 	var nullValue <-chan string
 	return nullValue
 }
+
+func NotEqRecvChanOfString(value <-chan string) <-chan string {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue <-chan string
+	return nullValue
+}
+
+func RecvChanOfStringThat(matcher pegomock.Matcher) <-chan string {
+	pegomock.RegisterMatcher(matcher)
+	var nullValue <-chan string
+	return nullValue
+}

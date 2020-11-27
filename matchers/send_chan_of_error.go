@@ -18,3 +18,15 @@ func EqSendChanOfError(value chan<- error) chan<- error {
 	var nullValue chan<- error
 	return nullValue
 }
+
+func NotEqSendChanOfError(value chan<- error) chan<- error {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue chan<- error
+	return nullValue
+}
+
+func SendChanOfErrorThat(matcher pegomock.Matcher) chan<- error {
+	pegomock.RegisterMatcher(matcher)
+	var nullValue chan<- error
+	return nullValue
+}

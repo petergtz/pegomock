@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"github.com/petergtz/pegomock"
 	
-
 )
 
 func AnyMapOfStringToInterface() map[string]interface{} {
@@ -16,6 +15,18 @@ func AnyMapOfStringToInterface() map[string]interface{} {
 
 func EqMapOfStringToInterface(value map[string]interface{}) map[string]interface{} {
 	pegomock.RegisterMatcher(&pegomock.EqMatcher{Value: value})
+	var nullValue map[string]interface{}
+	return nullValue
+}
+
+func NotEqMapOfStringToInterface(value map[string]interface{}) map[string]interface{} {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue map[string]interface{}
+	return nullValue
+}
+
+func MapOfStringToInterfaceThat(matcher pegomock.Matcher) map[string]interface{} {
+	pegomock.RegisterMatcher(matcher)
 	var nullValue map[string]interface{}
 	return nullValue
 }

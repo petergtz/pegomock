@@ -18,3 +18,15 @@ func EqSliceOfString(value []string) []string {
 	var nullValue []string
 	return nullValue
 }
+
+func NotEqSliceOfString(value []string) []string {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue []string
+	return nullValue
+}
+
+func SliceOfStringThat(matcher pegomock.Matcher) []string {
+	pegomock.RegisterMatcher(matcher)
+	var nullValue []string
+	return nullValue
+}

@@ -446,6 +446,18 @@ func Eq%v(value %v) %v {
 	var nullValue %v
 	return nullValue
 }
+
+func NotEq%v(value %v) %v {
+	pegomock.RegisterMatcher(&pegomock.NotEqMatcher{Value: value})
+	var nullValue %v
+	return nullValue
+}
+
+func %vThat(matcher pegomock.Matcher) %v {
+	pegomock.RegisterMatcher(matcher)
+	var nullValue %v
+	return nullValue
+}
 `,
 		optionalPackageOf(t, packageMap),
 		camelcaseNameFor(t, packageMap),
@@ -455,6 +467,15 @@ func Eq%v(value %v) %v {
 
 		camelcaseNameFor(t, packageMap),
 		t.String(packageMap, ""),
+		t.String(packageMap, ""),
+		t.String(packageMap, ""),
+
+		camelcaseNameFor(t, packageMap),
+		t.String(packageMap, ""),
+		t.String(packageMap, ""),
+		t.String(packageMap, ""),
+
+		camelcaseNameFor(t, packageMap),
 		t.String(packageMap, ""),
 		t.String(packageMap, ""),
 	)
