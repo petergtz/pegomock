@@ -271,9 +271,16 @@ When(contactList.getContactByFullName(EqString("Dan"), AnyString())).thenReturn(
 
 ### Writing Your Own Argument Matchers
 
-**Important:** `Eq...` and `Any...` matchers for types used in mock methods, can now be _auto-generated_ while generating the mock. So writing your own argument matchers is not necessary for most use cases. See section [The Pegomock CLI](#generating-mocks) for more information.
+**Important:** `Eq...`, `NotEq...`, `Any...` and `...That` matchers for types used in mock methods,
+can now be _auto-generated_ while generating the mock. The `...That` argument matcher accepts an
+argument implementing the `pegomock.Matcher` interface amd allows you to write and use custom
+matcher logic without having to create a new argument matcher method for each type you want to match.
 
-You can also write your own matchers for non-basic types. E.g. if you have a `struct MyType`, you can write an _Equals_ and _Any_ matcher like this:
+So writing your own argument matchers is not necessary for most use cases. See section
+[The Pegomock CLI](#generating-mocks) for more information.
+
+If you are not using the option to generate matchers you can write your own for non-basic types.
+E.g. if you have a `struct MyType`, you can write an _Equals_ and _Any_ matcher like this:
 ```go
 func EqMyType(value MyType) MyType {
 	RegisterMatcher(&EqMatcher{Value: value})
