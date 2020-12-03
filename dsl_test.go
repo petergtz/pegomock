@@ -289,7 +289,7 @@ var _ = Describe("MockDisplay", func() {
 
 		It("fails during verification when using invalid Eq-matchers ", func() {
 			Expect(func() { display.VerifyWasCalledOnce().Flash(EqString("Invalid"), EqInt(-1)) }).To(PanicWithMessageTo(HavePrefix(
-				expectation{method: "Flash(Eq(Invalid), Eq(-1))", expected: "1", actual: "0"}.string(),
+				expectation{method: `Flash(Eq("Invalid"), Eq(-1))`, expected: "1", actual: "0"}.string(),
 			)))
 		})
 
@@ -574,8 +574,37 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("Succeeds when map-parameter is passed to interface{} and verified as eq map", func() {
-			display.InterfaceParam(map[string]http.Request{"foo": http.Request{}})
-			display.VerifyWasCalledOnce().InterfaceParam(EqMapOfStringToHttpRequest(map[string]http.Request{"foo": http.Request{}}))
+			display.InterfaceParam(map[string]http.Request{"foo": {}})
+			display.VerifyWasCalledOnce().InterfaceParam(EqMapOfStringToHttpRequest(map[string]http.Request{"foo": {}}))
+		})
+
+		It("Fails when map-parameter is passed to interface{} and verified as not eq map", func() {
+			display.InterfaceParam(map[int]int{1: 2})
+			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(NotEqMapOfIntToInt(map[int]int{1: 2})) }).
+				To(PanicWithMessageTo(ContainSubstring("InterfaceParam(NotEq(map[int]int{1:2}))")))
+		})
+
+		It("Succeeds when map-parameter is passed to interface{} and verified as not eq a different map", func() {
+			display.InterfaceParam(map[int]int{1: 2})
+			display.VerifyWasCalledOnce().InterfaceParam(NotEqMapOfIntToInt(map[int]int{1: 3}))
+		})
+
+		It("Succeeds when map-parameter is passed to interface{} and verified as not eq a time", func() {
+			display.InterfaceParam(map[int]int{1: 2})
+			display.VerifyWasCalledOnce().InterfaceParam(NotEqTimeTime(time.Now()))
+		})
+
+		It("Fails when map-parameter is passed to interface{} and verified as different map that satisfies equals matcher", func() {
+			display.InterfaceParam(map[int]int{1: 2})
+			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(MapOfIntToIntThat(&EqMatcher{Value: map[int]int{1: 3}})) }).
+				To(PanicWithMessageTo(SatisfyAll(
+					ContainSubstring("InterfaceParam(Eq(map[int]int{1:3}))"),
+					ContainSubstring("InterfaceParam(map[int]int{1:2})"),
+				)))
+		})
+		It("Succeeds when map-parameter is passed to interface{} and verified as map that satisfies equals matcher", func() {
+			display.InterfaceParam(map[int]int{1: 2})
+			display.VerifyWasCalledOnce().InterfaceParam(MapOfIntToIntThat(&EqMatcher{Value: map[int]int{1: 2}}))
 		})
 	})
 

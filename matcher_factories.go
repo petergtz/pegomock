@@ -19,8 +19,28 @@ func AnyBool() bool {
 	return false
 }
 
+func BoolThat(matcher Matcher) bool {
+	RegisterMatcher(matcher)
+	return false
+}
+
+func EqBoolSlice(value []bool) []bool {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqBoolSlice(value []bool) []bool {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyBoolSlice() []bool {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf(false))))
+	return nil
+}
+
+func BoolSliceThat(matcher Matcher) []bool {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -39,8 +59,28 @@ func AnyInt() int {
 	return 0
 }
 
+func IntThat(matcher Matcher) int {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqIntSlice(value []int) []int {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqIntSlice(value []int) []int {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyIntSlice() []int {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf(0))))
+	return nil
+}
+
+func IntSliceThat(matcher Matcher) []int {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -59,8 +99,28 @@ func AnyInt8() int8 {
 	return 0
 }
 
+func Int8That(matcher Matcher) int8 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqInt8Slice(value []int8) []int8 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqInt8Slice(value []int8) []int8 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyInt8Slice() []int8 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((int8)(0)))))
+	return nil
+}
+
+func Int8SliceThat(matcher Matcher) []int8 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -79,8 +139,28 @@ func AnyInt16() int16 {
 	return 0
 }
 
+func Int16That(matcher Matcher) int16 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqInt16Slice(value []int16) []int16 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqInt16Slice(value []int16) []int16 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyInt16Slice() []int16 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((int16)(0)))))
+	return nil
+}
+
+func Int16SliceThat(matcher Matcher) []int16 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -99,8 +179,28 @@ func AnyInt32() int32 {
 	return 0
 }
 
+func Int32That(matcher Matcher) int32 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqInt32Slice(value []int32) []int32 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqInt32Slice(value []int32) []int32 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyInt32Slice() []int32 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((int32)(0)))))
+	return nil
+}
+
+func Int32SliceThat(matcher Matcher) []int32 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -119,8 +219,28 @@ func AnyInt64() int64 {
 	return 0
 }
 
+func Int64That(matcher Matcher) int64 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqInt64Slice(value []int64) []int64 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqInt64Slice(value []int64) []int64 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyInt64Slice() []int64 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((int64)(0)))))
+	return nil
+}
+
+func Int64SliceThat(matcher Matcher) []int64 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -139,8 +259,28 @@ func AnyUint() uint {
 	return 0
 }
 
+func UintThat(matcher Matcher) uint {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqUintSlice(value []uint) []uint {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqUintSlice(value []uint) []uint {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyUintSlice() []uint {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((uint)(0)))))
+	return nil
+}
+
+func UintSliceThat(matcher Matcher) []uint {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -159,8 +299,28 @@ func AnyUint8() uint8 {
 	return 0
 }
 
+func Uint8That(matcher Matcher) uint8 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqUint8Slice(value []uint8) []uint8 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqUint8Slice(value []uint8) []uint8 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyUint8Slice() []uint8 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((uint8)(0)))))
+	return nil
+}
+
+func Uint8SliceThat(matcher Matcher) []uint8 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -179,8 +339,28 @@ func AnyUint16() uint16 {
 	return 0
 }
 
+func Uint16That(matcher Matcher) uint16 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqUint16Slice(value []uint16) []uint16 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqUint16Slice(value []uint16) []uint16 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyUint16Slice() []uint16 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((uint16)(0)))))
+	return nil
+}
+
+func Uint16SliceThat(matcher Matcher) []uint16 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -199,8 +379,28 @@ func AnyUint32() uint32 {
 	return 0
 }
 
+func Uint32That(matcher Matcher) uint32 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqUint32Slice(value []uint32) []uint32 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqUint32Slice(value []uint32) []uint32 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyUint32Slice() []uint32 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((uint32)(0)))))
+	return nil
+}
+
+func Uint32SliceThat(matcher Matcher) []uint32 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -219,8 +419,28 @@ func AnyUint64() uint64 {
 	return 0
 }
 
+func Uint64That(matcher Matcher) uint64 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqUint64Slice(value []uint64) []uint64 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqUint64Slice(value []uint64) []uint64 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyUint64Slice() []uint64 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((uint64)(0)))))
+	return nil
+}
+
+func Uint64SliceThat(matcher Matcher) []uint64 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -239,8 +459,28 @@ func AnyUintptr() uintptr {
 	return 0
 }
 
+func UintptrThat(matcher Matcher) uintptr {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqUintptrSlice(value []uintptr) []uintptr {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqUintptrSlice(value []uintptr) []uintptr {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyUintptrSlice() []uintptr {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((uintptr)(0)))))
+	return nil
+}
+
+func UintptrSliceThat(matcher Matcher) []uintptr {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -259,8 +499,28 @@ func AnyFloat32() float32 {
 	return 0
 }
 
+func Float32That(matcher Matcher) float32 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqFloat32Slice(value []float32) []float32 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqFloat32Slice(value []float32) []float32 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyFloat32Slice() []float32 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((float32)(0)))))
+	return nil
+}
+
+func Float32SliceThat(matcher Matcher) []float32 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -279,8 +539,28 @@ func AnyFloat64() float64 {
 	return 0
 }
 
+func Float64That(matcher Matcher) float64 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqFloat64Slice(value []float64) []float64 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqFloat64Slice(value []float64) []float64 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyFloat64Slice() []float64 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((float64)(0)))))
+	return nil
+}
+
+func Float64SliceThat(matcher Matcher) []float64 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -299,8 +579,28 @@ func AnyComplex64() complex64 {
 	return 0
 }
 
+func Complex64That(matcher Matcher) complex64 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqComplex64Slice(value []complex64) []complex64 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqComplex64Slice(value []complex64) []complex64 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyComplex64Slice() []complex64 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((complex64)(0)))))
+	return nil
+}
+
+func Complex64SliceThat(matcher Matcher) []complex64 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -319,8 +619,28 @@ func AnyComplex128() complex128 {
 	return 0
 }
 
+func Complex128That(matcher Matcher) complex128 {
+	RegisterMatcher(matcher)
+	return 0
+}
+
+func EqComplex128Slice(value []complex128) []complex128 {
+	RegisterMatcher(&EqMatcher{Value: value})
+	return nil
+}
+
+func NotEqComplex128Slice(value []complex128) []complex128 {
+	RegisterMatcher(&NotEqMatcher{Value: value})
+	return nil
+}
+
 func AnyComplex128Slice() []complex128 {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((complex128)(0)))))
+	return nil
+}
+
+func Complex128SliceThat(matcher Matcher) []complex128 {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -339,6 +659,11 @@ func AnyString() string {
 	return ""
 }
 
+func StringThat(matcher Matcher) string {
+	RegisterMatcher(matcher)
+	return ""
+}
+
 func EqStringSlice(value []string) []string {
 	RegisterMatcher(&EqMatcher{Value: value})
 	return nil
@@ -351,6 +676,11 @@ func NotEqStringSlice(value []string) []string {
 
 func AnyStringSlice() []string {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf(""))))
+	return nil
+}
+
+func StringSliceThat(matcher Matcher) []string {
+	RegisterMatcher(matcher)
 	return nil
 }
 
@@ -369,6 +699,11 @@ func AnyInterface() interface{} {
 	return nil
 }
 
+func InterfaceThat(matcher Matcher) interface{} {
+	RegisterMatcher(matcher)
+	return nil
+}
+
 func EqInterfaceSlice(value []interface{}) []interface{} {
 	RegisterMatcher(&EqMatcher{Value: value})
 	return nil
@@ -381,5 +716,10 @@ func NotEqInterfaceSlice(value []interface{}) []interface{} {
 
 func AnyInterfaceSlice() []interface{} {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((*interface{})(nil)).Elem())))
+	return nil
+}
+
+func InterfaceSliceThat(matcher Matcher) []interface{} {
+	RegisterMatcher(matcher)
 	return nil
 }
