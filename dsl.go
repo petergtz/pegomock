@@ -200,7 +200,7 @@ func formatInteractions(interactions map[string][]MethodInvocation) string {
 	if len(interactions) == 0 {
 		return "There were no other interactions with this mock"
 	}
-	result := "But other interactions with this mock were:\n"
+	result := "Actual interactions with this mock were:\n"
 	for _, methodName := range sortedMethodNames(interactions) {
 		result += formatInvocations(methodName, interactions[methodName])
 	}

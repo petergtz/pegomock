@@ -617,7 +617,7 @@ var _ = Describe("MockDisplay", func() {
 
 	Expected: 1; but got: 0
 
-	But other interactions with this mock were:
+	Actual interactions with this mock were:
 	NetHttpRequestParam(http.Request{Method:"", URL:(*url.URL)(nil), Proto:"", ProtoMajor:0, ProtoMinor:0, Header:http.Header(nil), Body:io.ReadCloser(nil), GetBody:(func() (io.ReadCloser, error))(nil), ContentLength:0, TransferEncoding:[]string(nil), Close:false, Host:"", Form:url.Values(nil), PostForm:url.Values(nil), MultipartForm:(*multipart.Form)(nil), Trailer:http.Header(nil), RemoteAddr:"", RequestURI:"", TLS:(*tls.ConnectionState)(nil), Cancel:(<-chan struct {})(nil), Response:(*http.Response)(nil), ctx:context.Context(nil)})
 `)))
 		})
@@ -652,7 +652,7 @@ var _ = Describe("MockDisplay", func() {
 			Expect(func() { display.VerifyWasCalledOnce().Flash("wrong string", -987) }).To(PanicWith(
 				"Mock invocation count for Flash(\"wrong string\", -987) " +
 					"does not match expectation.\n\n\tExpected: 1; but got: 0\n\n" +
-					"\tBut other interactions with this mock were:\n" +
+					"\tActual interactions with this mock were:\n" +
 					"\tFlash(\"Hello\", 123)\n" +
 					"\tFlash(\"Again\", 456)\n",
 			))
@@ -665,7 +665,7 @@ var _ = Describe("MockDisplay", func() {
 			Expect(func() { display.VerifyWasCalledOnce().Flash("wrong string", -987) }).To(PanicWith(
 				"Mock invocation count for Flash(\"wrong string\", -987) " +
 					"does not match expectation.\n\n\tExpected: 1; but got: 0\n\n" +
-					"\tBut other interactions with this mock were:\n" +
+					"\tActual interactions with this mock were:\n" +
 					"\tFlash(\"Hello\", 123)\n" +
 					"\tShow(\"Again\")\n"),
 			)
@@ -678,7 +678,7 @@ var _ = Describe("MockDisplay", func() {
 
 	Expected: 1; but got: 0
 
-	But other interactions with this mock were:
+	Actual interactions with this mock were:
 	NetHttpRequestParam(http.Request{Method:"", URL:(*url.URL)(nil), Proto:"", ProtoMajor:0, ProtoMinor:0, Header:http.Header(nil), Body:io.ReadCloser(nil), GetBody:(func() (io.ReadCloser, error))(nil), ContentLength:0, TransferEncoding:[]string(nil), Close:false, Host:"x.com", Form:url.Values(nil), PostForm:url.Values(nil), MultipartForm:(*multipart.Form)(nil), Trailer:http.Header(nil), RemoteAddr:"", RequestURI:"", TLS:(*tls.ConnectionState)(nil), Cancel:(<-chan struct {})(nil), Response:(*http.Response)(nil), ctx:context.Context(nil)})
 `,
 			))
