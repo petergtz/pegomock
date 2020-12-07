@@ -24,7 +24,7 @@ func NotEqMapOfIntToInt(value map[int]int) map[int]int {
 	return nullValue
 }
 
-func MapOfIntToIntThat(matcher pegomock.Matcher) map[int]int {
+func MapOfIntToIntThat(matcher pegomock.ArgumentMatcher) map[int]int {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue map[int]int
 	return nullValue

@@ -26,7 +26,7 @@ func NotEqTimeTime(value time.Time) time.Time {
 	return nullValue
 }
 
-func TimeTimeThat(matcher pegomock.Matcher) time.Time {
+func TimeTimeThat(matcher pegomock.ArgumentMatcher) time.Time {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue time.Time
 	return nullValue

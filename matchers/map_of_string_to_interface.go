@@ -24,7 +24,7 @@ func NotEqMapOfStringToInterface(value map[string]interface{}) map[string]interf
 	return nullValue
 }
 
-func MapOfStringToInterfaceThat(matcher pegomock.Matcher) map[string]interface{} {
+func MapOfStringToInterfaceThat(matcher pegomock.ArgumentMatcher) map[string]interface{} {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue map[string]interface{}
 	return nullValue

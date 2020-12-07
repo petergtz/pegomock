@@ -26,7 +26,7 @@ func NotEqMapOfHttpFileToHttpFile(value map[http.File]http.File) map[http.File]h
 	return nullValue
 }
 
-func MapOfHttpFileToHttpFileThat(matcher pegomock.Matcher) map[http.File]http.File {
+func MapOfHttpFileToHttpFileThat(matcher pegomock.ArgumentMatcher) map[http.File]http.File {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue map[http.File]http.File
 	return nullValue
