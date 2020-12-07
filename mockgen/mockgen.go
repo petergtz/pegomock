@@ -458,7 +458,7 @@ func NotEq%v(value %v) %v {
 	return nullValue
 }
 
-func %vThat(matcher pegomock.Matcher) %v {
+func %vThat(matcher pegomock.ArgumentMatcher) %v {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue %v
 	return nullValue

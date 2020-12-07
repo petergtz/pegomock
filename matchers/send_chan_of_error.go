@@ -24,7 +24,7 @@ func NotEqSendChanOfError(value chan<- error) chan<- error {
 	return nullValue
 }
 
-func SendChanOfErrorThat(matcher pegomock.Matcher) chan<- error {
+func SendChanOfErrorThat(matcher pegomock.ArgumentMatcher) chan<- error {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue chan<- error
 	return nullValue

@@ -26,7 +26,7 @@ func NotEqPtrToHttpRequest(value *http.Request) *http.Request {
 	return nullValue
 }
 
-func PtrToHttpRequestThat(matcher pegomock.Matcher) *http.Request {
+func PtrToHttpRequestThat(matcher pegomock.ArgumentMatcher) *http.Request {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue *http.Request
 	return nullValue

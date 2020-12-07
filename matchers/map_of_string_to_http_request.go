@@ -26,7 +26,7 @@ func NotEqMapOfStringToHttpRequest(value map[string]http.Request) map[string]htt
 	return nullValue
 }
 
-func MapOfStringToHttpRequestThat(matcher pegomock.Matcher) map[string]http.Request {
+func MapOfStringToHttpRequestThat(matcher pegomock.ArgumentMatcher) map[string]http.Request {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue map[string]http.Request
 	return nullValue

@@ -24,7 +24,7 @@ func NotEqSliceOfString(value []string) []string {
 	return nullValue
 }
 
-func SliceOfStringThat(matcher pegomock.Matcher) []string {
+func SliceOfStringThat(matcher pegomock.ArgumentMatcher) []string {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue []string
 	return nullValue

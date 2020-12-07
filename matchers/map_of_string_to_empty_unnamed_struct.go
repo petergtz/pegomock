@@ -24,7 +24,7 @@ func NotEqMapOfStringToEmptyUnnamedStruct(value map[string]struct{}) map[string]
 	return nullValue
 }
 
-func MapOfStringToEmptyUnnamedStructThat(matcher pegomock.Matcher) map[string]struct{} {
+func MapOfStringToEmptyUnnamedStructThat(matcher pegomock.ArgumentMatcher) map[string]struct{} {
 	pegomock.RegisterMatcher(matcher)
 	var nullValue map[string]struct{}
 	return nullValue
