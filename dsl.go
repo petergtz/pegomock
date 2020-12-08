@@ -542,9 +542,12 @@ type InvocationCountMatcher interface {
 }
 
 // Matcher can be used to match arguments as well as invocation counts.
+// Note that support for overlapping embedded interfaces was added in Go 1.14, which is why
+// ArgumentMatcher and InvocationCountMatcher are not embedded here.
 type Matcher interface {
-	ArgumentMatcher
-	InvocationCountMatcher
+	Matches(param Param) bool
+	FailureMessage() string
+	fmt.Stringer
 }
 
 func DumpInvocationsFor(mock Mock) {
