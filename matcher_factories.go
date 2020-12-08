@@ -19,7 +19,7 @@ func AnyBool() bool {
 	return false
 }
 
-func BoolThat(matcher Matcher) bool {
+func BoolThat(matcher ArgumentMatcher) bool {
 	RegisterMatcher(matcher)
 	return false
 }
@@ -39,7 +39,7 @@ func AnyBoolSlice() []bool {
 	return nil
 }
 
-func BoolSliceThat(matcher Matcher) []bool {
+func BoolSliceThat(matcher ArgumentMatcher) []bool {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -59,7 +59,7 @@ func AnyInt() int {
 	return 0
 }
 
-func IntThat(matcher Matcher) int {
+func IntThat(matcher ArgumentMatcher) int {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -79,7 +79,7 @@ func AnyIntSlice() []int {
 	return nil
 }
 
-func IntSliceThat(matcher Matcher) []int {
+func IntSliceThat(matcher ArgumentMatcher) []int {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -99,7 +99,7 @@ func AnyInt8() int8 {
 	return 0
 }
 
-func Int8That(matcher Matcher) int8 {
+func Int8That(matcher ArgumentMatcher) int8 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -119,7 +119,7 @@ func AnyInt8Slice() []int8 {
 	return nil
 }
 
-func Int8SliceThat(matcher Matcher) []int8 {
+func Int8SliceThat(matcher ArgumentMatcher) []int8 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -139,7 +139,7 @@ func AnyInt16() int16 {
 	return 0
 }
 
-func Int16That(matcher Matcher) int16 {
+func Int16That(matcher ArgumentMatcher) int16 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -159,7 +159,7 @@ func AnyInt16Slice() []int16 {
 	return nil
 }
 
-func Int16SliceThat(matcher Matcher) []int16 {
+func Int16SliceThat(matcher ArgumentMatcher) []int16 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -179,7 +179,7 @@ func AnyInt32() int32 {
 	return 0
 }
 
-func Int32That(matcher Matcher) int32 {
+func Int32That(matcher ArgumentMatcher) int32 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -199,7 +199,7 @@ func AnyInt32Slice() []int32 {
 	return nil
 }
 
-func Int32SliceThat(matcher Matcher) []int32 {
+func Int32SliceThat(matcher ArgumentMatcher) []int32 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -219,7 +219,7 @@ func AnyInt64() int64 {
 	return 0
 }
 
-func Int64That(matcher Matcher) int64 {
+func Int64That(matcher ArgumentMatcher) int64 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -239,7 +239,7 @@ func AnyInt64Slice() []int64 {
 	return nil
 }
 
-func Int64SliceThat(matcher Matcher) []int64 {
+func Int64SliceThat(matcher ArgumentMatcher) []int64 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -259,7 +259,7 @@ func AnyUint() uint {
 	return 0
 }
 
-func UintThat(matcher Matcher) uint {
+func UintThat(matcher ArgumentMatcher) uint {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -279,7 +279,7 @@ func AnyUintSlice() []uint {
 	return nil
 }
 
-func UintSliceThat(matcher Matcher) []uint {
+func UintSliceThat(matcher ArgumentMatcher) []uint {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -299,7 +299,7 @@ func AnyUint8() uint8 {
 	return 0
 }
 
-func Uint8That(matcher Matcher) uint8 {
+func Uint8That(matcher ArgumentMatcher) uint8 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -319,7 +319,7 @@ func AnyUint8Slice() []uint8 {
 	return nil
 }
 
-func Uint8SliceThat(matcher Matcher) []uint8 {
+func Uint8SliceThat(matcher ArgumentMatcher) []uint8 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -339,7 +339,7 @@ func AnyUint16() uint16 {
 	return 0
 }
 
-func Uint16That(matcher Matcher) uint16 {
+func Uint16That(matcher ArgumentMatcher) uint16 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -359,7 +359,7 @@ func AnyUint16Slice() []uint16 {
 	return nil
 }
 
-func Uint16SliceThat(matcher Matcher) []uint16 {
+func Uint16SliceThat(matcher ArgumentMatcher) []uint16 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -379,7 +379,7 @@ func AnyUint32() uint32 {
 	return 0
 }
 
-func Uint32That(matcher Matcher) uint32 {
+func Uint32That(matcher ArgumentMatcher) uint32 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -399,7 +399,7 @@ func AnyUint32Slice() []uint32 {
 	return nil
 }
 
-func Uint32SliceThat(matcher Matcher) []uint32 {
+func Uint32SliceThat(matcher ArgumentMatcher) []uint32 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -419,7 +419,7 @@ func AnyUint64() uint64 {
 	return 0
 }
 
-func Uint64That(matcher Matcher) uint64 {
+func Uint64That(matcher ArgumentMatcher) uint64 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -439,7 +439,7 @@ func AnyUint64Slice() []uint64 {
 	return nil
 }
 
-func Uint64SliceThat(matcher Matcher) []uint64 {
+func Uint64SliceThat(matcher ArgumentMatcher) []uint64 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -459,7 +459,7 @@ func AnyUintptr() uintptr {
 	return 0
 }
 
-func UintptrThat(matcher Matcher) uintptr {
+func UintptrThat(matcher ArgumentMatcher) uintptr {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -479,7 +479,7 @@ func AnyUintptrSlice() []uintptr {
 	return nil
 }
 
-func UintptrSliceThat(matcher Matcher) []uintptr {
+func UintptrSliceThat(matcher ArgumentMatcher) []uintptr {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -499,7 +499,7 @@ func AnyFloat32() float32 {
 	return 0
 }
 
-func Float32That(matcher Matcher) float32 {
+func Float32That(matcher ArgumentMatcher) float32 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -519,7 +519,7 @@ func AnyFloat32Slice() []float32 {
 	return nil
 }
 
-func Float32SliceThat(matcher Matcher) []float32 {
+func Float32SliceThat(matcher ArgumentMatcher) []float32 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -539,7 +539,7 @@ func AnyFloat64() float64 {
 	return 0
 }
 
-func Float64That(matcher Matcher) float64 {
+func Float64That(matcher ArgumentMatcher) float64 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -559,7 +559,7 @@ func AnyFloat64Slice() []float64 {
 	return nil
 }
 
-func Float64SliceThat(matcher Matcher) []float64 {
+func Float64SliceThat(matcher ArgumentMatcher) []float64 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -579,7 +579,7 @@ func AnyComplex64() complex64 {
 	return 0
 }
 
-func Complex64That(matcher Matcher) complex64 {
+func Complex64That(matcher ArgumentMatcher) complex64 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -599,7 +599,7 @@ func AnyComplex64Slice() []complex64 {
 	return nil
 }
 
-func Complex64SliceThat(matcher Matcher) []complex64 {
+func Complex64SliceThat(matcher ArgumentMatcher) []complex64 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -619,7 +619,7 @@ func AnyComplex128() complex128 {
 	return 0
 }
 
-func Complex128That(matcher Matcher) complex128 {
+func Complex128That(matcher ArgumentMatcher) complex128 {
 	RegisterMatcher(matcher)
 	return 0
 }
@@ -639,7 +639,7 @@ func AnyComplex128Slice() []complex128 {
 	return nil
 }
 
-func Complex128SliceThat(matcher Matcher) []complex128 {
+func Complex128SliceThat(matcher ArgumentMatcher) []complex128 {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -659,7 +659,7 @@ func AnyString() string {
 	return ""
 }
 
-func StringThat(matcher Matcher) string {
+func StringThat(matcher ArgumentMatcher) string {
 	RegisterMatcher(matcher)
 	return ""
 }
@@ -679,7 +679,7 @@ func AnyStringSlice() []string {
 	return nil
 }
 
-func StringSliceThat(matcher Matcher) []string {
+func StringSliceThat(matcher ArgumentMatcher) []string {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -699,7 +699,7 @@ func AnyInterface() interface{} {
 	return nil
 }
 
-func InterfaceThat(matcher Matcher) interface{} {
+func InterfaceThat(matcher ArgumentMatcher) interface{} {
 	RegisterMatcher(matcher)
 	return nil
 }
@@ -719,7 +719,7 @@ func AnyInterfaceSlice() []interface{} {
 	return nil
 }
 
-func InterfaceSliceThat(matcher Matcher) []interface{} {
+func InterfaceSliceThat(matcher ArgumentMatcher) []interface{} {
 	RegisterMatcher(matcher)
 	return nil
 }
