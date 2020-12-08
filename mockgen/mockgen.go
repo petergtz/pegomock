@@ -239,7 +239,7 @@ func (g *generator) generateVerifierType(interfaceName string) *generator {
 	return g.
 		p("type Verifier%v struct {", interfaceName).
 		p("	mock *%v", interfaceName).
-		p("	invocationCountMatcher pegomock.Matcher").
+		p("	invocationCountMatcher pegomock.InvocationCountMatcher").
 		p("	inOrderContext *pegomock.InOrderContext").
 		p("	timeout time.Duration").
 		p("}").
@@ -255,14 +255,14 @@ func (g *generator) generateMockVerifyMethods(interfaceName string) {
 		p("	}").
 		p("}").
 		emptyLine().
-		p("func (mock *%v) VerifyWasCalled(invocationCountMatcher pegomock.Matcher) *Verifier%v {", interfaceName, interfaceName).
+		p("func (mock *%v) VerifyWasCalled(invocationCountMatcher pegomock.InvocationCountMatcher) *Verifier%v {", interfaceName, interfaceName).
 		p("	return &Verifier%v{", interfaceName).
 		p("		mock: mock,").
 		p("		invocationCountMatcher: invocationCountMatcher,").
 		p("	}").
 		p("}").
 		emptyLine().
-		p("func (mock *%v) VerifyWasCalledInOrder(invocationCountMatcher pegomock.Matcher, inOrderContext *pegomock.InOrderContext) *Verifier%v {", interfaceName, interfaceName).
+		p("func (mock *%v) VerifyWasCalledInOrder(invocationCountMatcher pegomock.InvocationCountMatcher, inOrderContext *pegomock.InOrderContext) *Verifier%v {", interfaceName, interfaceName).
 		p("	return &Verifier%v{", interfaceName).
 		p("		mock: mock,").
 		p("		invocationCountMatcher: invocationCountMatcher,").
@@ -270,7 +270,7 @@ func (g *generator) generateMockVerifyMethods(interfaceName string) {
 		p("	}").
 		p("}").
 		emptyLine().
-		p("func (mock *%v) VerifyWasCalledEventually(invocationCountMatcher pegomock.Matcher, timeout time.Duration) *Verifier%v {", interfaceName, interfaceName).
+		p("func (mock *%v) VerifyWasCalledEventually(invocationCountMatcher pegomock.InvocationCountMatcher, timeout time.Duration) *Verifier%v {", interfaceName, interfaceName).
 		p("	return &Verifier%v{", interfaceName).
 		p("		mock: mock,").
 		p("		invocationCountMatcher: invocationCountMatcher,").
