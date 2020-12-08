@@ -273,7 +273,7 @@ When(contactList.getContactByFullName(EqString("Dan"), AnyString())).thenReturn(
 
 **Important:** `Eq...`, `NotEq...`, `Any...` and `...That` matchers for types used in mock methods,
 can now be _auto-generated_ while generating the mock. The `...That` argument matcher accepts an
-argument implementing the `pegomock.Matcher` interface and allows you to write and use custom
+argument implementing the `pegomock.ArgumentMatcher` interface and allows you to write and use custom
 matcher logic without having to create a new argument matcher method for each type you want to match.
 
 So writing your own argument matchers is not necessary for most use cases. See section

@@ -95,7 +95,7 @@ func (genericMock *GenericMock) reset(methodName string, paramMatchers []Argumen
 
 func (genericMock *GenericMock) Verify(
 	inOrderContext *InOrderContext,
-	invocationCountMatcher Matcher,
+	invocationCountMatcher InvocationCountMatcher,
 	methodName string,
 	params []Param,
 	options ...interface{},
@@ -528,17 +528,23 @@ type InOrderContext struct {
 	lastInvokedMethodParams []Param
 }
 
-// ArgumentMatcher can be used to match arguments but not invocation counts.
+// ArgumentMatcher can be used to match arguments.
 type ArgumentMatcher interface {
 	Matches(param Param) bool
 	fmt.Stringer
 }
 
-// Matcher can be used to match arguments as well as invocation counts. It is guaranteed that
+// InvocationCountMatcher can be used to match invocation counts. It is guaranteed that
 // FailureMessage will always be called after Matches so an implementation can save state.
+type InvocationCountMatcher interface {
+	Matches(param Param) bool
+	FailureMessage() string
+}
+
+// Matcher can be used to match arguments as well as invocation counts.
 type Matcher interface {
 	ArgumentMatcher
-	FailureMessage() string
+	InvocationCountMatcher
 }
 
 func DumpInvocationsFor(mock Mock) {
