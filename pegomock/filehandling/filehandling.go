@@ -27,8 +27,8 @@ func GenerateMockFileInOutputDir(
 	out io.Writer,
 	useExperimentalModelGen bool,
 	shouldGenerateMatchers bool,
-	matchersDestination string) {
-
+	matchersDestination string,
+	skipMatchers string) {
 	// if a file path override is specified
 	// ensure all directories in the path are created
 	if outputFilePathOverride != "" {
@@ -47,7 +47,8 @@ func GenerateMockFileInOutputDir(
 		out,
 		useExperimentalModelGen,
 		shouldGenerateMatchers,
-		matchersDestination)
+		matchersDestination,
+		skipMatchers)
 }
 
 func OutputFilePath(args []string, outputDirPath string, outputFilePathOverride string) string {
@@ -60,7 +61,7 @@ func OutputFilePath(args []string, outputDirPath string, outputFilePathOverride 
 	}
 }
 
-func GenerateMockFile(args []string, outputFilePath string, nameOut string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool, shouldGenerateMatchers bool, matchersDestination string) {
+func GenerateMockFile(args []string, outputFilePath string, nameOut string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool, shouldGenerateMatchers bool, matchersDestination string, skipMatchers string) {
 	mockSourceCode, matcherSourceCodes := GenerateMockSourceCode(args, nameOut, packageOut, selfPackage, debugParser, out, useExperimentalModelGen)
 
 	err := ioutil.WriteFile(outputFilePath, mockSourceCode, 0664)
@@ -77,13 +78,27 @@ func GenerateMockFile(args []string, outputFilePath string, nameOut string, pack
 		if err != nil {
 			panic(fmt.Errorf("Failed making dirs \"%v\": %v", matchersPath, err))
 		}
+		excludedMatchers := matchersFilter(skipMatchers)
 		for matcherTypeName, matcherSourceCode := range matcherSourceCodes {
+			if _, found := excludedMatchers[matcherTypeName]; found {
+				continue
+			}
 			err := ioutil.WriteFile(filepath.Join(matchersPath, matcherTypeName+".go"), []byte(matcherSourceCode), 0664)
 			if err != nil {
 				panic(fmt.Errorf("Failed writing to destination: %v", err))
 			}
 		}
 	}
+}
+
+func matchersFilter(skipMatchers string) map[string]struct{} {
+	result := make(map[string]struct{})
+	for _, m := range strings.Split(skipMatchers, ",") {
+		if matcher := strings.TrimSpace(m); len(matcher) > 0 {
+			result[matcher] = struct{}{}
+		}
+	}
+	return result
 }
 
 func GenerateMockSourceCode(args []string, nameOut string, packageOut string, selfPackage string, debugParser bool, out io.Writer, useExperimentalModelGen bool) ([]byte, map[string]string) {

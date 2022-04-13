@@ -23,7 +23,7 @@ import (
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/petergtz/pegomock/pegomock/filehandling"
+	"github.com/joomcode/pegomock/pegomock/filehandling"
 	"github.com/petergtz/pegomock/pegomock/remove"
 	"github.com/petergtz/pegomock/pegomock/util"
 	"github.com/petergtz/pegomock/pegomock/watch"
@@ -57,6 +57,7 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 			"directory in the same directory where the mock file gets generated.").Short('m').Default("false").Bool()
 		matchersDestination = generateCmd.Flag("matchers-dir", "Generate matchers in the specified directory; defaults to "+
 			filepath.Join("<mockdir>", "matchers")).Short('p').String()
+		skipMatchers            = generateCmd.Flag("skip-matchers", "A list of types whose matchers shouldn't be generated").String()
 		useExperimentalModelGen = generateCmd.Flag("use-experimental-model-gen", "pegomock includes a new experimental source parser based on "+
 			"golang.org/x/tools/go/loader. It's currently experimental, but should be more powerful "+
 			"than the current reflect-based modelgen. E.g. reflect cannot detect method parameter names,"+
@@ -124,7 +125,8 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 			out,
 			*useExperimentalModelGen,
 			*shouldGenerateMatchers,
-			*matchersDestination)
+			*matchersDestination,
+			*skipMatchers)
 
 	case watchCmd.FullCommand():
 		var targetPaths []string
