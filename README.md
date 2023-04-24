@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/petergtz/pegomock.svg?branch=master)](https://travis-ci.org/petergtz/pegomock)
+
+<img src="logo.svg" height="150" alt="logo">
 
 PegoMock is a mocking framework for the [Go programming language](http://golang.org/). It integrates well with Go's built-in `testing` package, but can be used in other contexts too. It is based on [golang/mock](https://github.com/golang/mock), but uses a DSL closely related to [Mockito](http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html).
 
