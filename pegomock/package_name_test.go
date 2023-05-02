@@ -6,7 +6,7 @@ import (
 
 	. "github.com/petergtz/pegomock/pegomock/testutil"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	main "github.com/petergtz/pegomock/pegomock"
 )

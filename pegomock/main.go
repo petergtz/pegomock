@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -34,10 +35,10 @@ var (
 )
 
 func main() {
-	Run(os.Args, os.Stderr, os.Stdin, app, make(chan bool))
+	Run(os.Args, os.Stderr, os.Stdin, app, context.Background())
 }
 
-func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application, done chan bool) {
+func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application, ctx context.Context) {
 
 	workingDir, err := os.Getwd()
 	app.FatalIfError(err, "")
@@ -134,7 +135,7 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 			targetPaths = *watchPackages
 		}
 		watch.CreateWellKnownInterfaceListFilesIfNecessary(targetPaths)
-		util.Ticker(watch.NewMockFileUpdater(targetPaths, *watchRecursive).Update, 2*time.Second, done)
+		util.Ticker(watch.NewMockFileUpdater(targetPaths, *watchRecursive).Update, 2*time.Second, ctx)
 
 	case removeMocks.FullCommand():
 		path := *removePath

@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/petergtz/pegomock/pegomock/testutil"
 	"github.com/petergtz/pegomock/pegomock/watch"

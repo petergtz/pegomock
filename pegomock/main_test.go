@@ -16,14 +16,16 @@ package main_test
 
 import (
 	"bytes"
+	"context"
 	"go/build"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	kingpin "github.com/alecthomas/kingpin/v2"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	main "github.com/petergtz/pegomock/pegomock"
 
@@ -58,7 +60,6 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 			packageDir, subPackageDir, vendorPackageDir string
 			app                                         *kingpin.Application
 			origWorkingDir                              string
-			done                                        chan bool = make(chan bool)
 		)
 
 		BeforeEach(func() {
@@ -83,9 +84,9 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 			if useGoModules {
 				WriteFile(joinPath(packageDir, "go.mod"),
 					`module pegomocktest
-					go 1.12
+					go 1.18
 					require (
-						github.com/onsi/gomega v1.5.0 // indirect
+						github.com/onsi/gomega v1.27.6 // indirect
 						github.com/petergtz/pegomock v2.3.0+incompatible
 					)`)
 			}
@@ -124,7 +125,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 					// But to be useful, they must still reside in the package, where
 					// they are actually used.
 
-					main.Run(cmd("pegomock generate MyDisplay"), os.Stdout, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate MyDisplay"), os.Stdout, os.Stdin, app, context.Background())
 
 					Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
 						BeAnExistingFile(),
@@ -132,7 +133,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 				})
 
 				It(`sets the default mock name "DisplayMock"`, func() {
-					main.Run(cmd("pegomock generate MyDisplay"), os.Stdout, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate MyDisplay"), os.Stdout, os.Stdin, app, context.Background())
 
 					Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
 						BeAnExistingFile(),
@@ -147,7 +148,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 						Skip("Vendoring not supported with Go modules yet")
 					}
 
-					main.Run(cmd("pegomock generate -m VendorDisplay"), os.Stdout, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate -m VendorDisplay"), os.Stdout, os.Stdin, app, context.Background())
 					Expect(joinPath(packageDir, "mock_vendordisplay_test.go")).To(SatisfyAll(
 						BeAnExistingFile(),
 						BeAFileContainingSubString(`vendored_package "github.com/petergtz/vendored_package"`)))
@@ -159,7 +160,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 
 			Context(`with args "pegomocktest/subpackage SubDisplay"`, func() {
 				It(`generates a file mock_subdisplay_test.go in "pegomocktest" that contains "package pegomocktest_test"`, func() {
-					main.Run(cmd("pegomock generate pegomocktest/subpackage SubDisplay"), os.Stdout, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate pegomocktest/subpackage SubDisplay"), os.Stdout, os.Stdin, app, context.Background())
 
 					Expect(joinPath(packageDir, "mock_subdisplay_test.go")).To(SatisfyAll(
 						BeAnExistingFile(),
@@ -169,7 +170,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 
 			Context("with args mydisplay.go", func() {
 				It(`generates a file mock_mydisplay_test.go that contains "package pegomocktest_test"`, func() {
-					main.Run(cmd("pegomock generate mydisplay.go"), os.Stdout, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate mydisplay.go"), os.Stdout, os.Stdin, app, context.Background())
 
 					Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
 						BeAnExistingFile(),
@@ -182,7 +183,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 			Context("with args -d mydisplay.go", func() {
 				It(`prints out debug information on stdout`, func() {
 					var buf bytes.Buffer
-					main.Run(cmd("pegomock generate -d mydisplay.go"), &buf, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate -d mydisplay.go"), &buf, os.Stdin, app, context.Background())
 					Expect(buf.String()).To(ContainSubstring("- method Show"))
 				})
 			})
@@ -190,7 +191,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 			Context("with args -o where output override is a path with a non-existing directory", func() {
 				It(`creates an output directory before code generation`, func() {
 					var buf bytes.Buffer
-					main.Run(cmd("pegomock generate mydisplay.go -o testoutput/test.go"), &buf, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate mydisplay.go -o testoutput/test.go"), &buf, os.Stdin, app, context.Background())
 					Expect(joinPath(packageDir, "testoutput/test.go")).To(SatisfyAll(
 						BeAnExistingFile(),
 						BeAFileContainingSubString("package pegomocktest_test")))
@@ -200,7 +201,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 			Context("with args --output-dir", func() {
 				It(`creates the mocks in output dir with the dir's basename as package name`, func() {
 					var buf bytes.Buffer
-					main.Run(cmd("pegomock generate MyDisplay --output-dir fakes"), &buf, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate MyDisplay --output-dir fakes"), &buf, os.Stdin, app, context.Background())
 					Expect(joinPath(packageDir, "fakes/mock_mydisplay.go")).To(SatisfyAll(
 						BeAnExistingFile(),
 						BeAFileContainingSubString("package fakes")))
@@ -210,7 +211,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 			Context("with args --output-dir and --package", func() {
 				It(`creates the mocks in output dir with the specified package name`, func() {
 					var buf bytes.Buffer
-					main.Run(cmd("pegomock generate MyDisplay --output-dir fakes --package other"), &buf, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate MyDisplay --output-dir fakes --package other"), &buf, os.Stdin, app, context.Background())
 
 					Expect(joinPath(packageDir, "fakes/mock_mydisplay.go")).To(SatisfyAll(
 						BeAnExistingFile(),
@@ -220,7 +221,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 
 			Context("with args --mock-name", func() {
 				It(`sets the mock name as given`, func() {
-					main.Run(cmd("pegomock generate MyDisplay --mock-name RenamedMock"), os.Stdout, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate MyDisplay --mock-name RenamedMock"), os.Stdout, os.Stdin, app, context.Background())
 
 					Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
 						BeAnExistingFile(),
@@ -234,7 +235,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 						Skip("Vendoring not supported with Go modules yet")
 					}
 					var buf bytes.Buffer
-					main.Run(cmd("pegomock generate --generate-matchers --matchers-dir custom/matcher/dir VendorDisplay"), &buf, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate --generate-matchers --matchers-dir custom/matcher/dir VendorDisplay"), &buf, os.Stdin, app, context.Background())
 
 					Expect(joinPath(packageDir, "custom/matcher/dir")).To(BeADirectory())
 					Expect(joinPath(packageDir, "custom/matcher/dir/vendored_package_interface.go")).To(BeAnExistingFile())
@@ -246,7 +247,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 				It(`reports an error and the usage`, func() {
 					var buf bytes.Buffer
 					Expect(func() {
-						main.Run(cmd("pegomock generate with too many args"), &buf, os.Stdin, app, done)
+						main.Run(cmd("pegomock generate with too many args"), &buf, os.Stdin, app, context.Background())
 					}).To(Panic())
 
 					Expect(buf.String()).To(ContainSubstring("Please provide exactly 1 interface or 1 package + 1 interface"))
@@ -258,25 +259,23 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 
 		Describe(`"watch" command`, func() {
 
-			AfterEach(func(testDone Done) { done <- true; close(testDone) }, 3)
-
 			Context("with no further action", func() {
-				It(`Creates a template file interfaces_to_mock in the current directory`, func() {
-					go main.Run(cmd("pegomock watch"), os.Stdout, os.Stdin, app, done)
+				It(`Creates a template file interfaces_to_mock in the current directory`, func(ctx SpecContext) {
+					go main.Run(cmd("pegomock watch"), os.Stdout, os.Stdin, app, ctx)
 					Eventually(func() string { return "interfaces_to_mock" }, "3s").Should(BeAnExistingFile())
-				})
+				}, NodeTimeout(4*time.Second))
 			})
 
 			Context("after populating interfaces_to_mock with an actual interface", func() {
-				It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func() {
+				It(`Eventually creates a file mock_mydisplay_test.go starting with "package pegomocktest_test"`, func(ctx SpecContext) {
 					WriteFile(joinPath(packageDir, "interfaces_to_mock"), "MyDisplay")
 
-					go main.Run(cmd("pegomock watch"), os.Stdout, os.Stdin, app, done)
+					go main.Run(cmd("pegomock watch"), os.Stdout, os.Stdin, app, ctx)
 
 					Eventually(joinPath(packageDir, "mock_mydisplay_test.go"), "3s").Should(SatisfyAll(
 						BeAnExistingFile(),
 						BeAFileContainingSubString("package pegomocktest_test")))
-				})
+				}, NodeTimeout(4*time.Second))
 			})
 
 		})
@@ -286,7 +285,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 				It("removes mock files in current directory only", func() {
 					var buf bytes.Buffer
 
-					main.Run(cmd("pegomock remove -n"), &buf, os.Stdin, app, done)
+					main.Run(cmd("pegomock remove -n"), &buf, os.Stdin, app, context.Background())
 
 					Expect(buf.String()).To(ContainSubstring(`No files to remove.`))
 				})
@@ -294,12 +293,12 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 
 			Context("there are some mock files", func() {
 				BeforeEach(func() {
-					main.Run(cmd("pegomock generate MyDisplay"), os.Stdout, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate MyDisplay"), os.Stdout, os.Stdin, app, context.Background())
 					Expect(joinPath(packageDir, "mock_mydisplay_test.go")).To(SatisfyAll(
 						BeAnExistingFile(),
 						BeAFileContainingSubString("package pegomocktest_test")))
 
-					main.Run(cmd("pegomock generate --output-dir "+subPackageDir+" pegomocktest/subpackage SubDisplay"), os.Stdout, os.Stdin, app, done)
+					main.Run(cmd("pegomock generate --output-dir "+subPackageDir+" pegomocktest/subpackage SubDisplay"), os.Stdout, os.Stdin, app, context.Background())
 
 					Expect(joinPath(subPackageDir, "mock_subdisplay.go")).To(SatisfyAll(
 						BeAnExistingFile(),
@@ -311,7 +310,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 						It("removes mock files in current directory only", func() {
 							var buf bytes.Buffer
 
-							main.Run(cmd("pegomock remove -n"), &buf, os.Stdin, app, done)
+							main.Run(cmd("pegomock remove -n"), &buf, os.Stdin, app, context.Background())
 
 							Expect(buf.String()).To(ContainSubstring(`Deleting the following files:
 ` + packageDir + `/mock_mydisplay_test.go`))
@@ -324,7 +323,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 						It("removes mock files recursively", func() {
 							var buf bytes.Buffer
 
-							main.Run(cmd("pegomock remove -n -r"), &buf, os.Stdin, app, done)
+							main.Run(cmd("pegomock remove -n -r"), &buf, os.Stdin, app, context.Background())
 
 							Expect(buf.String()).To(ContainSubstring(`Deleting the following files:
 ` + packageDir + `/mock_mydisplay_test.go
@@ -335,7 +334,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 
 						Context("custom matchers were generated", func() {
 							BeforeEach(func() {
-								main.Run(cmd("pegomock generate -m RequestHandler"), os.Stdout, os.Stdin, app, done)
+								main.Run(cmd("pegomock generate -m RequestHandler"), os.Stdout, os.Stdin, app, context.Background())
 								Expect(joinPath(packageDir, "mock_requesthandler_test.go")).To(SatisfyAll(
 									BeAnExistingFile(),
 									BeAFileContainingSubString("package pegomocktest_test")))
@@ -344,7 +343,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 									BeAnExistingFile(),
 									BeAFileContainingSubString("package matchers"),
 								))
-								main.Run(cmd("pegomock generate -m --output-dir "+subPackageDir+" RequestHandler"), os.Stdout, os.Stdin, app, done)
+								main.Run(cmd("pegomock generate -m --output-dir "+subPackageDir+" RequestHandler"), os.Stdout, os.Stdin, app, context.Background())
 
 								Expect(joinPath(subPackageDir, "mock_requesthandler.go")).To(SatisfyAll(
 									BeAnExistingFile(),
@@ -359,7 +358,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 							It("removes matchers and matchers dir too", func() {
 								var buf bytes.Buffer
 
-								main.Run(cmd("pegomock remove -n -r"), &buf, os.Stdin, app, done)
+								main.Run(cmd("pegomock remove -n -r"), &buf, os.Stdin, app, context.Background())
 
 								Expect(buf.String()).To(Equal(`Deleting the following files:
 `+packageDir+`/matchers
@@ -381,7 +380,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 						It("removes mock files, but provides no output", func() {
 							var buf bytes.Buffer
 
-							main.Run(cmd("pegomock remove -n --silent"), &buf, os.Stdin, app, done)
+							main.Run(cmd("pegomock remove -n --silent"), &buf, os.Stdin, app, context.Background())
 
 							Expect(buf.String()).To(BeEmpty())
 							Expect(joinPath(packageDir, "mock_mydisplay_test.go")).NotTo(BeAnExistingFile())
@@ -393,7 +392,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 						It("removes mock files in path", func() {
 							var buf bytes.Buffer
 
-							main.Run(cmd("pegomock remove -n "+subPackageDir), &buf, os.Stdin, app, done)
+							main.Run(cmd("pegomock remove -n "+subPackageDir), &buf, os.Stdin, app, context.Background())
 
 							Expect(buf.String()).To(ContainSubstring(`Deleting the following files:
 ` + packageDir + `/subpackage/mock_subdisplay.go`))
@@ -408,7 +407,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 						It("removes mock files", func() {
 							var buf bytes.Buffer
 
-							main.Run(cmd("pegomock remove"), &buf, strings.NewReader("yes\n"), app, done)
+							main.Run(cmd("pegomock remove"), &buf, strings.NewReader("yes\n"), app, context.Background())
 
 							Expect(buf.String()).To(ContainSubstring(`Will delete the following files:
 ` + packageDir + `/mock_mydisplay_test.go
@@ -422,7 +421,7 @@ Continue? [y/n]:`))
 						It("does not remove mock files", func() {
 							var buf bytes.Buffer
 
-							main.Run(cmd("pegomock remove"), &buf, strings.NewReader("no\n"), app, done)
+							main.Run(cmd("pegomock remove"), &buf, strings.NewReader("no\n"), app, context.Background())
 
 							Expect(buf.String()).To(ContainSubstring(`Will delete the following files:
 ` + packageDir + `/mock_mydisplay_test.go
@@ -437,7 +436,7 @@ Continue? [y/n]:`))
 					It("removes no mock files, but provides files that would be deleted", func() {
 						var buf bytes.Buffer
 
-						main.Run(cmd("pegomock remove --dry-run"), &buf, os.Stdin, app, done)
+						main.Run(cmd("pegomock remove --dry-run"), &buf, os.Stdin, app, context.Background())
 
 						Expect(buf.String()).To(ContainSubstring(`Would delete the following files:
 ` + packageDir + `/mock_mydisplay_test.go`))
@@ -454,7 +453,7 @@ Continue? [y/n]:`))
 				kingpin.CommandLine.Terminate(nil)
 				kingpin.CommandLine.Writer(&buf)
 
-				main.Run(cmd("pegomock some unknown command"), &buf, os.Stdin, app, done)
+				main.Run(cmd("pegomock some unknown command"), &buf, os.Stdin, app, context.Background())
 				Expect(buf.String()).To(ContainSubstring("error"))
 			})
 		})

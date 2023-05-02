@@ -26,7 +26,7 @@ import (
 	. "github.com/petergtz/pegomock"
 	. "github.com/petergtz/pegomock/matchers"
 
-	"github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"github.com/petergtz/pegomock"
 	"github.com/petergtz/pegomock/test_interface"
@@ -596,7 +596,9 @@ var _ = Describe("MockDisplay", func() {
 
 		It("Fails when map-parameter is passed to interface{} and verified as different map that satisfies equals matcher", func() {
 			display.InterfaceParam(map[int]int{1: 2})
-			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(MapOfIntToIntThat(&EqMatcher{Value: map[int]int{1: 3}})) }).
+			Expect(func() {
+				display.VerifyWasCalledOnce().InterfaceParam(MapOfIntToIntThat(&EqMatcher{Value: map[int]int{1: 3}}))
+			}).
 				To(PanicWithMessageTo(SatisfyAll(
 					ContainSubstring("InterfaceParam(Eq(map[int]int{1:3}))"),
 					ContainSubstring("InterfaceParam(map[int]int{1:2})"),

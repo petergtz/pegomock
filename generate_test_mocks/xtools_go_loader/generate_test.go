@@ -18,7 +18,7 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	"github.com/petergtz/pegomock/pegomock/filehandling"
 )
 

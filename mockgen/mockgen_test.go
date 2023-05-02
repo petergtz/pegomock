@@ -4,7 +4,7 @@ import (
 	"github.com/petergtz/pegomock/mockgen"
 	"github.com/petergtz/pegomock/modelgen/loader"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
