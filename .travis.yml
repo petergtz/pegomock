@@ -5,7 +5,7 @@ go:
 install:
   - go get github.com/onsi/gomega
   - go get github.com/onsi/ginkgo/ginkgo
-  - go get gopkg.in/alecthomas/kingpin.v2
+  - go get github.com/alecthomas/kingpin/v2
   - go get golang.org/x/tools/go/loader
 
 script:

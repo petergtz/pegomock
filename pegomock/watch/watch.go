@@ -22,7 +22,7 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/alecthomas/kingpin.v2"
+	"github.com/alecthomas/kingpin/v2"
 
 	"github.com/petergtz/pegomock/pegomock/filehandling"
 	"github.com/petergtz/pegomock/pegomock/util"

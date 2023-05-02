@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	kingpin "github.com/alecthomas/kingpin/v2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

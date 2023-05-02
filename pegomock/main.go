@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	kingpin "github.com/alecthomas/kingpin/v2"
 
 	"github.com/petergtz/pegomock/pegomock/filehandling"
 	"github.com/petergtz/pegomock/pegomock/remove"
