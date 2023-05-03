@@ -75,7 +75,7 @@ func Reflect(importPath string, symbols []string) (*model.Package, error) {
 		}
 
 		// Build the program.
-		cmd := exec.Command("go", "build", "-o", progBinary, progSource)
+		cmd := exec.Command("go", "build", "-mod=mod", "-o", progBinary, progSource)
 		cmd.Dir = tmpDir
 		stderr := &bytes.Buffer{}
 		cmd.Stderr = stderr
