@@ -2,6 +2,7 @@ mock_display_test.go
 debug.test
 .vscode
 *.coverprofile
+coverprofile.out
 .idea
 *.iml
 dist
