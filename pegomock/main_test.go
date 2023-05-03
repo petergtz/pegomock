@@ -87,7 +87,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 					go 1.18
 					require (
 						github.com/onsi/gomega v1.27.6 // indirect
-						github.com/petergtz/pegomock/v3 v2.3.0+incompatible
+						github.com/petergtz/pegomock/v3 v3.0.0
 					)`)
 			}
 
