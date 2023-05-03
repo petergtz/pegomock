@@ -3,16 +3,20 @@
 
 PegoMock is a mocking framework for the [Go programming language](http://golang.org/). It integrates well with Go's built-in `testing` package, but can be used in other contexts too. It is based on [golang/mock](https://github.com/golang/mock), but uses a DSL closely related to [Mockito](http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html).
 
-Getting Pegomock
-================
+Installing Pegomock
+===================
 
-Just `go get` it:
+Pegomock consists of a binary `pegomock` and a package. Install both via:
 
+```shell
+go install github.com/petergtz/pegomock/v3/pegomock@latest
+go get github.com/petergtz/pegomock/v3@latest
 ```
-go get github.com/petergtz/pegomock/...
-```
 
-This will download the package and install an executable `pegomock` in your `$GOPATH/bin`.
+This will download the package and install an executable `pegomock` in the directory named by the `$GOBIN` environment variable, which defaults to `$GOPATH/bin` or `$HOME/go/bin` if the `$GOPATH` environment variable is not set.
+
+The `pegomock` binary is used to generate mocks and to watch over changes in interfaces. The package is used in your tests to create and verify mocks.
+
 
 See also section [Tracking the pegomock tool in your project](#tracking-the-pegomock-tool-in-your-project) for a per-project control of the tool version.
 
@@ -26,7 +30,7 @@ The preferred way is:
 
 ```go
 import (
-	"github.com/petergtz/pegomock"
+	"github.com/petergtz/pegomock/v3"
 	"testing"
 )
 
@@ -75,7 +79,7 @@ package some_test
 
 import (
 	. "github.com/onsi/ginkgo"
-	. "github.com/petergtz/pegomock/ginkgo_compatible"
+	. "github.com/petergtz/pegomock/v3/ginkgo_compatible"
 )
 
 var _ = Describe("Some function", func() {
@@ -409,8 +413,8 @@ Installation
 
 Install it via:
 
-```
-go install github.com/petergtz/pegomock/pegomock
+```shell
+go install github.com/petergtz/pegomock/v3/pegomock@latest
 ```
 
 Tracking the pegomock tool in your project
@@ -429,7 +433,7 @@ Go modules allow to pin not only a package but also a tool (that is, an executab
 package tools
 
 import (
-	_ "github.com/petergtz/pegomock/pegomock"
+	_ "github.com/petergtz/pegomock/v3/pegomock"
 )
 ```
 2. Set `$GOBIN` to a `bin` directory relative to your repo (this defines where tool dependencies will be installed).
@@ -437,7 +441,7 @@ import (
 ```console
 $ cd /path/to/myproject
 $ export GOBIN=$PWD/bin
-$ go install github.com/petergtz/pegomock/pegomock
+$ go install github.com/petergtz/pegomock/v3/pegomock
 ```
 3. Use that `$GOBIN` when invoking `pegomock` for that project:
 ```console
