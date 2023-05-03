@@ -24,7 +24,7 @@ jobs:
         run: go install github.com/onsi/ginkgo/v2/ginkgo@latest
 
       - name: Run tests
-        run: ./scripts/run-tests.sh
+        run: ./scripts/run_tests.sh
 
 
 
