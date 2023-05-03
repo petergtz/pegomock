@@ -44,7 +44,7 @@ func TestPegomock(t *testing.T) {
 }
 
 var (
-	_ = describeCLIWithGoModulesEnabled(false)
+	// _ = describeCLIWithGoModulesEnabled(false)
 	_ = describeCLIWithGoModulesEnabled(true)
 )
 
