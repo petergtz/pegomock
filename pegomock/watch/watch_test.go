@@ -22,8 +22,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/petergtz/pegomock/pegomock/testutil"
-	"github.com/petergtz/pegomock/pegomock/watch"
+	. "github.com/petergtz/pegomock/v3/pegomock/testutil"
+	"github.com/petergtz/pegomock/v3/pegomock/watch"
 )
 
 var (

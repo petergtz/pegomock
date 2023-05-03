@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	. "github.com/petergtz/pegomock/modelgen/loader"
+	. "github.com/petergtz/pegomock/v3/modelgen/loader"
 )
 
 var _ = Describe("Loader", func() {

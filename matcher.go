@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/petergtz/pegomock/internal/verify"
 	"sync"
+
+	"github.com/petergtz/pegomock/v3/internal/verify"
 )
 
 type EqMatcher struct {

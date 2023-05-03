@@ -6,7 +6,7 @@ import (
 	"go/ast"
 	"go/types"
 
-	"github.com/petergtz/pegomock/model"
+	"github.com/petergtz/pegomock/v3/model"
 	"golang.org/x/tools/go/loader"
 )
 

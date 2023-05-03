@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/petergtz/pegomock/mockgen"
-	"github.com/petergtz/pegomock/model"
-	"github.com/petergtz/pegomock/modelgen/gomock"
-	"github.com/petergtz/pegomock/modelgen/loader"
-	"github.com/petergtz/pegomock/pegomock/util"
+	"github.com/petergtz/pegomock/v3/mockgen"
+	"github.com/petergtz/pegomock/v3/model"
+	"github.com/petergtz/pegomock/v3/modelgen/gomock"
+	"github.com/petergtz/pegomock/v3/modelgen/loader"
+	"github.com/petergtz/pegomock/v3/pegomock/util"
 )
 
 func GenerateMockFileInOutputDir(

@@ -29,7 +29,7 @@ import (
 	"runtime"
 	"text/template"
 
-	"github.com/petergtz/pegomock/model"
+	"github.com/petergtz/pegomock/v3/model"
 )
 
 var (
@@ -120,8 +120,8 @@ import (
 	"path"
 	"reflect"
 
-	"github.com/petergtz/pegomock/model"
-	"github.com/petergtz/pegomock/modelgen/gomock"
+	"github.com/petergtz/pegomock/v3/model"
+	"github.com/petergtz/pegomock/v3/modelgen/gomock"
 
 	pkg_ {{printf "%q" .ImportPath}}
 )

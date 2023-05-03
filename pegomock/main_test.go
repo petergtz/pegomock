@@ -27,9 +27,9 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	main "github.com/petergtz/pegomock/pegomock"
+	main "github.com/petergtz/pegomock/v3/pegomock"
 
-	. "github.com/petergtz/pegomock/pegomock/testutil"
+	. "github.com/petergtz/pegomock/v3/pegomock/testutil"
 
 	"testing"
 )
@@ -87,7 +87,7 @@ func describeCLIWithGoModulesEnabled(useGoModules bool) interface{} {
 					go 1.18
 					require (
 						github.com/onsi/gomega v1.27.6 // indirect
-						github.com/petergtz/pegomock v2.3.0+incompatible
+						github.com/petergtz/pegomock/v3 v2.3.0+incompatible
 					)`)
 			}
 

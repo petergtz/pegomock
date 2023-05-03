@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
-	"github.com/petergtz/pegomock/mockgen/util"
+	"github.com/petergtz/pegomock/v3/mockgen/util"
 )
 
 func TestUtil(t *testing.T) {

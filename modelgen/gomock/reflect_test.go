@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
-	"github.com/petergtz/pegomock/modelgen/gomock"
+	"github.com/petergtz/pegomock/v3/modelgen/gomock"
 )
 
 func TestGomock(t *testing.T) {

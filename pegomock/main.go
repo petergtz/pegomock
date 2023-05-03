@@ -24,10 +24,10 @@ import (
 
 	kingpin "github.com/alecthomas/kingpin/v2"
 
-	"github.com/petergtz/pegomock/pegomock/filehandling"
-	"github.com/petergtz/pegomock/pegomock/remove"
-	"github.com/petergtz/pegomock/pegomock/util"
-	"github.com/petergtz/pegomock/pegomock/watch"
+	"github.com/petergtz/pegomock/v3/pegomock/filehandling"
+	"github.com/petergtz/pegomock/v3/pegomock/remove"
+	"github.com/petergtz/pegomock/v3/pegomock/util"
+	"github.com/petergtz/pegomock/v3/pegomock/watch"
 )
 
 var (

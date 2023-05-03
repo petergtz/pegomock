@@ -31,12 +31,12 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/petergtz/pegomock/mockgen/util"
+	"github.com/petergtz/pegomock/v3/mockgen/util"
 
-	"github.com/petergtz/pegomock/model"
+	"github.com/petergtz/pegomock/v3/model"
 )
 
-const mockFrameworkImportPath = "github.com/petergtz/pegomock"
+const mockFrameworkImportPath = "github.com/petergtz/pegomock/v3"
 
 func GenerateOutput(ast *model.Package, source, nameOut, packageOut, selfPackage string) ([]byte, map[string]string) {
 	g := generator{typesSet: make(map[string]string)}
@@ -436,7 +436,7 @@ func generateMatcherSourceCode(t model.Type, packageMap map[string]string) strin
 package matchers
 
 import (
-	"github.com/petergtz/pegomock"
+	"github.com/petergtz/pegomock/v3"
 	"reflect"%v
 )
 

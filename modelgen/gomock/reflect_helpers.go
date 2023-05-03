@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/petergtz/pegomock/model"
+	"github.com/petergtz/pegomock/v3/model"
 )
 
 func init() {

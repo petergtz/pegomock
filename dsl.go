@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/onsi/gomega/format"
-	"github.com/petergtz/pegomock/internal/verify"
+	"github.com/petergtz/pegomock/v3/internal/verify"
 )
 
 var GlobalFailHandler FailHandler

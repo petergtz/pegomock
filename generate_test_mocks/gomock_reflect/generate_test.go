@@ -19,14 +19,14 @@ import (
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
-	"github.com/petergtz/pegomock/pegomock/filehandling"
+	"github.com/petergtz/pegomock/v3/pegomock/filehandling"
 )
 
 func TestMockGeneration(t *testing.T) { RunSpecs(t, "Generating mocks with GoMock-reflect") }
 
 var _ = It("Generate mocks", func() {
 	filehandling.GenerateMockFile(
-		[]string{"github.com/petergtz/pegomock/test_interface", "Display"},
+		[]string{"github.com/petergtz/pegomock/v3/test_interface", "Display"},
 		"../../mock_display_test.go", "MockDisplay", "pegomock_test",
 		"", false, os.Stdout, false, true, "")
 })
