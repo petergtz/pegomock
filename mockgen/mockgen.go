@@ -103,6 +103,11 @@ func generateUniquePackageNamesFor(importPaths map[string]bool) (packageMap, non
 			packageName = sanitizedPackagePathBaseName + strconv.Itoa(i)
 		}
 
+		// hardcode package name for pegomock, because it's hardcoded in the generated code too
+		if importPath == mockFrameworkImportPath {
+			packageName = "pegomock"
+		}
+
 		packageMap[importPath] = packageName
 		packageNamesAlreadyUsed[packageName] = true
 
