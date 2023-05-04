@@ -20,7 +20,7 @@ The `pegomock` binary is used to generate mocks and to watch over changes in int
 
 See also section [Tracking the pegomock tool in your project](#tracking-the-pegomock-tool-in-your-project) for a per-project control of the tool version.
 
-For migration from Pegomock v1/v2 to v3, see [Migrating from Pegomock v1/v2 to v3](#migrating-from-pegomock-v1v2-to-v3).
+For migration from Pegomock v1/v2 to v3, see [Migration notes in v3 release description](https://github.com/petergtz/pegomock/releases/tag/v3.0.0).
 
 Getting Started
 ===============
@@ -591,27 +591,3 @@ it will remove all Pegomock-generated files in the current directory. It support
 ```
 pegomock remove --help
 ```
-
-Migrating from Pegomock v1/v2 to v3
-===================================
-
-There are no breaking API changes with the switch to v3. Migration from version 1 or 2 involves two steps:
-
-1. Change import paths as follows:
-	```diff
-	-import "github.com/petergtz/pegomock"
-	+import "github.com/petergtz/pegomock/v3"
-	```
-2. Install the latest pegomock binary via 
-	```shell
-	go install github.com/petergtz/pegomock/v3/pegomock@latest
-	```
-
-For step 1, make sure to change sub-packages as follows:
-
-```diff
--import "github.com/petergtz/pegomock/ginkgo_compatible"
-+import "github.com/petergtz/pegomock/v3/ginkgo_compatible"
-```
-
-
