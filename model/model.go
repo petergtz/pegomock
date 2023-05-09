@@ -46,8 +46,9 @@ func (pkg *Package) Imports() map[string]bool {
 
 // Interface is a Go interface.
 type Interface struct {
-	Name    string
-	Methods []*Method
+	Name       string
+	TypeParams []*Parameter
+	Methods    []*Method
 }
 
 func (intf *Interface) Print(w io.Writer) {
@@ -58,6 +59,9 @@ func (intf *Interface) Print(w io.Writer) {
 }
 
 func (intf *Interface) addImports(im map[string]bool) {
+	for _, tp := range intf.TypeParams {
+		tp.Type.addImports(im)
+	}
 	for _, m := range intf.Methods {
 		m.addImports(im)
 	}

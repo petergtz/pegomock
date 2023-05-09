@@ -963,6 +963,24 @@ var _ = Describe("MockDisplay", func() {
 	})
 })
 
+var _ = Describe("GenericMockDisplay", func() {
+	var display *MockGenericDisplay[string, int64]
+
+	BeforeEach(func() {
+		display = NewMockGenericDisplay[string, int64]()
+	})
+
+	Context("Stubbing generic method with generic value", func() {
+		BeforeEach(func() {
+			When(display.GenericParams(map[string]int64{"Hello": 333})).ThenReturn(int64(666))
+		})
+
+		It("returns stubbed generic value", func() {
+			Expect(display.GenericParams(map[string]int64{"Hello": 333})).To(Equal(int64(666)))
+		})
+	})
+})
+
 func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {
 	for _, slice := range sliceOfSlices {
 		result = append(result, slice...)

@@ -23,7 +23,7 @@ import (
 )
 
 func TestMockGeneration(t *testing.T) {
-	RunSpecs(t, "Generating mocks with golang.org/x/tools/go/loader")
+	RunSpecs(t, "Generating mocks with golang.org/x/tools/go/packages")
 }
 
 var _ = It("Generate mocks", func() {
@@ -31,4 +31,9 @@ var _ = It("Generate mocks", func() {
 		[]string{"github.com/petergtz/pegomock/v3/test_interface", "Display"},
 		"../../mock_display_test.go", "MockDisplay", "pegomock_test",
 		"", false, os.Stdout, true, true, "")
+
+	filehandling.GenerateMockFile(
+		[]string{"github.com/petergtz/pegomock/v3/test_interface", "GenericDisplay"},
+		"../../mock_generic_display_test.go", "MockGenericDisplay", "pegomock_test",
+		"", false, os.Stdout, true, false, "")
 })

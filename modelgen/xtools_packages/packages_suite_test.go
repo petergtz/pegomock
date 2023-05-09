@@ -1,4 +1,4 @@
-package loader_test
+package xtools_packages_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestLoader(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Loader Suite")
+	RunSpecs(t, "xtools_packages_test Suite")
 }

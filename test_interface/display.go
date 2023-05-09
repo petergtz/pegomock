@@ -48,3 +48,11 @@ type Display interface {
 	MapWithRedundantImports(m map[http.File]http.File)
 	MapOfStringToEmptyUnnamedStruct(m map[string]struct{})
 }
+
+type GenericDisplay[N comparable, V Number] interface {
+	GenericParams(m map[N]V) V
+}
+
+type Number interface {
+	int64 | float64
+}

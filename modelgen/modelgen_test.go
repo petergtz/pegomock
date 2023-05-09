@@ -21,7 +21,7 @@ import (
 
 	"github.com/petergtz/pegomock/v3/model"
 	"github.com/petergtz/pegomock/v3/modelgen/gomock"
-	"github.com/petergtz/pegomock/v3/modelgen/loader"
+	"github.com/petergtz/pegomock/v3/modelgen/xtools_packages"
 
 	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
@@ -40,13 +40,13 @@ func (a alphabetically) Len() int           { return len(a) }
 func (a alphabetically) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a alphabetically) Less(i, j int) bool { return a[i].Name < a[j].Name }
 
-var _ = Describe("modelgen/loader", func() {
+var _ = Describe("xtools_packages", func() {
 	It("generates an equivalent model as gomock/reflect does", func() {
 		pkgFromReflect, e := gomock.Reflect("github.com/petergtz/pegomock/v3/test_interface", []string{"Display"})
 		Expect(e).NotTo(HaveOccurred())
 		sort.Sort(alphabetically(pkgFromReflect.Interfaces[0].Methods))
 
-		pkgFromLoader, e := loader.GenerateModel("github.com/petergtz/pegomock/v3/test_interface", "Display")
+		pkgFromLoader, e := xtools_packages.GenerateModel("github.com/petergtz/pegomock/v3/test_interface", "Display")
 		Expect(e).NotTo(HaveOccurred())
 		sort.Sort(alphabetically(pkgFromLoader.Interfaces[0].Methods))
 
@@ -60,7 +60,7 @@ var _ = Describe("modelgen/loader", func() {
 	})
 
 	It("generates a model with the basic properties", func() {
-		pkg, e := loader.GenerateModel("github.com/petergtz/pegomock/v3/modelgen/test_data/default_test_interface", "Display")
+		pkg, e := xtools_packages.GenerateModel("github.com/petergtz/pegomock/v3/modelgen/test_data/default_test_interface", "Display")
 		Expect(e).NotTo(HaveOccurred())
 
 		Expect(pkg.Name).To(Equal("test_interface"))

@@ -1,4 +1,4 @@
-package loader
+package xtools_loader
 
 import (
 	"errors"
@@ -11,6 +11,8 @@ import (
 )
 
 func GenerateModel(importPath string, interfaceName string) (*model.Package, error) {
+	panic("DEPRECATED: Use GenerateModelViaPackages instead")
+
 	var conf loader.Config
 	conf.Import(importPath)
 	program, e := conf.Load()

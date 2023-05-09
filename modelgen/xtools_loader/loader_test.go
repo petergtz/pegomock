@@ -1,13 +1,13 @@
-package loader_test
+package xtools_loader_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	. "github.com/petergtz/pegomock/v3/modelgen/loader"
+	. "github.com/petergtz/pegomock/v3/modelgen/xtools_loader"
 )
 
-var _ = Describe("Loader", func() {
+var _ = XDescribe("Loader", func() {
 	Describe("GenerateModel", func() {
 		It("finds all methods within interface", func() {
 			pkg, e := GenerateModel("io", "Reader")

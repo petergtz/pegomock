@@ -1,4 +1,5 @@
 mock_display_test.go
+mock_generic_display_test.go
 debug.test
 .vscode
 *.coverprofile

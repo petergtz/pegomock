@@ -12,7 +12,7 @@ import (
 	"github.com/petergtz/pegomock/v3/mockgen"
 	"github.com/petergtz/pegomock/v3/model"
 	"github.com/petergtz/pegomock/v3/modelgen/gomock"
-	"github.com/petergtz/pegomock/v3/modelgen/loader"
+	"github.com/petergtz/pegomock/v3/modelgen/xtools_packages"
 	"github.com/petergtz/pegomock/v3/pegomock/util"
 )
 
@@ -99,8 +99,7 @@ func GenerateMockSourceCode(args []string, nameOut string, packageOut string, se
 			log.Fatal("Expected exactly two arguments, but got " + fmt.Sprint(args))
 		}
 		if useExperimentalModelGen {
-			ast, err = loader.GenerateModel(args[0], args[1])
-
+			ast, err = xtools_packages.GenerateModel(args[0], args[1])
 		} else {
 			ast, err = gomock.Reflect(args[0], strings.Split(args[1], ","))
 		}

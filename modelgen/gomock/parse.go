@@ -23,6 +23,7 @@ import (
 	"go/parser"
 	"go/token"
 	"log"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -38,6 +39,8 @@ var (
 // TODO: simplify error reporting
 
 func ParseFile(source string) (*model.Package, error) {
+	fmt.Fprintln(os.Stderr, "WARNING: The gomock package is deprecated and will be removed in a future version.")
+
 	fs := token.NewFileSet()
 	file, err := parser.ParseFile(fs, source, nil, 0)
 	if err != nil {

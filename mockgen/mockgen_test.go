@@ -2,7 +2,7 @@ package mockgen_test
 
 import (
 	"github.com/petergtz/pegomock/v3/mockgen"
-	"github.com/petergtz/pegomock/v3/modelgen/loader"
+	"github.com/petergtz/pegomock/v3/modelgen/xtools_packages"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -11,7 +11,7 @@ import (
 var _ = Describe("Mockgen", func() {
 	Context("matcherSourceCodes", func() {
 		It("uses correct naming pattern with underscores for keys, and correct types etc. in source code", func() {
-			ast, e := loader.GenerateModel("github.com/petergtz/pegomock/v3/test_interface", "Display")
+			ast, e := xtools_packages.GenerateModel("github.com/petergtz/pegomock/v3/test_interface", "Display")
 			Expect(e).NotTo(HaveOccurred())
 			_, matcherSourceCodes := mockgen.GenerateOutput(ast, "irrelevant", "MockDisplay", "test_package", "")
 

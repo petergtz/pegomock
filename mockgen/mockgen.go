@@ -149,9 +149,12 @@ func sanitize(s string) string {
 }
 
 func (g *generator) generateMockFor(iface *model.Interface, mockTypeName, selfPackage string) {
-	g.generateMockType(mockTypeName)
+	typeParamNames := typeParamsStringFrom(iface.TypeParams, g.packageMap, selfPackage, false)
+	typeParams := typeParamsStringFrom(iface.TypeParams, g.packageMap, selfPackage, true)
+	g.generateMockType(mockTypeName, typeParams,
+		typeParamNames)
 	for _, method := range iface.Methods {
-		g.generateMockMethod(mockTypeName, method, selfPackage)
+		g.generateMockMethod(mockTypeName, typeParamNames, method, selfPackage)
 		g.emptyLine()
 
 		addTypesFromMethodParamsTo(g.typesSet, method.In, g.packageMap)
@@ -160,42 +163,59 @@ func (g *generator) generateMockFor(iface *model.Interface, mockTypeName, selfPa
 			addTypesFromMethodParamsTo(g.typesSet, []*model.Parameter{method.Variadic}, g.packageMap)
 		}
 	}
-	g.generateMockVerifyMethods(mockTypeName)
-	g.generateVerifierType(mockTypeName)
+	g.generateMockVerifyMethods(mockTypeName, typeParamNames)
+	g.generateVerifierType(mockTypeName, typeParams, typeParamNames)
 	for _, method := range iface.Methods {
 		ongoingVerificationTypeName := fmt.Sprintf("%v_%v_OngoingVerification", mockTypeName, method.Name)
 		args, argNames, argTypes, _ := argDataFor(method, g.packageMap, selfPackage)
-		g.generateVerifierMethod(mockTypeName, method, selfPackage, ongoingVerificationTypeName, args, argNames)
-		g.generateOngoingVerificationType(mockTypeName, ongoingVerificationTypeName)
-		g.generateOngoingVerificationGetCapturedArguments(ongoingVerificationTypeName, argNames, argTypes)
-		g.generateOngoingVerificationGetAllCapturedArguments(ongoingVerificationTypeName, argTypes, method.Variadic != nil)
+		g.generateVerifierMethod(mockTypeName, typeParamNames, method, selfPackage, ongoingVerificationTypeName, args, argNames)
+		g.generateOngoingVerificationType(mockTypeName, typeParams, typeParamNames, ongoingVerificationTypeName)
+		g.generateOngoingVerificationGetCapturedArguments(ongoingVerificationTypeName, argNames, argTypes, typeParamNames)
+		g.generateOngoingVerificationGetAllCapturedArguments(ongoingVerificationTypeName, typeParamNames, argTypes, method.Variadic != nil)
 	}
 }
 
-func (g *generator) generateMockType(mockTypeName string) {
+func typeParamsStringFrom(params []*model.Parameter, packageMap map[string]string, pkgOverride string, withTypes bool) string {
+	if len(params) == 0 {
+		return ""
+	}
+	result := "["
+	for i, param := range params {
+		if i > 0 {
+			result += ", "
+		}
+		result += param.Name
+		if withTypes {
+			result += " " + param.Type.String(packageMap, pkgOverride)
+		}
+	}
+	return result + "]"
+}
+
+func (g *generator) generateMockType(mockTypeName string, typeParams string, typeParamNames string) {
 	g.
 		emptyLine().
-		p("type %v struct {", mockTypeName).
+		p("type %v%v struct {", mockTypeName, typeParams).
 		p("	fail func(message string, callerSkip ...int)").
 		p("}").
 		emptyLine().
-		p("func New%v(options ...pegomock.Option) *%v {", mockTypeName, mockTypeName).
-		p("	mock := &%v{}", mockTypeName).
+		p("func New%v%v(options ...pegomock.Option) *%v%v {", mockTypeName, typeParams, mockTypeName, typeParamNames).
+		p("	mock := &%v%v{}", mockTypeName, typeParamNames).
 		p("	for _, option := range options {").
 		p("		option.Apply(mock)").
 		p("	}").
 		p("	return mock").
 		p("}").
 		emptyLine().
-		p("func (mock *%v) SetFailHandler(fh pegomock.FailHandler) { mock.fail = fh }", mockTypeName).
-		p("func (mock *%v) FailHandler() pegomock.FailHandler      { return mock.fail }", mockTypeName).
+		p("func (mock *%v%v) SetFailHandler(fh pegomock.FailHandler) { mock.fail = fh }", mockTypeName, typeParamNames).
+		p("func (mock *%v%v) FailHandler() pegomock.FailHandler      { return mock.fail }", mockTypeName, typeParamNames).
 		emptyLine()
 }
 
 // If non-empty, pkgOverride is the package in which unqualified types reside.
-func (g *generator) generateMockMethod(mockType string, method *model.Method, pkgOverride string) *generator {
+func (g *generator) generateMockMethod(mockType string, typeParamNames string, method *model.Method, pkgOverride string) *generator {
 	args, argNames, _, returnTypes := argDataFor(method, g.packageMap, pkgOverride)
-	g.p("func (mock *%v) %v(%v) (%v) {", mockType, method.Name, join(args), join(stringSliceFrom(returnTypes, g.packageMap, pkgOverride)))
+	g.p("func (mock *%v%v) %v(%v) (%v) {", mockType, typeParamNames, method.Name, join(args), join(stringSliceFrom(returnTypes, g.packageMap, pkgOverride)))
 	g.p("if mock == nil {").
 		p("	panic(\"mock must not be nil. Use myMock := New%v().\")", mockType).
 		p("}")
@@ -240,10 +260,10 @@ func (g *generator) generateMockMethod(mockType string, method *model.Method, pk
 	return g
 }
 
-func (g *generator) generateVerifierType(interfaceName string) *generator {
+func (g *generator) generateVerifierType(interfaceName string, typeParams string, typeParamNames string) *generator {
 	return g.
-		p("type Verifier%v struct {", interfaceName).
-		p("	mock *%v", interfaceName).
+		p("type Verifier%v%v struct {", interfaceName, typeParams).
+		p("	mock *%v%v", interfaceName, typeParamNames).
 		p("	invocationCountMatcher pegomock.InvocationCountMatcher").
 		p("	inOrderContext *pegomock.InOrderContext").
 		p("	timeout time.Duration").
@@ -251,32 +271,32 @@ func (g *generator) generateVerifierType(interfaceName string) *generator {
 		emptyLine()
 }
 
-func (g *generator) generateMockVerifyMethods(interfaceName string) {
+func (g *generator) generateMockVerifyMethods(interfaceName string, typeParamNames string) {
 	g.
-		p("func (mock *%v) VerifyWasCalledOnce() *Verifier%v {", interfaceName, interfaceName).
-		p("	return &Verifier%v{", interfaceName).
+		p("func (mock *%v%v) VerifyWasCalledOnce() *Verifier%v%v {", interfaceName, typeParamNames, interfaceName, typeParamNames).
+		p("	return &Verifier%v%v{", interfaceName, typeParamNames).
 		p("		mock: mock,").
 		p("		invocationCountMatcher: pegomock.Times(1),").
 		p("	}").
 		p("}").
 		emptyLine().
-		p("func (mock *%v) VerifyWasCalled(invocationCountMatcher pegomock.InvocationCountMatcher) *Verifier%v {", interfaceName, interfaceName).
-		p("	return &Verifier%v{", interfaceName).
+		p("func (mock *%v%v) VerifyWasCalled(invocationCountMatcher pegomock.InvocationCountMatcher) *Verifier%v%v {", interfaceName, typeParamNames, interfaceName, typeParamNames).
+		p("	return &Verifier%v%v{", interfaceName, typeParamNames).
 		p("		mock: mock,").
 		p("		invocationCountMatcher: invocationCountMatcher,").
 		p("	}").
 		p("}").
 		emptyLine().
-		p("func (mock *%v) VerifyWasCalledInOrder(invocationCountMatcher pegomock.InvocationCountMatcher, inOrderContext *pegomock.InOrderContext) *Verifier%v {", interfaceName, interfaceName).
-		p("	return &Verifier%v{", interfaceName).
+		p("func (mock *%v%v) VerifyWasCalledInOrder(invocationCountMatcher pegomock.InvocationCountMatcher, inOrderContext *pegomock.InOrderContext) *Verifier%v%v {", interfaceName, typeParamNames, interfaceName, typeParamNames).
+		p("	return &Verifier%v%v{", interfaceName, typeParamNames).
 		p("		mock: mock,").
 		p("		invocationCountMatcher: invocationCountMatcher,").
 		p("		inOrderContext: inOrderContext,").
 		p("	}").
 		p("}").
 		emptyLine().
-		p("func (mock *%v) VerifyWasCalledEventually(invocationCountMatcher pegomock.InvocationCountMatcher, timeout time.Duration) *Verifier%v {", interfaceName, interfaceName).
-		p("	return &Verifier%v{", interfaceName).
+		p("func (mock *%v%v) VerifyWasCalledEventually(invocationCountMatcher pegomock.InvocationCountMatcher, timeout time.Duration) *Verifier%v%v {", interfaceName, typeParamNames, interfaceName, typeParamNames).
+		p("	return &Verifier%v%v{", interfaceName, typeParamNames).
 		p("		mock: mock,").
 		p("		invocationCountMatcher: invocationCountMatcher,").
 		p("		timeout: timeout,").
@@ -285,12 +305,12 @@ func (g *generator) generateMockVerifyMethods(interfaceName string) {
 		emptyLine()
 }
 
-func (g *generator) generateVerifierMethod(interfaceName string, method *model.Method, pkgOverride string, returnTypeString string, args []string, argNames []string) *generator {
+func (g *generator) generateVerifierMethod(interfaceName string, typeParamNames string, method *model.Method, pkgOverride string, returnTypeString string, args []string, argNames []string) *generator {
 	return g.
-		p("func (verifier *Verifier%v) %v(%v) *%v {", interfaceName, method.Name, join(args), returnTypeString).
+		p("func (verifier *Verifier%v%v) %v(%v) *%v%v {", interfaceName, typeParamNames, method.Name, join(args), returnTypeString, typeParamNames).
 		GenerateParamsDeclaration(argNames, method.Variadic != nil).
 		p("methodInvocations := pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", params, verifier.timeout)", method.Name).
-		p("return &%v{mock: verifier.mock, methodInvocations: methodInvocations}", returnTypeString).
+		p("return &%v%v{mock: verifier.mock, methodInvocations: methodInvocations}", returnTypeString, typeParamNames).
 		p("}")
 }
 
@@ -306,17 +326,17 @@ func (g *generator) GenerateParamsDeclaration(argNames []string, isVariadic bool
 	}
 }
 
-func (g *generator) generateOngoingVerificationType(interfaceName string, ongoingVerificationStructName string) *generator {
+func (g *generator) generateOngoingVerificationType(interfaceName string, typeParams string, typeParamNames string, ongoingVerificationStructName string) *generator {
 	return g.
-		p("type %v struct {", ongoingVerificationStructName).
-		p("mock *%v", interfaceName).
+		p("type %v%v struct {", ongoingVerificationStructName, typeParams).
+		p("mock *%v%v", interfaceName, typeParamNames).
 		p("	methodInvocations []pegomock.MethodInvocation").
 		p("}").
 		emptyLine()
 }
 
-func (g *generator) generateOngoingVerificationGetCapturedArguments(ongoingVerificationStructName string, argNames []string, argTypes []string) *generator {
-	g.p("func (c *%v) GetCapturedArguments() (%v) {", ongoingVerificationStructName, join(argTypes))
+func (g *generator) generateOngoingVerificationGetCapturedArguments(ongoingVerificationStructName string, argNames []string, argTypes []string, typeParamNames string) *generator {
+	g.p("func (c *%v%v) GetCapturedArguments() (%v) {", ongoingVerificationStructName, typeParamNames, join(argTypes))
 	if len(argNames) > 0 {
 		indexedArgNames := make([]string, len(argNames))
 		for i, argName := range argNames {
@@ -330,12 +350,12 @@ func (g *generator) generateOngoingVerificationGetCapturedArguments(ongoingVerif
 	return g
 }
 
-func (g *generator) generateOngoingVerificationGetAllCapturedArguments(ongoingVerificationStructName string, argTypes []string, isVariadic bool) *generator {
+func (g *generator) generateOngoingVerificationGetAllCapturedArguments(ongoingVerificationStructName string, typeParamNames string, argTypes []string, isVariadic bool) *generator {
 	argsAsArray := make([]string, len(argTypes))
 	for i, argType := range argTypes {
 		argsAsArray[i] = fmt.Sprintf("_param%v []%v", i, argType)
 	}
-	g.p("func (c *%v) GetAllCapturedArguments() (%v) {", ongoingVerificationStructName, strings.Join(argsAsArray, ", "))
+	g.p("func (c *%v%v) GetAllCapturedArguments() (%v) {", ongoingVerificationStructName, typeParamNames, strings.Join(argsAsArray, ", "))
 	if len(argTypes) > 0 {
 		g.p("params := pegomock.GetGenericMockFrom(c.mock).GetInvocationParams(c.methodInvocations)")
 		g.p("if len(params) > 0 {")
