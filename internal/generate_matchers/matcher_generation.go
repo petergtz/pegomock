@@ -37,41 +37,49 @@ import (
 
 	for _, kind := range primitiveKinds {
 		contents += fmt.Sprintf(`
+// Deprecated: Use Eq[T any](value T) instead.
 func Eq%[1]s(value %[2]s) %[2]s {
 	RegisterMatcher(&EqMatcher{Value: value})
 	return %[4]s
 }
 
+// Deprecated: Use NotEq[T any](value T) instead.
 func NotEq%[1]s(value %[2]s) %[2]s {
 	RegisterMatcher(&NotEqMatcher{Value: value})
 	return %[4]s
 }
 
+// Deprecated: Use Any[T any]() instead.
 func Any%[1]s() %[2]s {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf(%[3]s)))
 	return %[4]s
 }
 
+// Deprecated: Use ArgThat[T any](matcher ArgumentMatcher) instead.
 func %[1]sThat(matcher ArgumentMatcher) %[2]s {
 	RegisterMatcher(matcher)
 	return %[4]s
 }
 
+// Deprecated: Use Eq[T any](value T) instead.
 func Eq%[1]sSlice(value []%[2]s) []%[2]s {
 	RegisterMatcher(&EqMatcher{Value: value})
 	return nil
 }
 
+// Deprecated: Use NotEq[T any](value T) instead.
 func NotEq%[1]sSlice(value []%[2]s) []%[2]s {
 	RegisterMatcher(&NotEqMatcher{Value: value})
 	return nil
 }
 
+// Deprecated: Use Any[T any]() instead.
 func Any%[1]sSlice() []%[2]s {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf(%[3]s))))
 	return nil
 }
 
+// Deprecated: Use ArgThat[T any](matcher ArgumentMatcher) instead.
 func %[1]sSliceThat(matcher ArgumentMatcher) []%[2]s {
 	RegisterMatcher(matcher)
 	return nil
@@ -81,41 +89,49 @@ func %[1]sSliceThat(matcher ArgumentMatcher) []%[2]s {
 
 	// hard-coding this for now as interface{} overall works slightly different than other types.
 	return contents + `
+// Deprecated: Use Eq[T any](value T) instead.
 func EqInterface(value interface{}) interface{} {
 	RegisterMatcher(&EqMatcher{Value: value})
 	return nil
 }
 
+// Deprecated: Use NotEq[T any](value T) instead.
 func NotEqInterface(value interface{}) interface{} {
 	RegisterMatcher(&NotEqMatcher{Value: value})
 	return nil
 }
 
+// Deprecated: Use Any[T any]() instead.
 func AnyInterface() interface{} {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*interface{})(nil)).Elem()))
 	return nil
 }
 
+// Deprecated: Use ArgThat[T any](matcher ArgumentMatcher) instead.
 func InterfaceThat(matcher ArgumentMatcher) interface{} {
 	RegisterMatcher(matcher)
 	return nil
 }
 
+// Deprecated: Use Eq[T any](value T) instead.
 func EqInterfaceSlice(value []interface{}) []interface{} {
 	RegisterMatcher(&EqMatcher{Value: value})
 	return nil
 }
 
+// Deprecated: Use NotEq[T any](value T) instead.
 func NotEqInterfaceSlice(value []interface{}) []interface{} {
 	RegisterMatcher(&NotEqMatcher{Value: value})
 	return nil
 }
 
+// Deprecated: Use Any[T any]() instead.
 func AnyInterfaceSlice() []interface{} {
 	RegisterMatcher(NewAnyMatcher(reflect.SliceOf(reflect.TypeOf((*interface{})(nil)).Elem())))
 	return nil
 }
 
+// Deprecated: Use ArgThat[T any](matcher ArgumentMatcher) instead.
 func InterfaceSliceThat(matcher ArgumentMatcher) []interface{} {
 	RegisterMatcher(matcher)
 	return nil

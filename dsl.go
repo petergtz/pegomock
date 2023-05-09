@@ -447,11 +447,11 @@ func verifyArgMatcherUse(argMatchers []ArgumentMatcher, params []Param) {
 		"Invalid use of matchers!\n\n %v matchers expected, %v recorded.\n\n"+
 			"This error may occur if matchers are combined with raw values:\n"+
 			"    //incorrect:\n"+
-			"    someFunc(AnyInt(), \"raw String\")\n"+
+			"    someFunc(Any[int](), \"raw String\")\n"+
 			"When using matchers, all arguments have to be provided by matchers.\n"+
 			"For example:\n"+
 			"    //correct:\n"+
-			"    someFunc(AnyInt(), EqString(\"String by matcher\"))",
+			"    someFunc(Any[int](), Eq(\"String by matcher\"))",
 		len(params), len(argMatchers),
 	)
 }

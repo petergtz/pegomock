@@ -18,13 +18,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"reflect"
 	"sync"
 	"testing"
 	"time"
 
 	. "github.com/petergtz/pegomock/v3"
-	. "github.com/petergtz/pegomock/v3/matchers"
 
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -59,21 +57,6 @@ func TestDSL(t *testing.T) {
 	ginkgo.RunSpecs(t, "DSL Suite")
 }
 
-func AnyError() error {
-	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*error)(nil)).Elem()))
-	return nil
-}
-
-func AnyRequest() http.Request {
-	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*http.Request)(nil)).Elem()))
-	return http.Request{}
-}
-
-func AnyRequestPtr() *http.Request {
-	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((**http.Request)(nil)).Elem()))
-	return nil
-}
-
 type NeverMatcher struct{}
 
 func (matcher *NeverMatcher) Matches(param Param) bool { return false }
@@ -102,7 +85,7 @@ var _ = Describe("MockDisplay", func() {
 
 	Context("Stubbing MultipleParamsAndReturnValue() with matchers", func() {
 		BeforeEach(func() {
-			When(display.MultipleParamsAndReturnValue(EqString("Hello"), EqInt(333))).ThenReturn("Bla")
+			When(display.MultipleParamsAndReturnValue(Eq("Hello"), Eq(333))).ThenReturn("Bla")
 		})
 
 		It("fails during verification when mock was not called", func() {
@@ -127,7 +110,7 @@ var _ = Describe("MockDisplay", func() {
 
 	Context("Calling MultipleParamsAndReturnValue() with \"Any\"-matchers", func() {
 		It("succeeds all verifications that match", func() {
-			When(display.MultipleParamsAndReturnValue(AnyString(), EqInt(333))).ThenReturn("Bla")
+			When(display.MultipleParamsAndReturnValue(Any[string](), Eq(333))).ThenReturn("Bla")
 
 			Expect(func() { display.VerifyWasCalledOnce().MultipleParamsAndReturnValue("Hello", 333) }).To(PanicWithMessageTo(HavePrefix(
 				expectation{method: "MultipleParamsAndReturnValue(\"Hello\", 333)", expected: "1", actual: "0"}.string(),
@@ -150,15 +133,15 @@ var _ = Describe("MockDisplay", func() {
 
 	Context("Calling MultipleParamsAndReturnValue() only with matchers on some parameters", func() {
 		It("panics", func() {
-			Expect(func() { When(display.MultipleParamsAndReturnValue(EqString("Hello"), 333)) }).To(PanicWithMessageTo(HavePrefix(
+			Expect(func() { When(display.MultipleParamsAndReturnValue(Eq("Hello"), 333)) }).To(PanicWithMessageTo(HavePrefix(
 				"Invalid use of matchers!\n\n 2 matchers expected, 1 recorded.\n\n" +
 					"This error may occur if matchers are combined with raw values:\n" +
 					"    //incorrect:\n" +
-					"    someFunc(AnyInt(), \"raw String\")\n" +
+					"    someFunc(Any[int](), \"raw String\")\n" +
 					"When using matchers, all arguments have to be provided by matchers.\n" +
 					"For example:\n" +
 					"    //correct:\n" +
-					"    someFunc(AnyInt(), EqString(\"String by matcher\"))",
+					"    someFunc(Any[int](), Eq(\"String by matcher\"))",
 			)))
 		})
 	})
@@ -280,29 +263,29 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("succeeds during verification when using Any-matchers ", func() {
-			Expect(func() { display.VerifyWasCalledOnce().Flash(AnyString(), AnyInt()) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Flash(Any[string](), Any[int]()) }).NotTo(Panic())
 		})
 
 		It("succeeds during verification when using valid Eq-matchers ", func() {
-			Expect(func() { display.VerifyWasCalledOnce().Flash(EqString("Hello"), EqInt(333)) }).NotTo(Panic())
+			Expect(func() { display.VerifyWasCalledOnce().Flash(Eq("Hello"), Eq(333)) }).NotTo(Panic())
 		})
 
 		It("fails during verification when using invalid Eq-matchers ", func() {
-			Expect(func() { display.VerifyWasCalledOnce().Flash(EqString("Invalid"), EqInt(-1)) }).To(PanicWithMessageTo(HavePrefix(
+			Expect(func() { display.VerifyWasCalledOnce().Flash(Eq("Invalid"), Eq(-1)) }).To(PanicWithMessageTo(HavePrefix(
 				expectation{method: `Flash(Eq("Invalid"), Eq(-1))`, expected: "1", actual: "0"}.string(),
 			)))
 		})
 
 		It("fails when not using matchers for all params", func() {
-			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", AnyInt()) }).To(PanicWith(
+			Expect(func() { display.VerifyWasCalledOnce().Flash("Hello", Any[int]()) }).To(PanicWith(
 				"Invalid use of matchers!\n\n 2 matchers expected, 1 recorded.\n\n" +
 					"This error may occur if matchers are combined with raw values:\n" +
 					"    //incorrect:\n" +
-					"    someFunc(AnyInt(), \"raw String\")\n" +
+					"    someFunc(Any[int](), \"raw String\")\n" +
 					"When using matchers, all arguments have to be provided by matchers.\n" +
 					"For example:\n" +
 					"    //correct:\n" +
-					"    someFunc(AnyInt(), EqString(\"String by matcher\"))",
+					"    someFunc(Any[int](), Eq(\"String by matcher\"))",
 			))
 		})
 	})
@@ -360,7 +343,7 @@ var _ = Describe("MockDisplay", func() {
 		Context("Never calling Flash", func() {
 			It("succeeds during verification when using Never() and argument matchers", func() {
 				// https://github.com/petergtz/pegomock/v3/issues/34
-				Expect(func() { display.VerifyWasCalled(Never()).Flash(AnyString(), AnyInt()) }).NotTo(Panic())
+				Expect(func() { display.VerifyWasCalled(Never()).Flash(Any[string](), Any[int]()) }).NotTo(Panic())
 			})
 		})
 	})
@@ -368,7 +351,7 @@ var _ = Describe("MockDisplay", func() {
 	Context("Calling MultipleParamsAndReturnValue()", func() {
 
 		It("panics when stubbed to panic", func() {
-			When(display.MultipleParamsAndReturnValue(AnyString(), AnyInt())).
+			When(display.MultipleParamsAndReturnValue(Any[string](), Any[int]())).
 				ThenPanic("I'm panicking")
 			Expect(func() {
 				display.MultipleParamsAndReturnValue("Some string", 123)
@@ -376,7 +359,7 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("calls back when stubbed to call back", func() {
-			When(display.MultipleParamsAndReturnValue(AnyString(), AnyInt())).Then(
+			When(display.MultipleParamsAndReturnValue(Any[string](), Any[int]())).Then(
 				func(params []Param) ReturnValues {
 					return []ReturnValue{fmt.Sprintf("%v%v", params[0], params[1])}
 				},
@@ -430,7 +413,7 @@ var _ = Describe("MockDisplay", func() {
 		It("Returns arguments when verifying with argument capture", func() {
 			display.Flash("Hello", 111)
 
-			arg1, arg2 := display.VerifyWasCalledOnce().Flash(AnyString(), AnyInt()).GetCapturedArguments()
+			arg1, arg2 := display.VerifyWasCalledOnce().Flash(Any[string](), Any[int]()).GetCapturedArguments()
 
 			Expect(arg1).To(Equal("Hello"))
 			Expect(arg2).To(Equal(111))
@@ -440,7 +423,7 @@ var _ = Describe("MockDisplay", func() {
 			display.Flash("Hello", 111)
 			display.Flash("Again", 222)
 
-			arg1, arg2 := display.VerifyWasCalled(AtLeast(1)).Flash(AnyString(), AnyInt()).GetCapturedArguments()
+			arg1, arg2 := display.VerifyWasCalled(AtLeast(1)).Flash(Any[string](), Any[int]()).GetCapturedArguments()
 
 			Expect(arg1).To(Equal("Again"))
 			Expect(arg2).To(Equal(222))
@@ -450,7 +433,7 @@ var _ = Describe("MockDisplay", func() {
 			display.Flash("Hello", 111)
 			display.Flash("Again", 222)
 
-			args1, args2 := display.VerifyWasCalled(AtLeast(1)).Flash(AnyString(), AnyInt()).GetAllCapturedArguments()
+			args1, args2 := display.VerifyWasCalled(AtLeast(1)).Flash(Any[string](), Any[int]()).GetAllCapturedArguments()
 
 			Expect(args1).To(ConsistOf("Hello", "Again"))
 			Expect(args2).To(ConsistOf(111, 222))
@@ -460,7 +443,7 @@ var _ = Describe("MockDisplay", func() {
 			display.ArrayParam([]string{"one", "two"})
 			display.ArrayParam([]string{"4", "5", "3"})
 
-			args := display.VerifyWasCalled(AtLeast(1)).ArrayParam(AnyStringSlice()).GetAllCapturedArguments()
+			args := display.VerifyWasCalled(AtLeast(1)).ArrayParam(Any[[]string]()).GetAllCapturedArguments()
 
 			Expect(flattenStringSliceOfSlices(args)).To(ConsistOf("one", "two", "3", "4", "5"))
 		})
@@ -480,13 +463,13 @@ var _ = Describe("MockDisplay", func() {
 	Describe("Different \"Any\" matcher scenarios", func() {
 		It("Succeeds when int-parameter is passed as int but veryfied as float", func() {
 			display.FloatParam(1)
-			display.VerifyWasCalledOnce().FloatParam(AnyFloat32())
+			display.VerifyWasCalledOnce().FloatParam(Any[float32]())
 		})
 
 		It("Panics when interface{}-parameter is passed as int, but verified as float", func() {
 			Expect(func() {
 				display.InterfaceParam(3)
-				display.VerifyWasCalledOnce().InterfaceParam(AnyFloat32())
+				display.VerifyWasCalledOnce().InterfaceParam(Any[float32]())
 			}).To(PanicWithMessageTo(HavePrefix(
 				expectation{method: "InterfaceParam(Any(float32))", expected: "1", actual: "0"}.string(),
 			)))
@@ -495,7 +478,7 @@ var _ = Describe("MockDisplay", func() {
 		It("Panics when interface{}-parameter is passed as float, but verified as int", func() {
 			Expect(func() {
 				display.InterfaceParam(3.141)
-				display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
+				display.VerifyWasCalledOnce().InterfaceParam(Any[int]())
 			}).To(PanicWithMessageTo(HavePrefix(
 				expectation{method: "InterfaceParam(Any(int))", expected: "1", actual: "0"}.string(),
 			)))
@@ -503,18 +486,18 @@ var _ = Describe("MockDisplay", func() {
 
 		It("Succeeds when interface{}-parameter is passed as int and verified as int", func() {
 			display.InterfaceParam(3)
-			display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
+			display.VerifyWasCalledOnce().InterfaceParam(Any[int]())
 		})
 
 		It("Succeeds when interface{}-parameter is passed as nil and verified as int slice", func() {
 			display.InterfaceParam(nil)
-			display.VerifyWasCalledOnce().InterfaceParam(AnyIntSlice())
+			display.VerifyWasCalledOnce().InterfaceParam(Any[[]int]())
 		})
 
 		It("Panics when interface{}-parameter is passed as nil, but verified as int", func() {
 			Expect(func() {
 				display.InterfaceParam(nil)
-				display.VerifyWasCalledOnce().InterfaceParam(AnyInt())
+				display.VerifyWasCalledOnce().InterfaceParam(Any[int]())
 			}).To(PanicWithMessageTo(HavePrefix(
 				expectation{method: "InterfaceParam(Any(int))", expected: "1", actual: "0"}.string(),
 			)))
@@ -522,27 +505,27 @@ var _ = Describe("MockDisplay", func() {
 
 		It("Succeeds when error-parameter is passed as nil and verified as any error", func() {
 			display.ErrorParam(nil)
-			display.VerifyWasCalledOnce().ErrorParam(AnyError())
+			display.VerifyWasCalledOnce().ErrorParam(Any[error]())
 		})
 
 		It("Succeeds when error-parameter is passed as string error and verified as any error", func() {
 			display.ErrorParam(errors.New("Some error"))
-			display.VerifyWasCalledOnce().ErrorParam(AnyError())
+			display.VerifyWasCalledOnce().ErrorParam(Any[error]())
 		})
 
 		It("Succeeds when http.Request-parameter is passed as null value and verified as any http.Request", func() {
 			display.NetHttpRequestParam(http.Request{})
-			display.VerifyWasCalledOnce().NetHttpRequestParam(AnyRequest())
+			display.VerifyWasCalledOnce().NetHttpRequestParam(Any[http.Request]())
 		})
 
 		It("Succeeds when http.Request-parameter is passed as null value to interface{} and verified as any http.Request", func() {
 			display.InterfaceParam(http.Request{})
-			display.VerifyWasCalledOnce().InterfaceParam(AnyRequest())
+			display.VerifyWasCalledOnce().InterfaceParam(Any[http.Request]())
 		})
 
 		It("Fails when *pointer* to http.Request-parameter is passed to interface{} and verified as any http.Request", func() {
 			display.InterfaceParam(&http.Request{})
-			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(AnyRequest()) }).To(PanicWithMessageTo(SatisfyAll(
+			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(Any[http.Request]()) }).To(PanicWithMessageTo(SatisfyAll(
 				ContainSubstring("InterfaceParam(Any(http.Request))"),
 				ContainSubstring("InterfaceParam(&http.Request{Method"),
 			)))
@@ -550,24 +533,24 @@ var _ = Describe("MockDisplay", func() {
 
 		It("Succeeds when http.Request-Pointer-parameter is passed as nil and verified as any *http.Request", func() {
 			display.NetHttpRequestPtrParam(nil)
-			display.VerifyWasCalledOnce().NetHttpRequestPtrParam(AnyRequestPtr())
+			display.VerifyWasCalledOnce().NetHttpRequestPtrParam(Any[*http.Request]())
 		})
 
 		It("Succeeds when http.Request-Pointer-parameter is passed as null value and verified as any *http.Request", func() {
 			display.NetHttpRequestPtrParam(&http.Request{})
-			display.VerifyWasCalledOnce().NetHttpRequestPtrParam(AnyRequestPtr())
+			display.VerifyWasCalledOnce().NetHttpRequestPtrParam(Any[*http.Request]())
 		})
 	})
 
 	Describe("Generated matchers", func() {
 		It("Succeeds when map-parameter is passed to interface{} and verified as any map", func() {
-			display.InterfaceParam(map[string]http.Request{"foo": http.Request{}})
-			display.VerifyWasCalledOnce().InterfaceParam(AnyMapOfStringToHttpRequest())
+			display.InterfaceParam(map[string]http.Request{"foo": {}})
+			display.VerifyWasCalledOnce().InterfaceParam(Any[map[string]http.Request]())
 		})
 
 		It("Fails when string parameter is passed to interface{} and verified as any map", func() {
 			display.InterfaceParam("This will not match")
-			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(AnyMapOfStringToHttpRequest()) }).To(PanicWithMessageTo(SatisfyAll(
+			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(Any[map[string]http.Request]()) }).To(PanicWithMessageTo(SatisfyAll(
 				ContainSubstring("InterfaceParam(Any(map[string]http.Request))"),
 				ContainSubstring("InterfaceParam(\"This will not match\")"),
 			)))
@@ -575,29 +558,29 @@ var _ = Describe("MockDisplay", func() {
 
 		It("Succeeds when map-parameter is passed to interface{} and verified as eq map", func() {
 			display.InterfaceParam(map[string]http.Request{"foo": {}})
-			display.VerifyWasCalledOnce().InterfaceParam(EqMapOfStringToHttpRequest(map[string]http.Request{"foo": {}}))
+			display.VerifyWasCalledOnce().InterfaceParam(Eq(map[string]http.Request{"foo": {}}))
 		})
 
 		It("Fails when map-parameter is passed to interface{} and verified as not eq map", func() {
 			display.InterfaceParam(map[int]int{1: 2})
-			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(NotEqMapOfIntToInt(map[int]int{1: 2})) }).
+			Expect(func() { display.VerifyWasCalledOnce().InterfaceParam(NotEq(map[int]int{1: 2})) }).
 				To(PanicWithMessageTo(ContainSubstring("InterfaceParam(NotEq(map[int]int{1:2}))")))
 		})
 
 		It("Succeeds when map-parameter is passed to interface{} and verified as not eq a different map", func() {
 			display.InterfaceParam(map[int]int{1: 2})
-			display.VerifyWasCalledOnce().InterfaceParam(NotEqMapOfIntToInt(map[int]int{1: 3}))
+			display.VerifyWasCalledOnce().InterfaceParam(NotEq(map[int]int{1: 3}))
 		})
 
 		It("Succeeds when map-parameter is passed to interface{} and verified as not eq a time", func() {
 			display.InterfaceParam(map[int]int{1: 2})
-			display.VerifyWasCalledOnce().InterfaceParam(NotEqTimeTime(time.Now()))
+			display.VerifyWasCalledOnce().InterfaceParam(NotEq(time.Now()))
 		})
 
 		It("Fails when map-parameter is passed to interface{} and verified as different map that satisfies equals matcher", func() {
 			display.InterfaceParam(map[int]int{1: 2})
 			Expect(func() {
-				display.VerifyWasCalledOnce().InterfaceParam(MapOfIntToIntThat(&EqMatcher{Value: map[int]int{1: 3}}))
+				display.VerifyWasCalledOnce().InterfaceParam(ArgThat[map[int]int](&EqMatcher{Value: map[int]int{1: 3}}))
 			}).
 				To(PanicWithMessageTo(SatisfyAll(
 					ContainSubstring("InterfaceParam(Eq(map[int]int{1:3}))"),
@@ -606,7 +589,7 @@ var _ = Describe("MockDisplay", func() {
 		})
 		It("Succeeds when map-parameter is passed to interface{} and verified as map that satisfies equals matcher", func() {
 			display.InterfaceParam(map[int]int{1: 2})
-			display.VerifyWasCalledOnce().InterfaceParam(MapOfIntToIntThat(&EqMatcher{Value: map[int]int{1: 2}}))
+			display.VerifyWasCalledOnce().InterfaceParam(ArgThat[map[int]int](&EqMatcher{Value: map[int]int{1: 2}}))
 		})
 	})
 
@@ -697,7 +680,7 @@ var _ = Describe("MockDisplay", func() {
 
 	Describe("Stubbing methods that have no return value", func() {
 		It("Can be stubbed with Panic", func() {
-			When(func() { display.Show(AnyString()) }).ThenPanic("bla")
+			When(func() { display.Show(Any[string]()) }).ThenPanic("bla")
 			Expect(func() { display.Show("Hello") }).To(PanicWith("bla"))
 		})
 
@@ -708,7 +691,7 @@ var _ = Describe("MockDisplay", func() {
 
 		It("Panics when not using a func with no params", func() {
 			Expect(func() {
-				When(func(invalid int) { display.Show(AnyString()) })
+				When(func(invalid int) { display.Show(Any[string]()) })
 			}).To(PanicWith("When using 'When' with function that does not return a value, it expects a function with no arguments and no return value."))
 		})
 	})
@@ -730,19 +713,19 @@ var _ = Describe("MockDisplay", func() {
 
 			It("succeeds when verifying one invocation with arg matchers", func() {
 				display.VariadicParam("one", "two")
-				display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString())
+				display.VerifyWasCalledOnce().VariadicParam(Any[string](), Any[string]())
 			})
 
 			It("succeeds when verifying two different invocations with arg matchers", func() {
 				display.VariadicParam("one", "two")
 				display.VariadicParam("three", "four", "five")
-				display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString(), AnyString())
-				display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString())
+				display.VerifyWasCalledOnce().VariadicParam(Any[string](), Any[string](), Any[string]())
+				display.VerifyWasCalledOnce().VariadicParam(Any[string](), Any[string]())
 			})
 
 			It("succeeds when verifying captured arguments", func() {
 				display.VariadicParam("one", "two")
-				args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString()).GetCapturedArguments()
+				args := display.VerifyWasCalledOnce().VariadicParam(Any[string](), Any[string]()).GetCapturedArguments()
 				Expect(args[0]).To(Equal("one"))
 				Expect(args[1]).To(Equal("two"))
 			})
@@ -750,7 +733,7 @@ var _ = Describe("MockDisplay", func() {
 			It("succeeds when verifying all captured arguments", func() {
 				display.VariadicParam("one", "two")
 				display.VariadicParam("three", "four", "five")
-				args := display.VerifyWasCalledOnce().VariadicParam(AnyString(), AnyString(), AnyString()).GetCapturedArguments()
+				args := display.VerifyWasCalledOnce().VariadicParam(Any[string](), Any[string](), Any[string]()).GetCapturedArguments()
 				Expect(args[0]).To(Equal("three"))
 				Expect(args[1]).To(Equal("four"))
 				Expect(args[2]).To(Equal("five"))
@@ -763,13 +746,13 @@ var _ = Describe("MockDisplay", func() {
 				display.NormalAndVariadicParam("one", 2, "three", "four")
 				display.NormalAndVariadicParam("five", 6, "seven", "eight", "nine")
 
-				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString()).GetAllCapturedArguments()
+				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(Any[string](), Any[int](), Any[string](), Any[string]()).GetAllCapturedArguments()
 				Expect(stringArg[0]).To(Equal("one"))
 				Expect(intArg[0]).To(Equal(2))
 				Expect(varArgs[0][0]).To(Equal("three"))
 				Expect(varArgs[0][1]).To(Equal("four"))
 
-				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString(), AnyString()).GetAllCapturedArguments()
+				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(Any[string](), Any[int](), Any[string](), Any[string](), Any[string]()).GetAllCapturedArguments()
 				Expect(stringArg[0]).To(Equal("five"))
 				Expect(intArg[0]).To(Equal(6))
 				Expect(varArgs[0][0]).To(Equal("seven"))
@@ -782,13 +765,13 @@ var _ = Describe("MockDisplay", func() {
 				display.NormalAndVariadicParam("five", 6, "seven", "eight", "nine")
 				display.NormalAndVariadicParam("ten", 11, "twelf", "thirteen", "fourteen")
 
-				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString()).GetAllCapturedArguments()
+				stringArg, intArg, varArgs := display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(Any[string](), Any[int](), Any[string](), Any[string]()).GetAllCapturedArguments()
 				Expect(stringArg[0]).To(Equal("one"))
 				Expect(intArg[0]).To(Equal(2))
 				Expect(varArgs[0][0]).To(Equal("three"))
 				Expect(varArgs[0][1]).To(Equal("four"))
 
-				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(AnyString(), AnyInt(), AnyString(), AnyString(), AnyString()).GetAllCapturedArguments()
+				stringArg, intArg, varArgs = display.VerifyWasCalled(AtLeast(1)).NormalAndVariadicParam(Any[string](), Any[int](), Any[string](), Any[string](), Any[string]()).GetAllCapturedArguments()
 				Expect(stringArg[0]).To(Equal("five"))
 				Expect(intArg[0]).To(Equal(6))
 				Expect(varArgs[0][0]).To(Equal("seven"))
@@ -803,10 +786,10 @@ var _ = Describe("MockDisplay", func() {
 			})
 
 			It("does not panic when variadic arg has 0 params", func() {
-				display.VerifyWasCalled(Never()).NormalAndVariadicParam(AnyString(), AnyInt()).GetAllCapturedArguments()
+				display.VerifyWasCalled(Never()).NormalAndVariadicParam(Any[string](), Any[int]()).GetAllCapturedArguments()
 
 				display.NormalAndVariadicParam("one", 2)
-				display.VerifyWasCalledOnce().NormalAndVariadicParam(AnyString(), AnyInt()).GetAllCapturedArguments()
+				display.VerifyWasCalledOnce().NormalAndVariadicParam(Any[string](), Any[int]()).GetAllCapturedArguments()
 			})
 		})
 
@@ -834,7 +817,7 @@ var _ = Describe("MockDisplay", func() {
 					})
 					display.SomeValue()
 
-					display.VerifyWasCalledOnce().Show(AnyString())
+					display.VerifyWasCalledOnce().Show(Any[string]())
 				})
 			})
 
@@ -847,7 +830,7 @@ var _ = Describe("MockDisplay", func() {
 						})
 
 					pegomock.
-						When(display.MultipleParamsAndReturnValue(AnyString(), AnyInt())).
+						When(display.MultipleParamsAndReturnValue(Any[string](), Any[int]())).
 						Then(func(params []pegomock.Param) pegomock.ReturnValues {
 							return pegomock.ReturnValues{"MultipleParamsAndReturnValue" + params[0].(string)}
 						})
@@ -868,7 +851,7 @@ var _ = Describe("MockDisplay", func() {
 						wg.Wait()
 
 						display.VerifyWasCalled(Times(10)).MultipleValues()
-						display.VerifyWasCalled(Times(10)).MultipleParamsAndReturnValue(AnyString(), AnyInt())
+						display.VerifyWasCalled(Times(10)).MultipleParamsAndReturnValue(Any[string](), Any[int]())
 						display.VerifyWasCalled(Never()).SomeValue()
 					}).ToNot(Panic())
 				})
@@ -899,7 +882,7 @@ var _ = Describe("MockDisplay", func() {
 		It("correctly manipulates the out args", func() {
 			type Entity struct{ i int }
 			var input = []Entity{}
-			When(func() { display.InterfaceParam(AnyInterface()) }).Then(func(params []pegomock.Param) pegomock.ReturnValues {
+			When(func() { display.InterfaceParam(Any[interface{}]()) }).Then(func(params []pegomock.Param) pegomock.ReturnValues {
 				*params[0].(*[]Entity) = append(*params[0].(*[]Entity), Entity{3})
 				return nil
 			})
