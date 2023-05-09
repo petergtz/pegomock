@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -21,7 +21,7 @@ func main() {
 }
 
 func mustWriteFile(path string, contents string) {
-	err := ioutil.WriteFile(path, []byte(contents), 0644)
+	err := os.WriteFile(path, []byte(contents), 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -150,14 +150,14 @@ var (`
 
 	for _, kind := range append(primitiveKinds, reflect.Interface) {
 		contents += fmt.Sprintf(`
-	Eq%[1]s = pegomock.Eq%[1]s
-	NotEq%[1]s = pegomock.NotEq%[1]s
-	Any%[1]s = pegomock.Any%[1]s
-	%[1]sThat = pegomock.%[1]sThat
-	Eq%[1]sSlice = pegomock.Eq%[1]sSlice
-	NotEq%[1]sSlice = pegomock.NotEq%[1]sSlice
-	Any%[1]sSlice = pegomock.Any%[1]sSlice
-	%[1]sSliceThat = pegomock.%[1]sSliceThat
+	Eq%[1]s = pegomock.Eq%[1]s // Deprecated: Use Eq[T any](value T) instead.
+	NotEq%[1]s = pegomock.NotEq%[1]s // Deprecated: Use NotEq[T any](value T) instead.
+	Any%[1]s = pegomock.Any%[1]s // Deprecated: Use Any[T any]() instead.
+	%[1]sThat = pegomock.%[1]sThat // Deprecated: Use ArgThat[T any](matcher ArgumentMatcher) instead.
+	Eq%[1]sSlice = pegomock.Eq%[1]sSlice // Deprecated: Use Eq[T any](value T) instead.
+	NotEq%[1]sSlice = pegomock.NotEq%[1]sSlice // Deprecated: Use NotEq[T any](value T) instead.
+	Any%[1]sSlice = pegomock.Any%[1]sSlice // Deprecated: Use Any[T any]() instead.
+	%[1]sSliceThat = pegomock.%[1]sSliceThat // Deprecated: Use ArgThat[T any](matcher ArgumentMatcher) instead.
 `, strings.Title(kind.String()))
 	}
 
