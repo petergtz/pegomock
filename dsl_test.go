@@ -28,6 +28,7 @@ import (
 	"github.com/onsi/gomega"
 	"github.com/petergtz/pegomock/v3"
 	"github.com/petergtz/pegomock/v3/test_interface"
+	"github.com/samber/lo"
 )
 
 var (
@@ -59,7 +60,7 @@ func TestDSL(t *testing.T) {
 
 type NeverMatcher struct{}
 
-func (matcher *NeverMatcher) Matches(param Param) bool { return false }
+func (matcher *NeverMatcher) Matches(Param) bool { return false }
 func (matcher *NeverMatcher) FailureMessage() string {
 	return "This matcher never matches (and is only for testing purposes)"
 }
@@ -216,8 +217,8 @@ var _ = Describe("MockDisplay", func() {
 
 		Context("Stubbing with value that implements error interface", func() {
 			It("does not panic", func() {
-				When(display.ErrorReturnValue()).ThenReturn(errors.New("Ouch"))
-				Expect(display.ErrorReturnValue()).To(Equal(errors.New("Ouch")))
+				When(display.ErrorReturnValue()).ThenReturn(errors.New("ouch"))
+				Expect(display.ErrorReturnValue()).To(Equal(errors.New("ouch")))
 			})
 		})
 
@@ -445,7 +446,7 @@ var _ = Describe("MockDisplay", func() {
 
 			args := display.VerifyWasCalled(AtLeast(1)).ArrayParam(Any[[]string]()).GetAllCapturedArguments()
 
-			Expect(flattenStringSliceOfSlices(args)).To(ConsistOf("one", "two", "3", "4", "5"))
+			Expect(lo.Flatten(args)).To(ConsistOf("one", "two", "3", "4", "5"))
 		})
 
 	})
@@ -509,7 +510,7 @@ var _ = Describe("MockDisplay", func() {
 		})
 
 		It("Succeeds when error-parameter is passed as string error and verified as any error", func() {
-			display.ErrorParam(errors.New("Some error"))
+			display.ErrorParam(errors.New("some error"))
 			display.VerifyWasCalledOnce().ErrorParam(Any[error]())
 		})
 
@@ -881,7 +882,7 @@ var _ = Describe("MockDisplay", func() {
 	Describe("Manipulating out args (using pointers) in Then blocks", func() {
 		It("correctly manipulates the out args", func() {
 			type Entity struct{ i int }
-			var input = []Entity{}
+			var input []Entity
 			When(func() { display.InterfaceParam(Any[interface{}]()) }).Then(func(params []pegomock.Param) pegomock.ReturnValues {
 				*params[0].(*[]Entity) = append(*params[0].(*[]Entity), Entity{3})
 				return nil
@@ -963,13 +964,6 @@ var _ = Describe("GenericMockDisplay", func() {
 		})
 	})
 })
-
-func flattenStringSliceOfSlices(sliceOfSlices [][]string) (result []string) {
-	for _, slice := range sliceOfSlices {
-		result = append(result, slice...)
-	}
-	return
-}
 
 type expectation struct {
 	method   string
