@@ -49,7 +49,7 @@ var (
 	SatisfyAll       = gomega.SatisfyAll
 )
 
-var checkThatInterfaceIsImplemented test_interface.Display = NewMockDisplay()
+var _ test_interface.Display = NewMockDisplay() //check that interface is implemented
 
 func TestDSL(t *testing.T) {
 	gomega.RegisterFailHandler(ginkgo.Fail)
