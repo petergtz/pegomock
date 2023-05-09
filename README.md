@@ -1,3 +1,8 @@
+<div align="right">
+
+[![Unit tests](https://github.com/petergtz/pegomock/actions/workflows/run-tests.yml/badge.svg)](https://github.com/petergtz/pegomock/actions/workflows/run-tests.yml)
+
+</div>
 
 <img src="logo.svg" height="150" alt="logo">
 
