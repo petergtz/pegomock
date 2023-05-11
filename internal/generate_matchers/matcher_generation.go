@@ -9,7 +9,7 @@ import (
 
 // Generate matchers:
 //
-//     go generate github.com/petergtz/pegomock/v3/internal/generate_matchers
+//     go generate github.com/petergtz/pegomock/v4/internal/generate_matchers
 
 //go:generate go run matcher_generation.go
 //go:generate go fmt ../../matcher_factories.go
@@ -37,18 +37,6 @@ import (
 
 	for _, kind := range primitiveKinds {
 		contents += fmt.Sprintf(`
-// Deprecated: Use Eq[T any](value T) instead.
-func Eq%[1]s(value %[2]s) %[2]s {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return %[4]s
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEq%[1]s(value %[2]s) %[2]s {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return %[4]s
-}
-
 // Deprecated: Use Any[T any]() instead.
 func Any%[1]s() %[2]s {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf(%[3]s)))
@@ -59,18 +47,6 @@ func Any%[1]s() %[2]s {
 func %[1]sThat(matcher ArgumentMatcher) %[2]s {
 	RegisterMatcher(matcher)
 	return %[4]s
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func Eq%[1]sSlice(value []%[2]s) []%[2]s {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEq%[1]sSlice(value []%[2]s) []%[2]s {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -89,18 +65,6 @@ func %[1]sSliceThat(matcher ArgumentMatcher) []%[2]s {
 
 	// hard-coding this for now as interface{} overall works slightly different than other types.
 	return contents + `
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInterface(value interface{}) interface{} {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInterface(value interface{}) interface{} {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyInterface() interface{} {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*interface{})(nil)).Elem()))
@@ -110,18 +74,6 @@ func AnyInterface() interface{} {
 // Deprecated: Use ArgThat[T any](matcher ArgumentMatcher) instead.
 func InterfaceThat(matcher ArgumentMatcher) interface{} {
 	RegisterMatcher(matcher)
-	return nil
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInterfaceSlice(value []interface{}) []interface{} {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInterfaceSlice(value []interface{}) []interface{} {
-	RegisterMatcher(&NotEqMatcher{Value: value})
 	return nil
 }
 
@@ -143,7 +95,7 @@ func GenerateGinkgoMatchersFile() string {
 	contents := `package mock
 
 import (
-	"github.com/petergtz/pegomock/v3"
+	"github.com/petergtz/pegomock/v4"
 )
 
 var (`

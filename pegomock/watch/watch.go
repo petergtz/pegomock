@@ -16,7 +16,6 @@ package watch
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -24,8 +23,8 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 
-	"github.com/petergtz/pegomock/v3/pegomock/filehandling"
-	"github.com/petergtz/pegomock/v3/pegomock/util"
+	"github.com/petergtz/pegomock/v4/pegomock/filehandling"
+	"github.com/petergtz/pegomock/v4/pegomock/util"
 )
 
 const wellKnownInterfaceListFile = "interfaces_to_mock"
@@ -49,12 +48,15 @@ func NewMockFileUpdater(targetPaths []string, recursive bool) *MockFileUpdater {
 func (updater *MockFileUpdater) Update() {
 	for _, targetPath := range updater.targetPaths {
 		if updater.recursive {
-			filepath.Walk(targetPath, func(path string, info os.FileInfo, err error) error {
+			e := filepath.Walk(targetPath, func(path string, info os.FileInfo, err error) error {
 				if err == nil && info.IsDir() {
 					util.WithinWorkingDir(path, updater.updateMockFiles)
 				}
 				return nil
 			})
+			if e != nil {
+				panic(e)
+			}
 		} else {
 			util.WithinWorkingDir(targetPath, updater.updateMockFiles)
 		}
@@ -92,7 +94,7 @@ func (updater *MockFileUpdater) updateMockFiles(targetPath string) {
 		sourceArgs, err := util.SourceArgs(*lineArgs)
 		util.PanicOnError(err)
 
-		generatedMockSourceCode, _ := filehandling.GenerateMockSourceCode(sourceArgs, *nameOut, *packageOut, *selfPackage, false, os.Stdout, false)
+		generatedMockSourceCode := filehandling.GenerateMockSourceCode(sourceArgs, *nameOut, *packageOut, *selfPackage, false, os.Stdout)
 		mockFilePath := filehandling.OutputFilePath(sourceArgs, ".", *destination)
 		hasChanged := util.WriteFileIfChanged(mockFilePath, generatedMockSourceCode)
 
@@ -122,11 +124,14 @@ func CreateWellKnownInterfaceListFileIfNecessary(targetPath string) {
 		panic(err)
 	}
 	defer file.Close()
-	file.WriteString("### List here all interfaces you would like to mock. One per line.\n")
+	_, e := file.WriteString("### List here all interfaces you would like to mock. One per line.\n")
+	if e != nil {
+		panic(e)
+	}
 }
 
 func linesIn(file string) (result [][]string) {
-	content, err := ioutil.ReadFile(file)
+	content, err := os.ReadFile(file)
 	util.PanicOnError(err)
 	for _, line := range strings.Split(string(content), "\n") {
 		if strings.HasPrefix(strings.TrimSpace(line), "#") || line == "" {

@@ -1,4 +1,4 @@
-module github.com/petergtz/pegomock/v3
+module github.com/petergtz/pegomock/v4
 
 go 1.18
 

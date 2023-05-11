@@ -15,13 +15,10 @@
 package modelgen_test
 
 import (
-	"fmt"
-	"sort"
 	"testing"
 
-	"github.com/petergtz/pegomock/v3/model"
-	"github.com/petergtz/pegomock/v3/modelgen/gomock"
-	"github.com/petergtz/pegomock/v3/modelgen/xtools_packages"
+	"github.com/petergtz/pegomock/v4/model"
+	"github.com/petergtz/pegomock/v4/modelgen/xtools_packages"
 
 	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
@@ -41,26 +38,9 @@ func (a alphabetically) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a alphabetically) Less(i, j int) bool { return a[i].Name < a[j].Name }
 
 var _ = Describe("xtools_packages", func() {
-	It("generates an equivalent model as gomock/reflect does", func() {
-		pkgFromReflect, e := gomock.Reflect("github.com/petergtz/pegomock/v3/test_interface", []string{"Display"})
-		Expect(e).NotTo(HaveOccurred())
-		sort.Sort(alphabetically(pkgFromReflect.Interfaces[0].Methods))
-
-		pkgFromLoader, e := xtools_packages.GenerateModel("github.com/petergtz/pegomock/v3/test_interface", "Display")
-		Expect(e).NotTo(HaveOccurred())
-		sort.Sort(alphabetically(pkgFromLoader.Interfaces[0].Methods))
-
-		Expect(pkgFromLoader.Name).To(Equal(pkgFromReflect.Name))
-		Expect(pkgFromLoader.Interfaces).To(HaveLen(1))
-		Expect(pkgFromLoader.Interfaces[0].Name).To(Equal("Display"))
-
-		for i := range pkgFromReflect.Interfaces[0].Methods {
-			expectMethodsEqual(pkgFromLoader.Interfaces[0].Methods[i], pkgFromReflect.Interfaces[0].Methods[i])
-		}
-	})
 
 	It("generates a model with the basic properties", func() {
-		pkg, e := xtools_packages.GenerateModel("github.com/petergtz/pegomock/v3/modelgen/test_data/default_test_interface", "Display")
+		pkg, e := xtools_packages.GenerateModel("github.com/petergtz/pegomock/v4/modelgen/test_data/default_test_interface", "Display")
 		Expect(e).NotTo(HaveOccurred())
 
 		Expect(pkg.Name).To(Equal("test_interface"))
@@ -71,7 +51,7 @@ var _ = Describe("xtools_packages", func() {
 			&model.Method{
 				Name: "Show",
 				In: []*model.Parameter{
-					&model.Parameter{
+					{
 						Name: "_param0",
 						Type: model.PredeclaredType("string"),
 					},
@@ -82,18 +62,3 @@ var _ = Describe("xtools_packages", func() {
 		// TODO add more test cases
 	})
 })
-
-func expectMethodsEqual(actual, expected *model.Method) {
-	Expect(actual.Name).To(Equal(expected.Name))
-	expectParamsEqual(actual.Name, actual.In, expected.In)
-	expectParamsEqual(actual.Name, actual.Out, expected.Out)
-}
-
-func expectParamsEqual(methodName string, actual, expected []*model.Parameter) {
-	for i := range expected {
-		if actual[i].Name != expected[i].Name {
-			fmt.Printf("Note: In method %v, param names differ \"%v\" != \"%v\"\n", methodName, actual[i].Name, expected[i].Name)
-		}
-		Expect(actual[i].Type).To(Equal(expected[i].Type))
-	}
-}
