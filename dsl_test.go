@@ -22,12 +22,11 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/petergtz/pegomock/v3"
-
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
-	"github.com/petergtz/pegomock/v3"
-	"github.com/petergtz/pegomock/v3/test_interface"
+	"github.com/petergtz/pegomock/v4"
+	. "github.com/petergtz/pegomock/v4"
+	"github.com/petergtz/pegomock/v4/test_interface"
 	"github.com/samber/lo"
 )
 
@@ -195,7 +194,7 @@ var _ = Describe("MockDisplay", func() {
 		})
 	})
 
-	Describe("https://github.com/petergtz/pegomock/v3/issues/24", func() {
+	Describe("https://github.com/petergtz/pegomock/v4/issues/24", func() {
 		Context("Stubbing with nil value", func() {
 			It("does not panic when return type is interface{}", func() {
 				When(display.InterfaceReturnValue()).ThenReturn(nil)
@@ -343,7 +342,7 @@ var _ = Describe("MockDisplay", func() {
 
 		Context("Never calling Flash", func() {
 			It("succeeds during verification when using Never() and argument matchers", func() {
-				// https://github.com/petergtz/pegomock/v3/issues/34
+				// https://github.com/petergtz/pegomock/v4/issues/34
 				Expect(func() { display.VerifyWasCalled(Never()).Flash(Any[string](), Any[int]()) }).NotTo(Panic())
 			})
 		})

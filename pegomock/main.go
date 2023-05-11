@@ -22,12 +22,12 @@ import (
 	"strings"
 	"time"
 
-	kingpin "github.com/alecthomas/kingpin/v2"
+	"github.com/alecthomas/kingpin/v2"
 
-	"github.com/petergtz/pegomock/v3/pegomock/filehandling"
-	"github.com/petergtz/pegomock/v3/pegomock/remove"
-	"github.com/petergtz/pegomock/v3/pegomock/util"
-	"github.com/petergtz/pegomock/v3/pegomock/watch"
+	"github.com/petergtz/pegomock/v4/pegomock/filehandling"
+	"github.com/petergtz/pegomock/v4/pegomock/remove"
+	"github.com/petergtz/pegomock/v4/pegomock/util"
+	"github.com/petergtz/pegomock/v4/pegomock/watch"
 )
 
 var (
@@ -52,17 +52,8 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 		// TODO: self_package was taken as is from GoMock.
 		//       Still don't understand what it's really there for.
 		//       So for now it's not tested.
-		selfPackage            = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
-		debugParser            = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
-		shouldGenerateMatchers = generateCmd.Flag("generate-matchers", "Generate matchers for all non built-in types in a \"matchers\" "+
-			"directory in the same directory where the mock file gets generated.").Short('m').Default("false").Bool()
-		matchersDestination = generateCmd.Flag("matchers-dir", "Generate matchers in the specified directory; defaults to "+
-			filepath.Join("<mockdir>", "matchers")).Short('p').String()
-		useExperimentalModelGen = generateCmd.Flag("use-experimental-model-gen", "pegomock includes a new experimental source parser based on "+
-			"golang.org/x/tools/go/loader. It's currently experimental, but should be more powerful "+
-			"than the current reflect-based modelgen. E.g. reflect cannot detect method parameter names,"+
-			" and has to generate them based on a pattern. In a code editor with code assistence, this doesn't provide good help. "+
-			"\n\nThis option only works when specifying package path + interface, not with .go source files. Also, you can only specify *one* interface. This option cannot be used with the watch command.").Bool()
+		selfPackage     = generateCmd.Flag("self_package", "If set, the package this mock will be part of.").String()
+		debugParser     = generateCmd.Flag("debug", "Print debug information.").Short('d').Bool()
 		generateCmdArgs = generateCmd.Arg("args", "A (optional) Go package path + space-separated interface or a .go file").Required().Strings()
 
 		watchCmd       = app.Command("watch", "Watch over changes in interfaces and regenerate mocks if changes are detected.")
@@ -107,11 +98,7 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 			if *packageOut == "" {
 				realPackageOut = filepath.Base(*destinationDir)
 			}
-			if util.SourceMode(sourceArgs) {
-				realDestination = filepath.Join(*destinationDir, "mock_"+strings.TrimSuffix(sourceArgs[0], ".go")+".go")
-			} else {
-				realDestination = filepath.Join(*destinationDir, "mock_"+strings.ToLower(sourceArgs[len(sourceArgs)-1])+".go")
-			}
+			realDestination = filepath.Join(*destinationDir, "mock_"+strings.ToLower(sourceArgs[len(sourceArgs)-1])+".go")
 		}
 
 		filehandling.GenerateMockFileInOutputDir(
@@ -122,10 +109,7 @@ func Run(cliArgs []string, out io.Writer, in io.Reader, app *kingpin.Application
 			realPackageOut,
 			*selfPackage,
 			*debugParser,
-			out,
-			*useExperimentalModelGen,
-			*shouldGenerateMatchers,
-			*matchersDestination)
+			out)
 
 	case watchCmd.FullCommand():
 		var targetPaths []string

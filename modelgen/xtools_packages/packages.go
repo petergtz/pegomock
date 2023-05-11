@@ -6,7 +6,7 @@ import (
 	"go/types"
 	"path"
 
-	"github.com/petergtz/pegomock/v3/model"
+	"github.com/petergtz/pegomock/v4/model"
 	"golang.org/x/tools/go/packages"
 )
 

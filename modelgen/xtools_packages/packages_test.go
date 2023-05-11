@@ -3,9 +3,9 @@ package xtools_packages_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/petergtz/pegomock/v3/model"
+	"github.com/petergtz/pegomock/v4/model"
 
-	. "github.com/petergtz/pegomock/v3/modelgen/xtools_packages"
+	. "github.com/petergtz/pegomock/v4/modelgen/xtools_packages"
 )
 
 var _ = Describe("Packages", func() {
@@ -40,7 +40,7 @@ var _ = Describe("Packages", func() {
 			Expect(pkg.Interfaces[0].Methods).To(HaveLen(1))
 			Expect(pkg.Interfaces[0].Methods[0].Name).To(Equal("Read"))
 
-			pkg, e = GenerateModel("github.com/petergtz/pegomock/v3/modelgen/xtools_packages", "Bla")
+			pkg, e = GenerateModel("github.com/petergtz/pegomock/v4/modelgen/xtools_packages", "Bla")
 			Expect(e).NotTo(HaveOccurred())
 			Expect(pkg.Interfaces).To(HaveLen(1))
 			Expect(pkg.Interfaces[0].Name).To(Equal("Bla"))
@@ -52,7 +52,7 @@ var _ = Describe("Packages", func() {
 				&model.Parameter{
 					Name: "V",
 					Type: &model.NamedType{
-						Package: "github.com/petergtz/pegomock/v3/modelgen/xtools_packages",
+						Package: "github.com/petergtz/pegomock/v4/modelgen/xtools_packages",
 						Type:    "Number",
 					},
 				},

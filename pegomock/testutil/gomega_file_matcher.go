@@ -32,7 +32,7 @@ func BeAFileContainingSubString(substring string) *fileContentSubStringMatcher {
 func (matcher *fileContentSubStringMatcher) Match(actual interface{}) (bool, error) {
 	actualFilePath, ok := actual.(string)
 	if !ok {
-		return false, fmt.Errorf("Matcher expects the actual file path as string")
+		return false, fmt.Errorf("matcher expects the actual file path as string")
 	}
 	var err error
 	matcher.fileContent, err = ioutil.ReadFile(actualFilePath)

@@ -14,8 +14,8 @@ Installing Pegomock
 Pegomock consists of a binary `pegomock` and a package. Install both via:
 
 ```shell
-go install github.com/petergtz/pegomock/v3/pegomock@latest
-go get github.com/petergtz/pegomock/v3@latest
+go install github.com/petergtz/pegomock/v4/pegomock@latest
+go get github.com/petergtz/pegomock/v4@latest
 ```
 
 This will download the package and install an executable `pegomock` in the directory named by the `$GOBIN` environment variable, which defaults to `$GOPATH/bin` or `$HOME/go/bin` if the `$GOPATH` environment variable is not set.
@@ -37,7 +37,7 @@ The preferred way is:
 
 ```go
 import (
-	"github.com/petergtz/pegomock/v3"
+	"github.com/petergtz/pegomock/v4"
 	"testing"
 )
 
@@ -86,7 +86,7 @@ package some_test
 
 import (
 	. "github.com/onsi/ginkgo"
-	. "github.com/petergtz/pegomock/v3/ginkgo_compatible"
+	. "github.com/petergtz/pegomock/v4/ginkgo_compatible"
 )
 
 var _ = Describe("Some function", func() {
@@ -406,7 +406,7 @@ Installation
 Install it via:
 
 ```shell
-go install github.com/petergtz/pegomock/v3/pegomock@latest
+go install github.com/petergtz/pegomock/v4/pegomock@latest
 ```
 
 Tracking the pegomock tool in your project
@@ -425,7 +425,7 @@ Go modules allow to pin not only a package but also a tool (that is, an executab
 package tools
 
 import (
-	_ "github.com/petergtz/pegomock/v3/pegomock"
+	_ "github.com/petergtz/pegomock/v4/pegomock"
 )
 ```
 2. Set `$GOBIN` to a `bin` directory relative to your repo (this defines where tool dependencies will be installed).
@@ -433,7 +433,7 @@ import (
 ```console
 $ cd /path/to/myproject
 $ export GOBIN=$PWD/bin
-$ go install github.com/petergtz/pegomock/v3/pegomock
+$ go install github.com/petergtz/pegomock/v4/pegomock
 ```
 3. Use that `$GOBIN` when invoking `pegomock` for that project:
 ```console

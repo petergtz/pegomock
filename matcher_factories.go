@@ -4,18 +4,6 @@ import (
 	"reflect"
 )
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqBool(value bool) bool {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return false
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqBool(value bool) bool {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return false
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyBool() bool {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf(false)))
@@ -26,18 +14,6 @@ func AnyBool() bool {
 func BoolThat(matcher ArgumentMatcher) bool {
 	RegisterMatcher(matcher)
 	return false
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqBoolSlice(value []bool) []bool {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqBoolSlice(value []bool) []bool {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -52,18 +28,6 @@ func BoolSliceThat(matcher ArgumentMatcher) []bool {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt(value int) int {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt(value int) int {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyInt() int {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf(0)))
@@ -74,18 +38,6 @@ func AnyInt() int {
 func IntThat(matcher ArgumentMatcher) int {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqIntSlice(value []int) []int {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqIntSlice(value []int) []int {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -100,18 +52,6 @@ func IntSliceThat(matcher ArgumentMatcher) []int {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt8(value int8) int8 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt8(value int8) int8 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyInt8() int8 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((int8)(0))))
@@ -122,18 +62,6 @@ func AnyInt8() int8 {
 func Int8That(matcher ArgumentMatcher) int8 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt8Slice(value []int8) []int8 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt8Slice(value []int8) []int8 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -148,18 +76,6 @@ func Int8SliceThat(matcher ArgumentMatcher) []int8 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt16(value int16) int16 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt16(value int16) int16 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyInt16() int16 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((int16)(0))))
@@ -170,18 +86,6 @@ func AnyInt16() int16 {
 func Int16That(matcher ArgumentMatcher) int16 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt16Slice(value []int16) []int16 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt16Slice(value []int16) []int16 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -196,18 +100,6 @@ func Int16SliceThat(matcher ArgumentMatcher) []int16 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt32(value int32) int32 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt32(value int32) int32 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyInt32() int32 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((int32)(0))))
@@ -218,18 +110,6 @@ func AnyInt32() int32 {
 func Int32That(matcher ArgumentMatcher) int32 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt32Slice(value []int32) []int32 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt32Slice(value []int32) []int32 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -244,18 +124,6 @@ func Int32SliceThat(matcher ArgumentMatcher) []int32 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt64(value int64) int64 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt64(value int64) int64 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyInt64() int64 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((int64)(0))))
@@ -266,18 +134,6 @@ func AnyInt64() int64 {
 func Int64That(matcher ArgumentMatcher) int64 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInt64Slice(value []int64) []int64 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInt64Slice(value []int64) []int64 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -292,18 +148,6 @@ func Int64SliceThat(matcher ArgumentMatcher) []int64 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint(value uint) uint {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint(value uint) uint {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyUint() uint {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((uint)(0))))
@@ -314,18 +158,6 @@ func AnyUint() uint {
 func UintThat(matcher ArgumentMatcher) uint {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUintSlice(value []uint) []uint {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUintSlice(value []uint) []uint {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -340,18 +172,6 @@ func UintSliceThat(matcher ArgumentMatcher) []uint {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint8(value uint8) uint8 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint8(value uint8) uint8 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyUint8() uint8 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((uint8)(0))))
@@ -362,18 +182,6 @@ func AnyUint8() uint8 {
 func Uint8That(matcher ArgumentMatcher) uint8 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint8Slice(value []uint8) []uint8 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint8Slice(value []uint8) []uint8 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -388,18 +196,6 @@ func Uint8SliceThat(matcher ArgumentMatcher) []uint8 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint16(value uint16) uint16 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint16(value uint16) uint16 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyUint16() uint16 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((uint16)(0))))
@@ -410,18 +206,6 @@ func AnyUint16() uint16 {
 func Uint16That(matcher ArgumentMatcher) uint16 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint16Slice(value []uint16) []uint16 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint16Slice(value []uint16) []uint16 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -436,18 +220,6 @@ func Uint16SliceThat(matcher ArgumentMatcher) []uint16 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint32(value uint32) uint32 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint32(value uint32) uint32 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyUint32() uint32 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((uint32)(0))))
@@ -458,18 +230,6 @@ func AnyUint32() uint32 {
 func Uint32That(matcher ArgumentMatcher) uint32 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint32Slice(value []uint32) []uint32 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint32Slice(value []uint32) []uint32 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -484,18 +244,6 @@ func Uint32SliceThat(matcher ArgumentMatcher) []uint32 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint64(value uint64) uint64 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint64(value uint64) uint64 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyUint64() uint64 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((uint64)(0))))
@@ -506,18 +254,6 @@ func AnyUint64() uint64 {
 func Uint64That(matcher ArgumentMatcher) uint64 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUint64Slice(value []uint64) []uint64 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUint64Slice(value []uint64) []uint64 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -532,18 +268,6 @@ func Uint64SliceThat(matcher ArgumentMatcher) []uint64 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUintptr(value uintptr) uintptr {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUintptr(value uintptr) uintptr {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyUintptr() uintptr {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((uintptr)(0))))
@@ -554,18 +278,6 @@ func AnyUintptr() uintptr {
 func UintptrThat(matcher ArgumentMatcher) uintptr {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqUintptrSlice(value []uintptr) []uintptr {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqUintptrSlice(value []uintptr) []uintptr {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -580,18 +292,6 @@ func UintptrSliceThat(matcher ArgumentMatcher) []uintptr {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqFloat32(value float32) float32 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqFloat32(value float32) float32 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyFloat32() float32 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((float32)(0))))
@@ -602,18 +302,6 @@ func AnyFloat32() float32 {
 func Float32That(matcher ArgumentMatcher) float32 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqFloat32Slice(value []float32) []float32 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqFloat32Slice(value []float32) []float32 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -628,18 +316,6 @@ func Float32SliceThat(matcher ArgumentMatcher) []float32 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqFloat64(value float64) float64 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqFloat64(value float64) float64 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyFloat64() float64 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((float64)(0))))
@@ -650,18 +326,6 @@ func AnyFloat64() float64 {
 func Float64That(matcher ArgumentMatcher) float64 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqFloat64Slice(value []float64) []float64 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqFloat64Slice(value []float64) []float64 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -676,18 +340,6 @@ func Float64SliceThat(matcher ArgumentMatcher) []float64 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqComplex64(value complex64) complex64 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqComplex64(value complex64) complex64 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyComplex64() complex64 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((complex64)(0))))
@@ -698,18 +350,6 @@ func AnyComplex64() complex64 {
 func Complex64That(matcher ArgumentMatcher) complex64 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqComplex64Slice(value []complex64) []complex64 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqComplex64Slice(value []complex64) []complex64 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -724,18 +364,6 @@ func Complex64SliceThat(matcher ArgumentMatcher) []complex64 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqComplex128(value complex128) complex128 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return 0
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqComplex128(value complex128) complex128 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return 0
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyComplex128() complex128 {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((complex128)(0))))
@@ -746,18 +374,6 @@ func AnyComplex128() complex128 {
 func Complex128That(matcher ArgumentMatcher) complex128 {
 	RegisterMatcher(matcher)
 	return 0
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqComplex128Slice(value []complex128) []complex128 {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqComplex128Slice(value []complex128) []complex128 {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -772,18 +388,6 @@ func Complex128SliceThat(matcher ArgumentMatcher) []complex128 {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqString(value string) string {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return ""
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqString(value string) string {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return ""
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyString() string {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf("")))
@@ -794,18 +398,6 @@ func AnyString() string {
 func StringThat(matcher ArgumentMatcher) string {
 	RegisterMatcher(matcher)
 	return ""
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqStringSlice(value []string) []string {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqStringSlice(value []string) []string {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
 }
 
 // Deprecated: Use Any[T any]() instead.
@@ -820,18 +412,6 @@ func StringSliceThat(matcher ArgumentMatcher) []string {
 	return nil
 }
 
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInterface(value interface{}) interface{} {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInterface(value interface{}) interface{} {
-	RegisterMatcher(&NotEqMatcher{Value: value})
-	return nil
-}
-
 // Deprecated: Use Any[T any]() instead.
 func AnyInterface() interface{} {
 	RegisterMatcher(NewAnyMatcher(reflect.TypeOf((*interface{})(nil)).Elem()))
@@ -841,18 +421,6 @@ func AnyInterface() interface{} {
 // Deprecated: Use ArgThat[T any](matcher ArgumentMatcher) instead.
 func InterfaceThat(matcher ArgumentMatcher) interface{} {
 	RegisterMatcher(matcher)
-	return nil
-}
-
-// Deprecated: Use Eq[T any](value T) instead.
-func EqInterfaceSlice(value []interface{}) []interface{} {
-	RegisterMatcher(&EqMatcher{Value: value})
-	return nil
-}
-
-// Deprecated: Use NotEq[T any](value T) instead.
-func NotEqInterfaceSlice(value []interface{}) []interface{} {
-	RegisterMatcher(&NotEqMatcher{Value: value})
 	return nil
 }
 
