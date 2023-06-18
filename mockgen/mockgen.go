@@ -224,7 +224,7 @@ func (g *generator) generateMockMethod(mockType string, typeParamNames string, m
 	if len(method.Out) > 0 {
 		// TODO: translate LastInvocation into a Matcher so it can be used as key for Stubbings
 		for i, returnType := range returnTypes {
-			g.p("var ret%v %v", i, returnType.String(g.packageMap, pkgOverride))
+			g.p("var _ret%v %v", i, returnType.String(g.packageMap, pkgOverride))
 		}
 		g.p("if len(_result) != 0 {")
 		returnValues := make([]string, len(returnTypes))
@@ -234,15 +234,15 @@ func (g *generator) generateMockMethod(mockType string, typeParamNames string, m
 				undirectedChanType := *chanType
 				undirectedChanType.Dir = 0
 				g.p("var ok bool").
-					p("  ret%v, ok = _result[%v].(%v)", i, i, undirectedChanType.String(g.packageMap, pkgOverride))
+					p("  _ret%v, ok = _result[%v].(%v)", i, i, undirectedChanType.String(g.packageMap, pkgOverride))
 				g.p("if !ok{").
-					p("ret%v = _result[%v].(%v)", i, i, chanType.String(g.packageMap, pkgOverride)).
+					p("_ret%v = _result[%v].(%v)", i, i, chanType.String(g.packageMap, pkgOverride)).
 					p("}")
 			} else {
-				g.p("ret%v  = _result[%v].(%v)", i, i, returnType.String(g.packageMap, pkgOverride))
+				g.p("_ret%v  = _result[%v].(%v)", i, i, returnType.String(g.packageMap, pkgOverride))
 			}
 			g.p("}")
-			returnValues[i] = fmt.Sprintf("ret%v", i)
+			returnValues[i] = fmt.Sprintf("_ret%v", i)
 		}
 		g.p("}")
 		g.p("return %v", strings.Join(returnValues, ", "))
