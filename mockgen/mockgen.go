@@ -219,7 +219,7 @@ func (g *generator) generateMockMethod(mockType string, typeParamNames string, m
 	if len(method.Out) > 0 {
 		resultAssignment = "result :="
 	}
-	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", params, []reflect.Type{%v})",
+	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", _params, []reflect.Type{%v})",
 		resultAssignment, method.Name, strings.Join(reflectReturnTypes, ", "))
 	if len(method.Out) > 0 {
 		// TODO: translate LastInvocation into a Matcher so it can be used as key for Stubbings
@@ -300,7 +300,7 @@ func (g *generator) generateVerifierMethod(interfaceName string, typeParamNames 
 	return g.
 		p("func (verifier *Verifier%v%v) %v(%v) *%v%v {", interfaceName, typeParamNames, method.Name, join(args), returnTypeString, typeParamNames).
 		GenerateParamsDeclaration(argNames, method.Variadic != nil).
-		p("methodInvocations := pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", params, verifier.timeout)", method.Name).
+		p("methodInvocations := pegomock.GetGenericMockFrom(verifier.mock).Verify(verifier.inOrderContext, verifier.invocationCountMatcher, \"%v\", _params, verifier.timeout)", method.Name).
 		p("return &%v%v{mock: verifier.mock, methodInvocations: methodInvocations}", returnTypeString, typeParamNames).
 		p("}")
 }
@@ -308,12 +308,12 @@ func (g *generator) generateVerifierMethod(interfaceName string, typeParamNames 
 func (g *generator) GenerateParamsDeclaration(argNames []string, isVariadic bool) *generator {
 	if isVariadic {
 		return g.
-			p("params := []pegomock.Param{%v}", strings.Join(argNames[0:len(argNames)-1], ", ")).
+			p("_params := []pegomock.Param{%v}", strings.Join(argNames[0:len(argNames)-1], ", ")).
 			p("for _, param := range %v {", argNames[len(argNames)-1]).
-			p("params = append(params, param)").
+			p("_params = append(_params, param)").
 			p("}")
 	} else {
-		return g.p("params := []pegomock.Param{%v}", join(argNames))
+		return g.p("_params := []pegomock.Param{%v}", join(argNames))
 	}
 }
 
@@ -348,25 +348,25 @@ func (g *generator) generateOngoingVerificationGetAllCapturedArguments(ongoingVe
 	}
 	g.p("func (c *%v%v) GetAllCapturedArguments() (%v) {", ongoingVerificationStructName, typeParamNames, strings.Join(argsAsArray, ", "))
 	if len(argTypes) > 0 {
-		g.p("params := pegomock.GetGenericMockFrom(c.mock).GetInvocationParams(c.methodInvocations)")
-		g.p("if len(params) > 0 {")
+		g.p("_params := pegomock.GetGenericMockFrom(c.mock).GetInvocationParams(c.methodInvocations)")
+		g.p("if len(_params) > 0 {")
 		for i, argType := range argTypes {
 			if isVariadic && i == len(argTypes)-1 {
 				variadicBasicType := strings.Replace(argType, "[]", "", 1)
 				g.
 					p("_param%v = make([]%v, len(c.methodInvocations))", i, argType).
 					p("for u := 0; u < len(c.methodInvocations); u++ {").
-					p("_param%v[u] = make([]%v, len(params)-%v)", i, variadicBasicType, i).
-					p("for x := %v; x < len(params); x++ {", i).
-					p("if params[x][u] != nil {").
-					p("_param%v[u][x-%v] = params[x][u].(%v)", i, i, variadicBasicType).
+					p("_param%v[u] = make([]%v, len(_params)-%v)", i, variadicBasicType, i).
+					p("for x := %v; x < len(_params); x++ {", i).
+					p("if _params[x][u] != nil {").
+					p("_param%v[u][x-%v] = _params[x][u].(%v)", i, i, variadicBasicType).
 					p("}").
 					p("}").
 					p("}")
 				break
 			} else {
 				g.p("_param%v = make([]%v, len(c.methodInvocations))", i, argType)
-				g.p("for u, param := range params[%v] {", i)
+				g.p("for u, param := range _params[%v] {", i)
 				g.p("_param%v[u]=param.(%v)", i, argType)
 				g.p("}")
 			}
