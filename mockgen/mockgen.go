@@ -217,7 +217,7 @@ func (g *generator) generateMockMethod(mockType string, typeParamNames string, m
 	}
 	resultAssignment := ""
 	if len(method.Out) > 0 {
-		resultAssignment = "result :="
+		resultAssignment = "_result :="
 	}
 	g.p("%v pegomock.GetGenericMockFrom(mock).Invoke(\"%v\", _params, []reflect.Type{%v})",
 		resultAssignment, method.Name, strings.Join(reflectReturnTypes, ", "))
@@ -226,20 +226,20 @@ func (g *generator) generateMockMethod(mockType string, typeParamNames string, m
 		for i, returnType := range returnTypes {
 			g.p("var ret%v %v", i, returnType.String(g.packageMap, pkgOverride))
 		}
-		g.p("if len(result) != 0 {")
+		g.p("if len(_result) != 0 {")
 		returnValues := make([]string, len(returnTypes))
 		for i, returnType := range returnTypes {
-			g.p("if result[%v] != nil {", i)
+			g.p("if _result[%v] != nil {", i)
 			if chanType, isChanType := returnType.(*model.ChanType); isChanType && chanType.Dir != 0 {
 				undirectedChanType := *chanType
 				undirectedChanType.Dir = 0
 				g.p("var ok bool").
-					p("  ret%v, ok = result[%v].(%v)", i, i, undirectedChanType.String(g.packageMap, pkgOverride))
+					p("  ret%v, ok = _result[%v].(%v)", i, i, undirectedChanType.String(g.packageMap, pkgOverride))
 				g.p("if !ok{").
-					p("ret%v = result[%v].(%v)", i, i, chanType.String(g.packageMap, pkgOverride)).
+					p("ret%v = _result[%v].(%v)", i, i, chanType.String(g.packageMap, pkgOverride)).
 					p("}")
 			} else {
-				g.p("ret%v  = result[%v].(%v)", i, i, returnType.String(g.packageMap, pkgOverride))
+				g.p("ret%v  = _result[%v].(%v)", i, i, returnType.String(g.packageMap, pkgOverride))
 			}
 			g.p("}")
 			returnValues[i] = fmt.Sprintf("ret%v", i)
