@@ -27,6 +27,8 @@ See also section [Tracking the pegomock tool in your project](#tracking-the-pego
 
 For migration from Pegomock v1/v2 to v3, see [Migration notes in v3 release description](https://github.com/petergtz/pegomock/releases/tag/v3.0.0).
 
+For migration from Pegomock v3 to v4, see [Migration notes in v4 release description](https://github.com/petergtz/pegomock/releases/tag/v4.0.0).
+
 Getting Started
 ===============
 
