@@ -342,16 +342,17 @@ func (g *generator) generateOngoingVerificationGetCapturedArguments(ongoingVerif
 }
 
 func (g *generator) generateOngoingVerificationGetAllCapturedArguments(ongoingVerificationStructName string, typeParamNames string, argTypes []string, isVariadic bool) *generator {
-	argsAsArray := make([]string, len(argTypes))
+	numArgs := len(argTypes)
+	argsAsArray := make([]string, numArgs)
 	for i, argType := range argTypes {
 		argsAsArray[i] = fmt.Sprintf("_param%v []%v", i, argType)
 	}
 	g.p("func (c *%v%v) GetAllCapturedArguments() (%v) {", ongoingVerificationStructName, typeParamNames, strings.Join(argsAsArray, ", "))
-	if len(argTypes) > 0 {
+	if numArgs > 0 {
 		g.p("_params := pegomock.GetGenericMockFrom(c.mock).GetInvocationParams(c.methodInvocations)")
 		g.p("if len(_params) > 0 {")
 		for i, argType := range argTypes {
-			if isVariadic && i == len(argTypes)-1 {
+			if isVariadic && i == numArgs-1 {
 				variadicBasicType := strings.Replace(argType, "[]", "", 1)
 				g.
 					p("_param%v = make([]%v, len(c.methodInvocations))", i, argType).
@@ -365,9 +366,12 @@ func (g *generator) generateOngoingVerificationGetAllCapturedArguments(ongoingVe
 					p("}")
 				break
 			} else {
+				// explicitly validate the length of the params slice to avoid out of bounds code smells
+				g.p("if len(_params) > %v {", i)
 				g.p("_param%v = make([]%v, len(c.methodInvocations))", i, argType)
 				g.p("for u, param := range _params[%v] {", i)
 				g.p("_param%v[u]=param.(%v)", i, argType)
+				g.p("}")
 				g.p("}")
 			}
 		}
