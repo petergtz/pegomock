@@ -20,7 +20,7 @@ jobs:
         run: go version
 
       - name: Install Ginkgo
-        run: go install github.com/onsi/ginkgo/v2/ginkgo@latest
+        run: go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 
       - name: Run tests
         run: ./scripts/run_tests.sh
