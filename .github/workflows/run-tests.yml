@@ -4,11 +4,11 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        go-version: [ '1.18', '1.19', '1.20' ]
+        go-version: ["1.18", "1.19", "1.20", "1.21", "1.22"]
 
     steps:
       - uses: actions/checkout@v3
@@ -21,15 +21,7 @@ jobs:
         run: go version
 
       - name: Install Ginkgo
-        run: go install github.com/onsi/ginkgo/v2/ginkgo@latest
+        run: go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 
       - name: Run tests
         run: ./scripts/run_tests.sh
-
-
-
-
-
-
-
-
