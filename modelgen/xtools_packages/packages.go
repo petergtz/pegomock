@@ -149,6 +149,14 @@ func modelTypeFrom(typesType types.Type) model.Type {
 			Dir:  dir,
 			Type: modelTypeFrom(typedTyp.Elem()),
 		}
+	case *types.Alias:
+		if typedTyp.Obj().Pkg() == nil {
+			return model.PredeclaredType(typedTyp.Obj().Name())
+		}
+		return &model.NamedType{
+			Package: typedTyp.Obj().Pkg().Path(),
+			Type:    typedTyp.Obj().Name(),
+		}
 	case *types.Named:
 		if typedTyp.Obj().Pkg() == nil {
 			return model.PredeclaredType(typedTyp.Obj().Name())
