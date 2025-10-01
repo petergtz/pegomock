@@ -3,6 +3,7 @@
 set -ex
 cd $(dirname $0)/..
 
+ginkgo ginkgo_compatible
 rm -f mock_display_test.go
 rm -f mock_generic_display_test.go
 ginkgo -succinct generate_test_mocks/xtools_go_loader
