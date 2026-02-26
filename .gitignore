@@ -4,6 +4,7 @@ debug.test
 .vscode
 *.coverprofile
 coverprofile.out
+*.test
 .idea
 *.iml
 dist
