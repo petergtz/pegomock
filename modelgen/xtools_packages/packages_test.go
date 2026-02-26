@@ -61,5 +61,18 @@ var _ = Describe("Packages", func() {
 			Expect(pkg.Interfaces[0].Methods[0].Name).To(Equal("SumNumbers"))
 		})
 
+		It("handles 'any' type alias", func() {
+			pkg, e := GenerateModel("github.com/petergtz/pegomock/v4/modelgen/test_data/default_test_interface", "InterfaceWithAny")
+			Expect(e).NotTo(HaveOccurred())
+			Expect(pkg.Interfaces).To(HaveLen(1))
+			Expect(pkg.Interfaces[0].Name).To(Equal("InterfaceWithAny"))
+			Expect(pkg.Interfaces[0].Methods).To(HaveLen(1))
+			Expect(pkg.Interfaces[0].Methods[0].Name).To(Equal("DoSomething"))
+			Expect(pkg.Interfaces[0].Methods[0].In).To(HaveLen(1))
+			Expect(pkg.Interfaces[0].Methods[0].In[0].Type).To(Equal(model.PredeclaredType("any")))
+			Expect(pkg.Interfaces[0].Methods[0].Out).To(HaveLen(1))
+			Expect(pkg.Interfaces[0].Methods[0].Out[0].Type).To(Equal(model.PredeclaredType("any")))
+		})
+
 	})
 })

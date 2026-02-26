@@ -35,3 +35,7 @@ type Display interface {
 	VariadicParam(v ...string)
 	NormalAndVariadicParam(s string, i int, v ...string)
 }
+
+type InterfaceWithAny interface {
+	DoSomething(value any) any
+}
